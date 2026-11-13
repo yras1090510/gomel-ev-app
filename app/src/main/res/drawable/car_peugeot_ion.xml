@@ -1,0 +1,46 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="320dp"
+    android:height="150dp"
+    android:viewportWidth="320"
+    android:viewportHeight="150">
+    <!-- Floor shadow -->
+    <path
+        android:fillColor="#180F1413"
+        android:pathData="M56,124 C56,119 102,116 160,116 C218,116 264,119 264,124 C264,129 218,132 160,132 C102,132 56,129 56,124 Z" />
+    <!-- Lower trim -->
+    <path
+        android:fillColor="#1C2225"
+        android:pathData="M70,111 L252,111 L250,116 L72,116 Z" />
+    <!-- Peugeot iOn tall mono-space kei-EV body -->
+    <path
+        android:fillColor="#F3F5F7"
+        android:pathData="M68,103 C67,85 71,62 84,41 C95,33 114,32 146,32 C178,32 204,40 226,64 L248,84 C253,92 254,104 250,111 L71,111 C68,109 68,107 68,103 Z" />
+    <!-- Tall panoramic mono-space glass -->
+    <path
+        android:fillColor="#20282C"
+        android:pathData="M88,43 C99,37 120,36 146,36 C174,36 198,44 218,67 L81,67 C82,56 84,48 88,43 Z" />
+    <path
+        android:strokeColor="#C2CACF"
+        android:strokeWidth="1.4"
+        android:pathData="M148,36 L148,109" />
+    <!-- Leaf-shaped front headlamp & tall rear lamp -->
+    <path
+        android:fillColor="#4CE0B3"
+        android:pathData="M232,76 L248,82 L245,87 L229,82 Z" />
+    <path
+        android:fillColor="#D94B4B"
+        android:pathData="M70,74 L77,74 L76,92 L69,92 Z" />
+    <!-- Wheels at extreme corners -->
+    <path
+        android:fillColor="#15191B"
+        android:pathData="M100,111 m-17,0 a17,17 0 1,0 34,0 a17,17 0 1,0 -34,0" />
+    <path
+        android:fillColor="#CFD6DB"
+        android:pathData="M100,111 m-10.5,0 a10.5,10.5 0 1,0 21,0 a10.5,10.5 0 1,0 -21,0" />
+    <path
+        android:fillColor="#15191B"
+        android:pathData="M222,111 m-17,0 a17,17 0 1,0 34,0 a17,17 0 1,0 -34,0" />
+    <path
+        android:fillColor="#CFD6DB"
+        android:pathData="M222,111 m-10.5,0 a10.5,10.5 0 1,0 21,0 a10.5,10.5 0 1,0 -21,0" />
+</vector>

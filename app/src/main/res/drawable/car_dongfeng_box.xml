@@ -1,0 +1,60 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="320dp"
+    android:height="150dp"
+    android:viewportWidth="320"
+    android:viewportHeight="150">
+    <!-- Floor shadow -->
+    <path
+        android:fillColor="#180F1413"
+        android:pathData="M34,124 C34,119 92,116 160,116 C228,116 286,119 286,124 C286,129 228,132 160,132 C92,132 34,129 34,124 Z" />
+    <!-- Gloss black rocker trim -->
+    <path
+        android:fillColor="#181C1E"
+        android:pathData="M48,110 L272,110 L269,116 L51,116 Z" />
+    <!-- Dongfeng BOX warm champagne-cream rounded neo hatch -->
+    <path
+        android:fillColor="#EFECE4"
+        android:pathData="M47,98 C47,82 54,66 72,49 C89,37 116,35 156,35 C195,35 219,43 244,67 L268,74 C276,78 279,92 274,109 L50,110 C47,108 47,103 47,98 Z" />
+    <!-- Iconic floating contrast obsidian roof -->
+    <path
+        android:fillColor="#171C1E"
+        android:pathData="M73,47 C90,37 116,34 156,34 C190,34 212,40 230,54 L214,54 C196,43 176,41 148,41 L82,42 Z" />
+    <!-- Panoramic smoked glass -->
+    <path
+        android:fillColor="#21292C"
+        android:pathData="M82,46 L192,46 C209,50 222,58 234,69 L77,69 C78,59 79,52 82,46 Z" />
+    <!-- Flush door handles & crisp body arc -->
+    <path
+        android:fillColor="#DCD7CC"
+        android:pathData="M56,94 L268,94 L268,108 L54,108 Z" />
+    <path
+        android:strokeColor="#C2BDB1"
+        android:strokeWidth="1.4"
+        android:pathData="M148,46 L148,108 M124,80 L134,80 M182,80 L192,80" />
+    <!-- Continuous futuristic nose DRL light -->
+    <path
+        android:fillColor="#4CE0B3"
+        android:pathData="M244,76 L275,78 L273,83 L242,81 Z" />
+    <path
+        android:fillColor="#D94B4B"
+        android:pathData="M48,74 L62,74 L62,79 L47,79 Z" />
+    <!-- Wheels -->
+    <path
+        android:fillColor="#14181A"
+        android:pathData="M89,110 m-20,0 a20,20 0 1,0 40,0 a20,20 0 1,0 -40,0" />
+    <path
+        android:fillColor="#E3DFD6"
+        android:pathData="M89,110 m-12.5,0 a12.5,12.5 0 1,0 25,0 a12.5,12.5 0 1,0 -25,0" />
+    <path
+        android:fillColor="#22292B"
+        android:pathData="M89,110 m-4.5,0 a4.5,4.5 0 1,0 9,0 a4.5,4.5 0 1,0 -9,0" />
+    <path
+        android:fillColor="#14181A"
+        android:pathData="M233,110 m-20,0 a20,20 0 1,0 40,0 a20,20 0 1,0 -40,0" />
+    <path
+        android:fillColor="#E3DFD6"
+        android:pathData="M233,110 m-12.5,0 a12.5,12.5 0 1,0 25,0 a12.5,12.5 0 1,0 -25,0" />
+    <path
+        android:fillColor="#22292B"
+        android:pathData="M233,110 m-4.5,0 a4.5,4.5 0 1,0 9,0 a4.5,4.5 0 1,0 -9,0" />
+</vector>

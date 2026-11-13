@@ -1,0 +1,54 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="320dp"
+    android:height="150dp"
+    android:viewportWidth="320"
+    android:viewportHeight="150">
+    <!-- Floor shadow -->
+    <path
+        android:fillColor="#180F1413"
+        android:pathData="M28,125 C28,120 88,117 160,117 C232,117 292,120 292,125 C292,130 232,133 160,133 C88,133 28,130 28,125 Z" />
+    <!-- SUV dark lower cladding -->
+    <path
+        android:fillColor="#1A1F22"
+        android:pathData="M42,107 L278,107 L274,114 L46,114 Z" />
+    <!-- Kia Niro EV compact crossover body -->
+    <path
+        android:fillColor="#E5EAEE"
+        android:pathData="M40,94 C41,78 48,60 66,42 C84,33 114,31 162,31 C198,31 224,41 248,64 L274,72 C282,77 284,92 278,107 L44,107 C40,104 40,100 40,94 Z" />
+    <!-- Signature contrast C-pillar blade + smoked glass -->
+    <path
+        android:fillColor="#20282D"
+        android:pathData="M78,43 C96,37 126,36 160,36 C192,36 218,44 238,65 L75,65 C75,55 76,48 78,43 Z" />
+    <path
+        android:fillColor="#59666F"
+        android:pathData="M56,48 L74,44 L73,66 L52,66 Z" />
+    <path
+        android:fillColor="#D4DBE0"
+        android:pathData="M52,92 L270,92 L270,106 L50,106 Z" />
+    <!-- Crisp DRL + boomerang taillight -->
+    <path
+        android:fillColor="#4CE0B3"
+        android:pathData="M254,75 L278,79 L276,84 L251,79 Z" />
+    <path
+        android:fillColor="#D94B4B"
+        android:pathData="M41,66 L54,68 L52,79 L40,78 Z" />
+    <!-- Wheels (taller crossover stance) -->
+    <path
+        android:fillColor="#14181A"
+        android:pathData="M86,108 m-21,0 a21,21 0 1,0 42,0 a21,21 0 1,0 -42,0" />
+    <path
+        android:fillColor="#CBD3D8"
+        android:pathData="M86,108 m-13,0 a13,13 0 1,0 26,0 a13,13 0 1,0 -26,0" />
+    <path
+        android:fillColor="#252E32"
+        android:pathData="M86,108 m-5,0 a5,5 0 1,0 10,0 a5,5 0 1,0 -10,0" />
+    <path
+        android:fillColor="#14181A"
+        android:pathData="M236,108 m-21,0 a21,21 0 1,0 42,0 a21,21 0 1,0 -42,0" />
+    <path
+        android:fillColor="#CBD3D8"
+        android:pathData="M236,108 m-13,0 a13,13 0 1,0 26,0 a13,13 0 1,0 -26,0" />
+    <path
+        android:fillColor="#252E32"
+        android:pathData="M236,108 m-5,0 a5,5 0 1,0 10,0 a5,5 0 1,0 -10,0" />
+</vector>

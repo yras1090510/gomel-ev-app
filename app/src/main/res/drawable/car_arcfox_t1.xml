@@ -1,0 +1,55 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="320dp"
+    android:height="150dp"
+    android:viewportWidth="320"
+    android:viewportHeight="150">
+    <!-- Floor shadow -->
+    <path
+        android:fillColor="#180F1413"
+        android:pathData="M32,124 C32,119 90,116 160,116 C230,116 288,119 288,124 C288,129 230,132 160,132 C90,132 32,129 32,124 Z" />
+    <!-- Gloss black lower aero splitter & arch molding -->
+    <path
+        android:fillColor="#14181B"
+        android:pathData="M45,109 L276,109 L273,116 L48,116 Z" />
+    <!-- ARCFOX T1 sculpted geometric hatchback -->
+    <path
+        android:fillColor="#F4F6F8"
+        android:pathData="M44,98 C45,82 54,66 72,48 C90,37 118,35 162,36 C198,37 224,46 248,68 L273,77 C280,82 281,96 275,110 L48,110 C44,107 44,103 44,98 Z" />
+    <path
+        android:fillColor="#E1E6EA"
+        android:pathData="M54,93 L272,93 L270,108 L52,108 Z" />
+    <!-- Tinted canopy with black D-pillar -->
+    <path
+        android:fillColor="#1B2226"
+        android:pathData="M78,48 C96,41 124,40 160,40 C192,40 218,47 239,68 L74,68 C75,59 76,53 78,48 Z" />
+    <path
+        android:strokeColor="#BAC3CA"
+        android:strokeWidth="1.5"
+        android:pathData="M150,40 L150,108 M128,80 L138,80 M188,80 L198,80" />
+    <!-- Signature futuristic piercing ARCFOX light-bar -->
+    <path
+        android:fillColor="#4CE0B3"
+        android:pathData="M250,76 L278,80 L277,84 L248,80 Z" />
+    <path
+        android:fillColor="#E04848"
+        android:pathData="M45,70 L66,71 L65,75 L44,75 Z" />
+    <!-- Aero turbine wheels -->
+    <path
+        android:fillColor="#121618"
+        android:pathData="M88,110 m-20,0 a20,20 0 1,0 40,0 a20,20 0 1,0 -40,0" />
+    <path
+        android:fillColor="#CBD2D7"
+        android:pathData="M88,110 m-12.5,0 a12.5,12.5 0 1,0 25,0 a12.5,12.5 0 1,0 -25,0" />
+    <path
+        android:fillColor="#1E262A"
+        android:pathData="M88,110 m-5,0 a5,5 0 1,0 10,0 a5,5 0 1,0 -10,0" />
+    <path
+        android:fillColor="#121618"
+        android:pathData="M236,110 m-20,0 a20,20 0 1,0 40,0 a20,20 0 1,0 -40,0" />
+    <path
+        android:fillColor="#CBD2D7"
+        android:pathData="M236,110 m-12.5,0 a12.5,12.5 0 1,0 25,0 a12.5,12.5 0 1,0 -25,0" />
+    <path
+        android:fillColor="#1E262A"
+        android:pathData="M236,110 m-5,0 a5,5 0 1,0 10,0 a5,5 0 1,0 -10,0" />
+</vector>

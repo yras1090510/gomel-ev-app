@@ -1,0 +1,47 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="320dp"
+    android:height="150dp"
+    android:viewportWidth="320"
+    android:viewportHeight="150">
+    <!-- Floor shadow -->
+    <path
+        android:fillColor="#180F1413"
+        android:pathData="M32,124 C32,119 92,116 160,116 C228,116 288,119 288,124 C288,129 228,132 160,132 C92,132 32,129 32,124 Z" />
+    <!-- Lower rocker -->
+    <path
+        android:fillColor="#1B2023"
+        android:pathData="M45,109 L275,109 L272,115 L48,115 Z" />
+    <!-- Timeless European compact sedan/hatchback (Polo/Golf/Emgrand/Accent style) -->
+    <path
+        android:fillColor="#DCE0E4"
+        android:pathData="M43,96 C43,80 48,66 64,53 C82,40 112,37 152,37 C186,37 210,47 234,68 L270,75 C278,79 279,95 274,109 L46,109 C43,106 43,101 43,96 Z" />
+    <path
+        android:fillColor="#C9CFD5"
+        android:pathData="M52,93 L269,93 L268,108 L50,108 Z" />
+    <path
+        android:fillColor="#21272B"
+        android:pathData="M78,51 C96,43 122,42 152,42 C184,42 206,50 226,68 L74,68 C74,60 75,55 78,51 Z" />
+    <path
+        android:strokeColor="#A6AEB5"
+        android:strokeWidth="1.4"
+        android:pathData="M146,42 L146,108" />
+    <path
+        android:fillColor="#E9EEF2"
+        android:pathData="M258,76 L276,78 L275,85 L256,84 Z" />
+    <path
+        android:fillColor="#D94B4B"
+        android:pathData="M44,71 L58,72 L57,80 L43,80 Z" />
+    <!-- Alloy wheels -->
+    <path
+        android:fillColor="#15191B"
+        android:pathData="M88,110 m-19,0 a19,19 0 1,0 38,0 a19,19 0 1,0 -38,0" />
+    <path
+        android:fillColor="#C5CCD2"
+        android:pathData="M88,110 m-11.5,0 a11.5,11.5 0 1,0 23,0 a11.5,11.5 0 1,0 -23,0" />
+    <path
+        android:fillColor="#15191B"
+        android:pathData="M232,110 m-19,0 a19,19 0 1,0 38,0 a19,19 0 1,0 -38,0" />
+    <path
+        android:fillColor="#C5CCD2"
+        android:pathData="M232,110 m-11.5,0 a11.5,11.5 0 1,0 23,0 a11.5,11.5 0 1,0 -23,0" />
+</vector>

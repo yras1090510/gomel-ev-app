@@ -1,0 +1,49 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="320dp"
+    android:height="150dp"
+    android:viewportWidth="320"
+    android:viewportHeight="150">
+    <!-- Floor shadow -->
+    <path
+        android:fillColor="#180F1413"
+        android:pathData="M30,124 C30,119 90,116 160,116 C230,116 290,119 290,124 C290,129 230,132 160,132 C90,132 30,129 30,124 Z" />
+    <!-- Lower trim -->
+    <path
+        android:fillColor="#1D2224"
+        android:pathData="M42,109 L276,109 L273,115 L45,115 Z" />
+    <!-- LADA Granta classic compact 3-box sedan -->
+    <path
+        android:fillColor="#E6E9EC"
+        android:pathData="M40,94 C40,79 42,67 48,66 L76,65 C84,48 99,37 122,36 L168,36 C192,36 212,48 232,69 L274,74 C280,78 281,94 277,109 L44,109 C40,106 40,100 40,94 Z" />
+    <path
+        android:fillColor="#D4D9DD"
+        android:pathData="M48,93 L272,93 L271,108 L46,108 Z" />
+    <!-- Sedan greenhouse -->
+    <path
+        android:fillColor="#22292D"
+        android:pathData="M86,65 C94,49 106,42 124,41 L168,41 C188,41 206,50 222,67 L84,67 Z" />
+    <path
+        android:strokeColor="#AEB6BC"
+        android:strokeWidth="1.4"
+        android:pathData="M148,41 L148,108 M206,67 L206,106" />
+    <!-- Conventional halogen headlamp & sedan taillight -->
+    <path
+        android:fillColor="#D8DFE4"
+        android:pathData="M262,75 L278,77 L277,86 L260,86 Z" />
+    <path
+        android:fillColor="#D94B4B"
+        android:pathData="M41,70 L53,70 L53,82 L40,82 Z" />
+    <!-- Classic 14-inch wheels -->
+    <path
+        android:fillColor="#161A1C"
+        android:pathData="M86,110 m-18.5,0 a18.5,18.5 0 1,0 37,0 a18.5,18.5 0 1,0 -37,0" />
+    <path
+        android:fillColor="#CFD5DA"
+        android:pathData="M86,110 m-11,0 a11,11 0 1,0 22,0 a11,11 0 1,0 -22,0" />
+    <path
+        android:fillColor="#161A1C"
+        android:pathData="M234,110 m-18.5,0 a18.5,18.5 0 1,0 37,0 a18.5,18.5 0 1,0 -37,0" />
+    <path
+        android:fillColor="#CFD5DA"
+        android:pathData="M234,110 m-11,0 a11,11 0 1,0 22,0 a11,11 0 1,0 -22,0" />
+</vector>

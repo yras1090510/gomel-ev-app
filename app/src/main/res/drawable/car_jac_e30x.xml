@@ -1,0 +1,55 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="320dp"
+    android:height="150dp"
+    android:viewportWidth="320"
+    android:viewportHeight="150">
+    <!-- Floor shadow -->
+    <path
+        android:fillColor="#180F1413"
+        android:pathData="M34,124 C34,119 92,116 160,116 C228,116 286,119 286,124 C286,129 228,132 160,132 C92,132 34,129 34,124 Z" />
+    <!-- Lower trim -->
+    <path
+        android:fillColor="#1B2123"
+        android:pathData="M48,110 L272,110 L269,116 L51,116 Z" />
+    <!-- JAC E30X rounded pebble minimalist EV hatch -->
+    <path
+        android:fillColor="#F3F2EE"
+        android:pathData="M46,98 C46,80 56,64 76,47 C94,36 122,35 156,35 C192,35 218,44 242,67 L266,76 C276,82 278,96 273,110 L50,110 C47,108 46,103 46,98 Z" />
+    <!-- Smooth black panoramic dome & window -->
+    <path
+        android:fillColor="#1F2629"
+        android:pathData="M82,46 C98,40 124,39 156,39 C188,39 212,46 232,68 L77,68 C78,59 79,52 82,46 Z" />
+    <path
+        android:fillColor="#E2E0DA"
+        android:pathData="M56,95 L268,95 L267,108 L54,108 Z" />
+    <!-- Signature JAC E30X round Halo LED headlamp -->
+    <path
+        android:fillColor="#20282B"
+        android:pathData="M254,82 m-9,0 a9,9 0 1,0 18,0 a9,9 0 1,0 -18,0" />
+    <path
+        android:strokeColor="#4CE0B3"
+        android:strokeWidth="2.5"
+        android:pathData="M254,82 m-6.5,0 a6.5,6.5 0 1,0 13,0 a6.5,6.5 0 1,0 -13,0" />
+    <path
+        android:fillColor="#D94B4B"
+        android:pathData="M47,75 L59,75 L59,83 L47,83 Z" />
+    <!-- Wheels -->
+    <path
+        android:fillColor="#14181A"
+        android:pathData="M88,110 m-20,0 a20,20 0 1,0 40,0 a20,20 0 1,0 -40,0" />
+    <path
+        android:fillColor="#DEDCD6"
+        android:pathData="M88,110 m-12.5,0 a12.5,12.5 0 1,0 25,0 a12.5,12.5 0 1,0 -25,0" />
+    <path
+        android:fillColor="#232A2C"
+        android:pathData="M88,110 m-4.5,0 a4.5,4.5 0 1,0 9,0 a4.5,4.5 0 1,0 -9,0" />
+    <path
+        android:fillColor="#14181A"
+        android:pathData="M232,110 m-20,0 a20,20 0 1,0 40,0 a20,20 0 1,0 -40,0" />
+    <path
+        android:fillColor="#DEDCD6"
+        android:pathData="M232,110 m-12.5,0 a12.5,12.5 0 1,0 25,0 a12.5,12.5 0 1,0 -25,0" />
+    <path
+        android:fillColor="#232A2C"
+        android:pathData="M232,110 m-4.5,0 a4.5,4.5 0 1,0 9,0 a4.5,4.5 0 1,0 -9,0" />
+</vector>

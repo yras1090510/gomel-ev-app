@@ -1,0 +1,55 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="320dp"
+    android:height="150dp"
+    android:viewportWidth="320"
+    android:viewportHeight="150">
+    <!-- Floor shadow -->
+    <path
+        android:fillColor="#180F1413"
+        android:pathData="M24,125 C24,120 84,117 160,117 C236,117 296,120 296,125 C296,130 236,133 160,133 C84,133 24,130 24,125 Z" />
+    <!-- Black aero sill -->
+    <path
+        android:fillColor="#161A1D"
+        android:pathData="M38,108 L282,108 L278,114 L42,114 Z" />
+    <!-- Deepal S05 sleek fastback aerodynamic EV SUV -->
+    <path
+        android:fillColor="#E3E7EB"
+        android:pathData="M36,93 C39,77 52,58 78,40 C98,32 132,30 166,31 C202,32 232,44 256,66 L282,75 C289,80 289,94 282,108 L40,108 C36,104 35,99 36,93 Z" />
+    <path
+        android:fillColor="#CFD6DC"
+        android:pathData="M50,91 L276,91 L274,107 L48,107 Z" />
+    <!-- Fastback coupe-SUV glass silhouette -->
+    <path
+        android:fillColor="#1C2328"
+        android:pathData="M78,43 C98,36 128,35 164,35 C196,35 222,44 244,65 L72,64 C72,54 74,47 78,43 Z" />
+    <!-- Flush handles + split blade DRL -->
+    <path
+        android:strokeColor="#AAB3BB"
+        android:strokeWidth="1.4"
+        android:pathData="M150,35 L148,107 M124,78 L135,78 M194,78 L205,78" />
+    <path
+        android:fillColor="#4CE0B3"
+        android:pathData="M256,74 L283,79 L281,83 L254,78 Z" />
+    <path
+        android:fillColor="#E04B4B"
+        android:pathData="M38,68 L64,69 L63,74 L37,74 Z" />
+    <!-- Large dynamic wheels -->
+    <path
+        android:fillColor="#131719"
+        android:pathData="M84,109 m-21,0 a21,21 0 1,0 42,0 a21,21 0 1,0 -42,0" />
+    <path
+        android:fillColor="#C4CCD3"
+        android:pathData="M84,109 m-13.5,0 a13.5,13.5 0 1,0 27,0 a13.5,13.5 0 1,0 -27,0" />
+    <path
+        android:fillColor="#1F262B"
+        android:pathData="M84,109 m-5,0 a5,5 0 1,0 10,0 a5,5 0 1,0 -10,0" />
+    <path
+        android:fillColor="#131719"
+        android:pathData="M240,109 m-21,0 a21,21 0 1,0 42,0 a21,21 0 1,0 -42,0" />
+    <path
+        android:fillColor="#C4CCD3"
+        android:pathData="M240,109 m-13.5,0 a13.5,13.5 0 1,0 27,0 a13.5,13.5 0 1,0 -27,0" />
+    <path
+        android:fillColor="#1F262B"
+        android:pathData="M240,109 m-5,0 a5,5 0 1,0 10,0 a5,5 0 1,0 -10,0" />
+</vector>

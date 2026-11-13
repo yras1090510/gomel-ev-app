@@ -1,0 +1,55 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="320dp"
+    android:height="150dp"
+    android:viewportWidth="320"
+    android:viewportHeight="150">
+    <!-- Floor shadow -->
+    <path
+        android:fillColor="#180F1413"
+        android:pathData="M30,125 C30,120 90,117 160,117 C230,117 290,120 290,125 C290,130 230,133 160,133 C90,133 30,130 30,125 Z" />
+    <!-- Chunky urban SUV lower cladding -->
+    <path
+        android:fillColor="#191D20"
+        android:pathData="M43,106 L277,106 L273,115 L47,115 Z" />
+    <!-- BYD Yuan Up / Pro muscular compact SUV body -->
+    <path
+        android:fillColor="#DEE4E9"
+        android:pathData="M42,92 C42,74 49,54 64,37 C80,30 112,29 162,29 C198,29 224,38 248,62 L274,70 C282,76 283,92 277,107 L45,107 C42,104 42,98 42,92 Z" />
+    <path
+        android:fillColor="#CBD3DA"
+        android:pathData="M52,90 L270,90 L269,106 L50,106 Z" />
+    <!-- Floating roof + dark glass canopy -->
+    <path
+        android:fillColor="#1E262B"
+        android:pathData="M68,40 C86,34 118,33 160,33 C192,33 218,41 238,63 L64,63 C65,53 66,45 68,40 Z" />
+    <path
+        android:strokeColor="#AAB5BF"
+        android:strokeWidth="1.5"
+        android:pathData="M148,33 L148,106" />
+    <!-- Slim Dragon Face LED bar -->
+    <path
+        android:fillColor="#4CE0B3"
+        android:pathData="M250,74 L277,76 L275,82 L248,79 Z" />
+    <path
+        android:fillColor="#D94B4B"
+        android:pathData="M43,66 L62,67 L61,73 L42,73 Z" />
+    <!-- SUV wheels -->
+    <path
+        android:fillColor="#14181A"
+        android:pathData="M86,108 m-21,0 a21,21 0 1,0 42,0 a21,21 0 1,0 -42,0" />
+    <path
+        android:fillColor="#C6CFD6"
+        android:pathData="M86,108 m-13,0 a13,13 0 1,0 26,0 a13,13 0 1,0 -26,0" />
+    <path
+        android:fillColor="#242C30"
+        android:pathData="M86,108 m-5,0 a5,5 0 1,0 10,0 a5,5 0 1,0 -10,0" />
+    <path
+        android:fillColor="#14181A"
+        android:pathData="M234,108 m-21,0 a21,21 0 1,0 42,0 a21,21 0 1,0 -42,0" />
+    <path
+        android:fillColor="#C6CFD6"
+        android:pathData="M234,108 m-13,0 a13,13 0 1,0 26,0 a13,13 0 1,0 -26,0" />
+    <path
+        android:fillColor="#242C30"
+        android:pathData="M234,108 m-5,0 a5,5 0 1,0 10,0 a5,5 0 1,0 -10,0" />
+</vector>
