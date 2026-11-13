@@ -1,0 +1,28 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Minimalist car arch + subtle EV spark -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M28,60 C29,51 35,43 46,42 L63,42 C72,42 78,48 80,56 L82,58 C83,60 82,63 79,63 L29,63 C26,63 25,61 28,60 Z" />
+    <path
+        android:fillColor="#0E1413"
+        android:pathData="M37,54 C40,47 45,45 50,45 L62,45 C67,45 71,48 73,54 Z" />
+    <path
+        android:fillColor="#4CE0B3"
+        android:pathData="M56,33 L49,47 L55,47 L52,58 L61,43 L55,43 Z" />
+    <path
+        android:fillColor="#0E1413"
+        android:pathData="M36,63 m-6.5,0 a6.5,6.5 0 1,0 13,0 a6.5,6.5 0 1,0 -13,0" />
+    <path
+        android:fillColor="#4CE0B3"
+        android:pathData="M36,63 m-2.8,0 a2.8,2.8 0 1,0 5.6,0 a2.8,2.8 0 1,0 -5.6,0" />
+    <path
+        android:fillColor="#0E1413"
+        android:pathData="M72,63 m-6.5,0 a6.5,6.5 0 1,0 13,0 a6.5,6.5 0 1,0 -13,0" />
+    <path
+        android:fillColor="#4CE0B3"
+        android:pathData="M72,63 m-2.8,0 a2.8,2.8 0 1,0 5.6,0 a2.8,2.8 0 1,0 -5.6,0" />
+</vector>

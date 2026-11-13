@@ -1,0 +1,3 @@
+-keep class com.gomelev.app.** { *; }
+-dontwarn okhttp3.**
+-dontwarn okio.**
