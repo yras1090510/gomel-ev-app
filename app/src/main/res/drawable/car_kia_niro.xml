@@ -1,54 +1,101 @@
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
     android:width="320dp"
     android:height="150dp"
     android:viewportWidth="320"
     android:viewportHeight="150">
-    <!-- Floor shadow -->
+    <!-- Ground contact shadow -->
     <path
-        android:fillColor="#180F1413"
-        android:pathData="M28,125 C28,120 88,117 160,117 C232,117 292,120 292,125 C292,130 232,133 160,133 C88,133 28,130 28,125 Z" />
-    <!-- SUV dark lower cladding -->
+        android:fillColor="#220A1916"
+        android:pathData="M26,126 C26,121 88,118 160,118 C232,118 294,121 294,126 C294,131 232,134 160,134 C88,134 26,131 26,126 Z" />
+
+    <!-- SUV Silver Roof Rails -->
     <path
-        android:fillColor="#1A1F22"
-        android:pathData="M42,107 L278,107 L274,114 L46,114 Z" />
-    <!-- Kia Niro EV compact crossover body -->
+        android:strokeColor="#FFBFCAD4"
+        android:strokeWidth="2.4"
+        android:strokeLineCap="round"
+        android:pathData="M82,31 C110,27 154,27 192,31" />
+
+    <!-- Kia Niro EV tall compact SUV body in Mineral Sapphire Blue -->
+    <path android:pathData="M38,93 C39,77 46,57 62,40 C80,32 114,30 166,30 C200,30 227,40 251,62 L276,72 C284,78 286,94 279,108 L256,108 C256,95 247,86 234,86 C221,86 212,95 212,108 L108,108 C108,95 99,86 86,86 C73,86 64,95 64,108 L44,108 C40,104 38,99 38,93 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="160"
+                android:startY="30"
+                android:endX="160"
+                android:endY="109">
+                <item android:color="#FF4A87B8" android:offset="0.0" />
+                <item android:color="#FF285780" android:offset="0.6" />
+                <item android:color="#FF163552" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Chunky Matte Black SUV lower body cladding + wheel arch armor -->
     <path
-        android:fillColor="#E5EAEE"
-        android:pathData="M40,94 C41,78 48,60 66,42 C84,33 114,31 162,31 C198,31 224,41 248,64 L274,72 C282,77 284,92 278,107 L44,107 C40,104 40,100 40,94 Z" />
-    <!-- Signature contrast C-pillar blade + smoked glass -->
+        android:fillColor="#FF191F24"
+        android:pathData="M44,102 L65,102 C67,90 75,83 86,83 C97,83 105,90 107,102 L213,102 C215,90 223,83 234,83 C245,83 253,90 255,102 L280,102 L276,110 L256,110 C256,96 247,87 234,87 C221,87 212,96 212,110 L108,110 C108,96 99,87 86,87 C73,87 64,96 64,110 L46,110 Z" />
+
+    <!-- Smoked canopy & iconic Brushed Titanium-Silver Aero C-Pillar Blade -->
+    <path android:pathData="M81,42 C100,36 128,35 164,35 C195,35 220,43 240,63 L79,63 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="95"
+                android:startY="35"
+                android:endX="235"
+                android:endY="64">
+                <item android:color="#FF232F38" android:offset="0.0" />
+                <item android:color="#FF12181E" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
     <path
-        android:fillColor="#20282D"
-        android:pathData="M78,43 C96,37 126,36 160,36 C192,36 218,44 238,65 L75,65 C75,55 76,48 78,43 Z" />
+        android:fillColor="#FFBAC7D1"
+        android:pathData="M53,45 L77,41 L75,65 L49,65 Z" />
     <path
-        android:fillColor="#59666F"
-        android:pathData="M56,48 L74,44 L73,66 L52,66 Z" />
+        android:fillColor="#34FFFFFF"
+        android:pathData="M138,35 L158,35 L144,63 L127,63 Z" />
+
+    <!-- Pillar dividers, Heartbeat LED DRL + C-pillar vertical tail lamp -->
     <path
-        android:fillColor="#D4DBE0"
-        android:pathData="M52,92 L270,92 L270,106 L50,106 Z" />
-    <!-- Crisp DRL + boomerang taillight -->
+        android:strokeColor="#FF1A3A57"
+        android:strokeWidth="1.6"
+        android:pathData="M148,35 L148,102" />
     <path
-        android:fillColor="#4CE0B3"
-        android:pathData="M254,75 L278,79 L276,84 L251,79 Z" />
+        android:fillColor="#FF8CFAFF"
+        android:pathData="M254,75 L281,79 L279,84 L250,80 Z" />
     <path
-        android:fillColor="#D94B4B"
-        android:pathData="M41,66 L54,68 L52,79 L40,78 Z" />
-    <!-- Wheels (taller crossover stance) -->
+        android:fillColor="#FFE54848"
+        android:pathData="M42,58 L52,58 L48,79 L39,78 Z" />
+
+    <!-- Taller 17" Crossover Machined 5-Spoke Alloys -->
     <path
-        android:fillColor="#14181A"
-        android:pathData="M86,108 m-21,0 a21,21 0 1,0 42,0 a21,21 0 1,0 -42,0" />
+        android:fillColor="#FF11161A"
+        android:pathData="M86,109 m-20,0 a20,20 0 1,0 40,0 a20,20 0 1,0 -40,0" />
     <path
-        android:fillColor="#CBD3D8"
-        android:pathData="M86,108 m-13,0 a13,13 0 1,0 26,0 a13,13 0 1,0 -26,0" />
+        android:fillColor="#FF2E3840"
+        android:pathData="M86,109 m-13,0 a13,13 0 1,0 26,0 a13,13 0 1,0 -26,0" />
     <path
-        android:fillColor="#252E32"
-        android:pathData="M86,108 m-5,0 a5,5 0 1,0 10,0 a5,5 0 1,0 -10,0" />
+        android:strokeColor="#FFD9E3EB"
+        android:strokeWidth="2.4"
+        android:pathData="M86,97 L86,121 M75,103 L97,115 M75,115 L97,103" />
     <path
-        android:fillColor="#14181A"
-        android:pathData="M236,108 m-21,0 a21,21 0 1,0 42,0 a21,21 0 1,0 -42,0" />
+        android:fillColor="#FF1D2429"
+        android:pathData="M86,109 m-4.5,0 a4.5,4.5 0 1,0 9,0 a4.5,4.5 0 1,0 -9,0" />
+
     <path
-        android:fillColor="#CBD3D8"
-        android:pathData="M236,108 m-13,0 a13,13 0 1,0 26,0 a13,13 0 1,0 -26,0" />
+        android:fillColor="#FF11161A"
+        android:pathData="M234,109 m-20,0 a20,20 0 1,0 40,0 a20,20 0 1,0 -40,0" />
     <path
-        android:fillColor="#252E32"
-        android:pathData="M236,108 m-5,0 a5,5 0 1,0 10,0 a5,5 0 1,0 -10,0" />
+        android:fillColor="#FF2E3840"
+        android:pathData="M234,109 m-13,0 a13,13 0 1,0 26,0 a13,13 0 1,0 -26,0" />
+    <path
+        android:strokeColor="#FFD9E3EB"
+        android:strokeWidth="2.4"
+        android:pathData="M234,97 L234,121 M223,103 L245,115 M223,115 L245,103" />
+    <path
+        android:fillColor="#FF1D2429"
+        android:pathData="M234,109 m-4.5,0 a4.5,4.5 0 1,0 9,0 a4.5,4.5 0 1,0 -9,0" />
 </vector>

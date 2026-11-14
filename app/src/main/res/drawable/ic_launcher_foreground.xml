@@ -1,28 +1,94 @@
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- Minimalist car arch + subtle EV spark -->
+
+    <!-- Electric spark crest centered neatly above vehicle silhouette inside safe zone -->
+    <path android:pathData="M56.5,24 L45.5,39.5 L53,39.5 L49.5,50 L62.5,34 L54.5,34 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="46"
+                android:startY="24"
+                android:endX="62"
+                android:endY="50">
+                <item android:color="#FF9CFFE6" android:offset="0.0" />
+                <item android:color="#FF2CE0AE" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Sleek Material 3 aerodynamic EV body inside safe zone (x: 23..85, y: 45..73) -->
+    <path android:pathData="M24,66 C23,60 25,55 30,52 L39,47 C43,45 49,44 57,44 C64,44 69,46 74,52 L82,55 C85.5,57 86,62 84.5,67.5 C84,69 82.5,70 80.5,70 L78.5,70 C78.5,65 74.5,61 69.5,61 C64.5,61 60.5,65 60.5,70 L47.5,70 C47.5,65 43.5,61 38.5,61 C33.5,61 29.5,65 29.5,70 L27,70 C25,70 24.2,68.5 24,66 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="24"
+                android:startY="44"
+                android:endX="85"
+                android:endY="71">
+                <item android:color="#FFFFFFFF" android:offset="0.0" />
+                <item android:color="#FFD8F2EA" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Panoramic smoked glasshouse cutout -->
     <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M28,60 C29,51 35,43 46,42 L63,42 C72,42 78,48 80,56 L82,58 C83,60 82,63 79,63 L29,63 C26,63 25,61 28,60 Z" />
+        android:fillColor="#FF0D2824"
+        android:pathData="M34.5,55.5 L40.5,49.5 C43.5,47.5 48.5,47 56,47 C62,47 66.5,48.5 70.5,54 L70.5,56 Z" />
+
+    <!-- Subtle glass sheen highlight -->
     <path
-        android:fillColor="#0E1413"
-        android:pathData="M37,54 C40,47 45,45 50,45 L62,45 C67,45 71,48 73,54 Z" />
+        android:fillColor="#447EFFDF"
+        android:pathData="M43,48.5 L49,48.5 L44.5,55.5 L39.5,55.5 Z" />
+
+    <!-- Horizon LED front DRL blade -->
+    <path android:pathData="M74.5,57.5 L84.5,58.5 L83.5,61 L73.5,60 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="74"
+                android:startY="57"
+                android:endX="85"
+                android:endY="61">
+                <item android:color="#FF78FFE0" android:offset="0.0" />
+                <item android:color="#FF29D4FA" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Sculpted rear wheel -->
     <path
-        android:fillColor="#4CE0B3"
-        android:pathData="M56,33 L49,47 L55,47 L52,58 L61,43 L55,43 Z" />
+        android:fillColor="#FF091B18"
+        android:pathData="M38.5,70 m-7.2,0 a7.2,7.2 0 1,0 14.4,0 a7.2,7.2 0 1,0 -14.4,0" />
     <path
-        android:fillColor="#0E1413"
-        android:pathData="M36,63 m-6.5,0 a6.5,6.5 0 1,0 13,0 a6.5,6.5 0 1,0 -13,0" />
+        android:fillColor="#FF4CE0B3"
+        android:pathData="M38.5,70 m-3.6,0 a3.6,3.6 0 1,0 7.2,0 a3.6,3.6 0 1,0 -7.2,0" />
+
+    <!-- Sculpted front wheel -->
     <path
-        android:fillColor="#4CE0B3"
-        android:pathData="M36,63 m-2.8,0 a2.8,2.8 0 1,0 5.6,0 a2.8,2.8 0 1,0 -5.6,0" />
+        android:fillColor="#FF091B18"
+        android:pathData="M69.5,70 m-7.2,0 a7.2,7.2 0 1,0 14.4,0 a7.2,7.2 0 1,0 -14.4,0" />
     <path
-        android:fillColor="#0E1413"
-        android:pathData="M72,63 m-6.5,0 a6.5,6.5 0 1,0 13,0 a6.5,6.5 0 1,0 -13,0" />
-    <path
-        android:fillColor="#4CE0B3"
-        android:pathData="M72,63 m-2.8,0 a2.8,2.8 0 1,0 5.6,0 a2.8,2.8 0 1,0 -5.6,0" />
+        android:fillColor="#FF4CE0B3"
+        android:pathData="M69.5,70 m-3.6,0 a3.6,3.6 0 1,0 7.2,0 a3.6,3.6 0 1,0 -7.2,0" />
+
+    <!-- Road horizon pill glow -->
+    <path android:pathData="M29,80 C29,79 40,78.5 54,78.5 C68,78.5 79,79 79,80 C79,81 68,81.5 54,81.5 C40,81.5 29,81 29,80 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="29"
+                android:startY="80"
+                android:endX="79"
+                android:endY="80">
+                <item android:color="#004CE0B3" android:offset="0.0" />
+                <item android:color="#AA4CE0B3" android:offset="0.5" />
+                <item android:color="#004CE0B3" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
 </vector>

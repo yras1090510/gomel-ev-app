@@ -1,64 +1,115 @@
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
     android:width="320dp"
     android:height="150dp"
     android:viewportWidth="320"
     android:viewportHeight="150">
-    <!-- Soft floor studio shadow -->
+    <!-- Ground contact shadow (short kei footprint) -->
     <path
-        android:fillColor="#180F1413"
-        android:pathData="M54,124 C54,119 102,116 160,116 C218,116 266,119 266,124 C266,129 218,132 160,132 C102,132 54,129 54,124 Z" />
-    <!-- Lower trim skirt -->
+        android:fillColor="#220A1916"
+        android:pathData="M68,125 C68,120 109,117 160,117 C211,117 252,120 252,125 C252,130 211,133 160,133 C109,133 68,130 68,125 Z" />
+
+    <!-- Cream upper cabin & roof (iconic two-tone Xiaoma upper half) -->
+    <path android:pathData="M80,76 L88,46 C93,36 105,32 124,32 L194,32 C210,32 220,39 227,54 L237,76 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="160"
+                android:startY="32"
+                android:endX="160"
+                android:endY="76">
+                <item android:color="#FFFFFBF2" android:offset="0.0" />
+                <item android:color="#FFF0E9D8" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Pastel Mint lower boxy body with wheel-well cutouts -->
+    <path android:pathData="M77,104 L79,74 L237,74 L245,84 C248,91 248,101 245,109 C243,112 240,113 235,113 L232,113 C232,102 224,94 213,94 C202,94 194,102 194,113 L126,113 C126,102 118,94 107,94 C96,94 88,102 88,113 L84,113 C79,113 77,109 77,104 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="80"
+                android:startY="74"
+                android:endX="245"
+                android:endY="114">
+                <item android:color="#FF8EF0D6" android:offset="0.0" />
+                <item android:color="#FF42B89B" android:offset="0.65" />
+                <item android:color="#FF2D8C75" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Lower charcoal bumper & cute black front smile -->
     <path
-        android:fillColor="#1D2326"
-        android:pathData="M68,111 L252,111 L250,117 L70,117 Z" />
-    <!-- Cute boxy micro-EV body (FAW Bestune Xiaoma) -->
+        android:fillColor="#FF1C2625"
+        android:pathData="M78,106 L88,106 C88,100 91,96 95,94 L80,94 Z M230,94 L246,94 L245,109 L232,109 C232,102 231,97 230,94 Z M126,108 L194,108 L194,113 L126,113 Z" />
+
+    <!-- Smoked upright kei windows -->
+    <path android:pathData="M93,48 L128,48 L128,70 L86,70 Z M136,48 L212,48 C219,53 224,60 227,70 L136,70 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="90"
+                android:startY="48"
+                android:endX="225"
+                android:endY="71">
+                <item android:color="#FF1E2D30" android:offset="0.0" />
+                <item android:color="#FF121C1E" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Diagonal glass reflection & mirror cap -->
     <path
-        android:fillColor="#EDF4F1"
-        android:pathData="M66,105 C64,88 68,72 79,54 C85,43 96,38 112,38 L208,38 C225,38 236,44 242,58 L250,82 C253,93 253,104 249,112 L71,112 C67,112 66,109 66,105 Z" />
-    <!-- Contrast black minimalist floating roof -->
+        android:fillColor="#38FFFFFF"
+        android:pathData="M148,48 L166,48 L154,70 L139,70 Z" />
     <path
-        android:fillColor="#1A2022"
-        android:pathData="M94,39 C99,36 108,35 116,35 L204,35 C215,35 224,38 229,43 L87,43 Z" />
-    <!-- Greenhouse windows -->
+        android:fillColor="#FFFFFBF2"
+        android:pathData="M196,65 L209,65 C211,65 212,67 211,71 L197,71 Z" />
+
+    <!-- Single big 3-door panel cut & door handle -->
     <path
-        android:fillColor="#20282C"
-        android:pathData="M88,46 L142,46 L142,72 L78,72 C80,61 83,52 88,46 Z" />
-    <path
-        android:fillColor="#20282C"
-        android:pathData="M150,46 L220,46 C227,52 232,61 235,72 L150,72 Z" />
-    <!-- Subtle door & belt crease -->
-    <path
-        android:strokeColor="#C8D5D0"
+        android:strokeColor="#FF2A7D68"
         android:strokeWidth="1.5"
-        android:pathData="M86,78 L236,78 M194,46 L194,108" />
-    <!-- Signature squared friendly LED eye (right front) -->
+        android:pathData="M124,48 L124,106 M201,48 L201,106" />
     <path
-        android:fillColor="#4CE0B3"
-        android:pathData="M240,81 L249,81 L251,90 L240,90 Z" />
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M133,80 L144,80 L144,83.5 L133,83.5 Z" />
+
+    <!-- Signature Xiaoma rounded-square cute headlamp -->
     <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M242,83 L247,83 L248,88 L242,88 Z" />
-    <!-- Compact rear lamp -->
+        android:fillColor="#FF1A2424"
+        android:pathData="M231,77 C231,75 233,74 236,74 L244,74 L246,88 L235,88 C232,88 231,86 231,84 Z" />
     <path
-        android:fillColor="#D94B4B"
-        android:pathData="M68,82 L75,82 L75,92 L67,92 Z" />
-    <!-- Front aero wheel & rear wheel (compact proportions) -->
+        android:fillColor="#FF9CFFE6"
+        android:pathData="M233.5,77.5 L243,77.5 L244,85 L233.5,85 Z" />
     <path
-        android:fillColor="#161A1C"
-        android:pathData="M104,112 m-17,0 a17,17 0 1,0 34,0 a17,17 0 1,0 -34,0" />
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M235.5,79 L241.5,79 L242,83.5 L235.5,83.5 Z" />
+    <!-- Square retro rear lamp -->
     <path
-        android:fillColor="#D9E2DF"
-        android:pathData="M104,112 m-10.5,0 a10.5,10.5 0 1,0 21,0 a10.5,10.5 0 1,0 -21,0" />
+        android:fillColor="#FFE54848"
+        android:pathData="M79,78 L86,78 L86,89 L78,89 Z" />
+
+    <!-- Miniature retro steel-look wheels with cream dish & mint cap -->
     <path
-        android:fillColor="#283133"
-        android:pathData="M104,112 m-4,0 a4,4 0 1,0 8,0 a4,4 0 1,0 -8,0" />
+        android:fillColor="#FF13191B"
+        android:pathData="M107,112 m-15.5,0 a15.5,15.5 0 1,0 31,0 a15.5,15.5 0 1,0 -31,0" />
     <path
-        android:fillColor="#161A1C"
-        android:pathData="M216,112 m-17,0 a17,17 0 1,0 34,0 a17,17 0 1,0 -34,0" />
+        android:fillColor="#FFF7F2E6"
+        android:pathData="M107,112 m-10,0 a10,10 0 1,0 20,0 a10,10 0 1,0 -20,0" />
     <path
-        android:fillColor="#D9E2DF"
-        android:pathData="M216,112 m-10.5,0 a10.5,10.5 0 1,0 21,0 a10.5,10.5 0 1,0 -21,0" />
+        android:fillColor="#FF42B89B"
+        android:pathData="M107,112 m-4.5,0 a4.5,4.5 0 1,0 9,0 a4.5,4.5 0 1,0 -9,0" />
+
     <path
-        android:fillColor="#283133"
-        android:pathData="M216,112 m-4,0 a4,4 0 1,0 8,0 a4,4 0 1,0 -8,0" />
+        android:fillColor="#FF13191B"
+        android:pathData="M213,112 m-15.5,0 a15.5,15.5 0 1,0 31,0 a15.5,15.5 0 1,0 -31,0" />
+    <path
+        android:fillColor="#FFF7F2E6"
+        android:pathData="M213,112 m-10,0 a10,10 0 1,0 20,0 a10,10 0 1,0 -20,0" />
+    <path
+        android:fillColor="#FF42B89B"
+        android:pathData="M213,112 m-4.5,0 a4.5,4.5 0 1,0 9,0 a4.5,4.5 0 1,0 -9,0" />
 </vector>

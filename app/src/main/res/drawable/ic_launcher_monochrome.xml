@@ -1,0 +1,24 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Pure single-tone stencil for Material You wallpaper-themed monochrome icons -->
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M56.5,24 L46,38.5 L53,38.5 L50,47.5 L62,33 L55,33 Z" />
+
+    <path
+        android:fillColor="#FF000000"
+        android:fillType="evenOdd"
+        android:pathData="M24,66 C23,60 25,55 30,52 L39,47 C43,45 49,44 57,44 C64,44 69,46 74,52 L82,55 C85.5,57 86,62 84.5,67.5 C84,69 82.5,70 80.5,70 L78.2,70 C78.2,65 74.3,61 69.5,61 C64.7,61 60.8,65 60.8,70 L47.2,70 C47.2,65 43.3,61 38.5,61 C33.7,61 29.8,65 29.8,70 L27,70 C25,70 24.2,68.5 24,66 Z
+                          M35,55.5 L40.5,49.5 C43.5,47.5 48.5,47 56,47 C61.5,47 66,48.5 69.8,54 L69.8,55.5 Z" />
+
+    <path
+        android:fillColor="#FF000000"
+        android:fillType="evenOdd"
+        android:pathData="M38.5,70 m-6.5,0 a6.5,6.5 0 1,0 13,0 a6.5,6.5 0 1,0 -13,0
+                          M38.5,70 m-2.6,0 a2.6,2.6 0 1,0 5.2,0 a2.6,2.6 0 1,0 -5.2,0
+                          M69.5,70 m-6.5,0 a6.5,6.5 0 1,0 13,0 a6.5,6.5 0 1,0 -13,0
+                          M69.5,70 m-2.6,0 a2.6,2.6 0 1,0 5.2,0 a2.6,2.6 0 1,0 -5.2,0" />
+</vector>

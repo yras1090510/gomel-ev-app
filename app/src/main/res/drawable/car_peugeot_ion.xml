@@ -1,46 +1,97 @@
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
     android:width="320dp"
     android:height="150dp"
     android:viewportWidth="320"
     android:viewportHeight="150">
-    <!-- Floor shadow -->
+    <!-- Ground contact shadow -->
     <path
-        android:fillColor="#180F1413"
-        android:pathData="M56,124 C56,119 102,116 160,116 C218,116 264,119 264,124 C264,129 218,132 160,132 C102,132 56,129 56,124 Z" />
-    <!-- Lower trim -->
+        android:fillColor="#220A1916"
+        android:pathData="M60,125 C60,120 105,117 160,117 C215,117 260,120 260,125 C260,130 215,133 160,133 C105,133 60,130 60,125 Z" />
+
+    <!-- Roof antenna -->
     <path
-        android:fillColor="#1C2225"
-        android:pathData="M70,111 L252,111 L250,116 L72,116 Z" />
-    <!-- Peugeot iOn tall mono-space kei-EV body -->
+        android:strokeColor="#FF25323B"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:pathData="M112,31 L101,20" />
+
+    <!-- Peugeot iOn tall egg-shaped 5-door cab-forward monovolume in metallic ice blue -->
+    <path android:pathData="M73,103 L74,73 C77,50 88,33 107,30 C130,27 156,28 179,36 C203,45 224,63 243,80 C249,86 251,98 248,108 C247,111 243,113 238,113 L235,113 C235,101 227,93 216,93 C205,93 197,101 197,113 L118,113 C118,101 110,93 99,93 C88,93 80,101 80,113 L77,113 C74,113 73,109 73,103 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="160"
+                android:startY="28"
+                android:endX="160"
+                android:endY="114">
+                <item android:color="#FFD7E9F7" android:offset="0.0" />
+                <item android:color="#FF9CC0DA" android:offset="0.65" />
+                <item android:color="#FF6F95B3" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Lower dark rub strip & bumper lip -->
     <path
-        android:fillColor="#F3F5F7"
-        android:pathData="M68,103 C67,85 71,62 84,41 C95,33 114,32 146,32 C178,32 204,40 226,64 L248,84 C253,92 254,104 250,111 L71,111 C68,109 68,107 68,103 Z" />
-    <!-- Tall panoramic mono-space glass -->
+        android:fillColor="#FF26333D"
+        android:pathData="M118,108 L197,108 L197,113 L118,113 Z M235,103 L249,103 L247,111 L235,111 Z" />
+
+    <!-- Monospace greenhouse with triangular front quarter window -->
+    <path android:pathData="M86,65 C89,50 96,39 109,35 C129,32 153,34 173,41 L219,70 L84,68 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="100"
+                android:startY="34"
+                android:endX="215"
+                android:endY="71">
+                <item android:color="#FF26343F" android:offset="0.0" />
+                <item android:color="#FF151E26" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Gloss streak + B/C pillars (4 side doors layout) -->
     <path
-        android:fillColor="#20282C"
-        android:pathData="M88,43 C99,37 120,36 146,36 C174,36 198,44 218,67 L81,67 C82,56 84,48 88,43 Z" />
+        android:fillColor="#33FFFFFF"
+        android:pathData="M142,36 L160,39 L146,68 L131,68 Z" />
     <path
-        android:strokeColor="#C2CACF"
-        android:strokeWidth="1.4"
-        android:pathData="M148,36 L148,109" />
-    <!-- Leaf-shaped front headlamp & tall rear lamp -->
+        android:strokeColor="#FF52728C"
+        android:strokeWidth="1.8"
+        android:pathData="M138,34 L138,108 M185,48 L185,108 M96,38 L94,68" />
+
+    <!-- Iconic vertical i-MiEV / iOn hood-climbing teardrop headlamp & tall rear taillight -->
     <path
-        android:fillColor="#4CE0B3"
-        android:pathData="M232,76 L248,82 L245,87 L229,82 Z" />
+        android:fillColor="#FFEBF9FF"
+        android:pathData="M214,68 C224,71 236,78 244,85 L234,86 C225,80 218,74 214,68 Z" />
     <path
-        android:fillColor="#D94B4B"
-        android:pathData="M70,74 L77,74 L76,92 L69,92 Z" />
-    <!-- Wheels at extreme corners -->
+        android:fillColor="#FF4CE0B3"
+        android:pathData="M218,71 C226,74 235,79 241,84 L236,84 C228,80 222,76 218,71 Z" />
     <path
-        android:fillColor="#15191B"
-        android:pathData="M100,111 m-17,0 a17,17 0 1,0 34,0 a17,17 0 1,0 -34,0" />
+        android:fillColor="#FFE04646"
+        android:pathData="M75,66 L82,66 L80,88 L73,88 Z" />
+
+    <!-- Wheels (6-spoke silver alloys) -->
     <path
-        android:fillColor="#CFD6DB"
-        android:pathData="M100,111 m-10.5,0 a10.5,10.5 0 1,0 21,0 a10.5,10.5 0 1,0 -21,0" />
+        android:fillColor="#FF12181C"
+        android:pathData="M99,112 m-15.5,0 a15.5,15.5 0 1,0 31,0 a15.5,15.5 0 1,0 -31,0" />
     <path
-        android:fillColor="#15191B"
-        android:pathData="M222,111 m-17,0 a17,17 0 1,0 34,0 a17,17 0 1,0 -34,0" />
+        android:fillColor="#FFD7E3EC"
+        android:pathData="M99,112 m-9.5,0 a9.5,9.5 0 1,0 19,0 a9.5,9.5 0 1,0 -19,0" />
     <path
-        android:fillColor="#CFD6DB"
-        android:pathData="M222,111 m-10.5,0 a10.5,10.5 0 1,0 21,0 a10.5,10.5 0 1,0 -21,0" />
+        android:strokeColor="#FF354552"
+        android:strokeWidth="1.6"
+        android:pathData="M99,103 L99,121 M91,107.5 L107,116.5 M91,116.5 L107,107.5" />
+
+    <path
+        android:fillColor="#FF12181C"
+        android:pathData="M216,112 m-15.5,0 a15.5,15.5 0 1,0 31,0 a15.5,15.5 0 1,0 -31,0" />
+    <path
+        android:fillColor="#FFD7E3EC"
+        android:pathData="M216,112 m-9.5,0 a9.5,9.5 0 1,0 19,0 a9.5,9.5 0 1,0 -19,0" />
+    <path
+        android:strokeColor="#FF354552"
+        android:strokeWidth="1.6"
+        android:pathData="M216,103 L216,121 M208,107.5 L224,116.5 M208,116.5 L224,107.5" />
 </vector>
