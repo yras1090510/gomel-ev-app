@@ -1,7 +1,12 @@
 package com.gomelev.app.ui.theme
 
 import android.os.Build
-import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.FiniteAnimationSpec
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
@@ -14,6 +19,7 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -23,92 +29,165 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+/**
+ * Material 3 Expressive motion physics tokens.
+ */
+object ExpressiveMotion {
+    fun <T> fastSpatial(): FiniteAnimationSpec<T> = spring(
+        dampingRatio = 0.72f,
+        stiffness = 750f
+    )
+
+    fun <T> defaultSpatial(): FiniteAnimationSpec<T> = spring(
+        dampingRatio = 0.80f,
+        stiffness = Spring.StiffnessMediumLow
+    )
+
+    fun <T> slowSpatial(): FiniteAnimationSpec<T> = spring(
+        dampingRatio = 0.86f,
+        stiffness = Spring.StiffnessLow
+    )
+
+    val colorTween: FiniteAnimationSpec<Color> = tween(
+        durationMillis = 360,
+        easing = FastOutSlowInEasing
+    )
+}
+
 @Immutable
 data class SemanticColors(
+    val passAccent: Color,
     val passContainer: Color,
     val onPassContainer: Color,
-    val passAccent: Color,
     val warnContainer: Color,
     val onWarnContainer: Color,
     val failContainer: Color,
     val onFailContainer: Color,
     val studioBackdrop: Color,
-    val studioBorder: Color
+    val studioBorder: Color,
+    val stageTop: Color,
+    val stageBottom: Color,
+    val stageSpot: Color,
+    val brandGradientStart: Color,
+    val brandGradientEnd: Color,
+    val isDark: Boolean
 )
 
-val LocalSemanticColors = staticCompositionLocalOf {
-    SemanticColors(
-        passContainer = Color(0xFFDDF5EC),
-        onPassContainer = Color(0xFF074936),
-        passAccent = Color(0xFF0E7C5D),
-        warnContainer = Color(0xFFFEF1D6),
-        onWarnContainer = Color(0xFF734500),
-        failContainer = Color(0xFFFDE4E1),
-        onFailContainer = Color(0xFF7B1B15),
-        studioBackdrop = Color(0xFFF3F5F4),
-        studioBorder = Color(0xFFE3E7E5)
-    )
-}
+private val LightSemantic = SemanticColors(
+    passAccent = Color(0xFF007A5E),
+    passContainer = Color(0xFFD5F5EA),
+    onPassContainer = Color(0xFF003D2E),
+    warnContainer = Color(0xFFFFECC7),
+    onWarnContainer = Color(0xFF5D3A00),
+    failContainer = Color(0xFFFFE2E0),
+    onFailContainer = Color(0xFF6B1316),
+    studioBackdrop = Color(0xFFF3F8F6),
+    studioBorder = Color(0xFFD0E0DC),
+    stageTop = Color(0xFFFFFFFF),
+    stageBottom = Color(0xFFE7F2EE),
+    stageSpot = Color(0x4216B890),
+    brandGradientStart = Color(0xFF006D5B),
+    brandGradientEnd = Color(0xFF0B7E8C),
+    isDark = false
+)
+
+private val DarkSemantic = SemanticColors(
+    passAccent = Color(0xFF4BE2B8),
+    passContainer = Color(0xFF0D4438),
+    onPassContainer = Color(0xFFB3FAE3),
+    warnContainer = Color(0xFF473004),
+    onWarnContainer = Color(0xFFFFDF9B),
+    failContainer = Color(0xFF54181D),
+    onFailContainer = Color(0xFFFFD8D6),
+    studioBackdrop = Color(0xFF132026),
+    studioBorder = Color(0xFF283D47),
+    stageTop = Color(0xFF1C2E36),
+    stageBottom = Color(0xFF0D171C),
+    stageSpot = Color(0x484BE2B8),
+    brandGradientStart = Color(0xFF2ED9B1),
+    brandGradientEnd = Color(0xFF45CFE0),
+    isDark = true
+)
+
+val LocalSemanticColors = staticCompositionLocalOf { LightSemantic }
 
 private val LightColors: ColorScheme = lightColorScheme(
-    primary = Color(0xFF0E7C5D),
+    primary = Color(0xFF006B58),
     onPrimary = Color(0xFFFFFFFF),
-    primaryContainer = Color(0xFFD3F4E6),
-    onPrimaryContainer = Color(0xFF063829),
-    secondary = Color(0xFF3E4E4A),
+    primaryContainer = Color(0xFFC2F5E6),
+    onPrimaryContainer = Color(0xFF00211A),
+    secondary = Color(0xFF0E6774),
     onSecondary = Color(0xFFFFFFFF),
-    secondaryContainer = Color(0xFFE5EAE8),
-    onSecondaryContainer = Color(0xFF17211E),
-    tertiary = Color(0xFF285E6B),
-    background = Color(0xFFFAFAFA),
-    onBackground = Color(0xFF111514),
-    surface = Color(0xFFFAFAFA),
-    onSurface = Color(0xFF111514),
-    surfaceVariant = Color(0xFFECEFED),
-    onSurfaceVariant = Color(0xFF56605D),
+    secondaryContainer = Color(0xFFCFEFF4),
+    onSecondaryContainer = Color(0xFF04262B),
+    tertiary = Color(0xFF8C5A00),
+    onTertiary = Color(0xFFFFFFFF),
+    tertiaryContainer = Color(0xFFFFE4B5),
+    onTertiaryContainer = Color(0xFF2C1900),
+    error = Color(0xFFBA2D33),
+    onError = Color(0xFFFFFFFF),
+    errorContainer = Color(0xFFFFDAD8),
+    onErrorContainer = Color(0xFF410004),
+    background = Color(0xFFF3F7F6),
+    onBackground = Color(0xFF0F1A1C),
+    surface = Color(0xFFF9FCFB),
+    onSurface = Color(0xFF0F1A1C),
+    surfaceVariant = Color(0xFFDFE9E6),
+    onSurfaceVariant = Color(0xFF435357),
     surfaceContainerLowest = Color(0xFFFFFFFF),
-    surfaceContainerLow = Color(0xFFF4F6F5),
-    surfaceContainer = Color(0xFFEDF0EE),
-    surfaceContainerHigh = Color(0xFFE6EAE8),
-    outlineVariant = Color(0xFFDDE2DF)
+    surfaceContainerLow = Color(0xFFEDF3F1),
+    surfaceContainer = Color(0xFFE5EEEC),
+    surfaceContainerHigh = Color(0xFFDBE7E4),
+    surfaceContainerHighest = Color(0xFFD1DFDC),
+    outline = Color(0xFF708185),
+    outlineVariant = Color(0xFFC7D7D3)
 )
 
 private val DarkColors: ColorScheme = darkColorScheme(
-    primary = Color(0xFF4CE0B3),
-    onPrimary = Color(0xFF02281D),
-    primaryContainer = Color(0xFF0C3B2E),
-    onPrimaryContainer = Color(0xFFA8F7DC),
-    secondary = Color(0xFFB5C5C0),
-    onSecondary = Color(0xFF1D2724),
-    secondaryContainer = Color(0xFF232B28),
-    onSecondaryContainer = Color(0xFFD8E3DF),
-    tertiary = Color(0xFF8CCBDB),
-    background = Color(0xFF0D0F10),
-    onBackground = Color(0xFFF1F4F3),
-    surface = Color(0xFF0D0F10),
-    onSurface = Color(0xFFF1F4F3),
-    surfaceVariant = Color(0xFF1E2324),
-    onSurfaceVariant = Color(0xFFA0ACA8),
-    surfaceContainerLowest = Color(0xFF090B0C),
-    surfaceContainerLow = Color(0xFF141819),
-    surfaceContainer = Color(0xFF191D1F),
-    surfaceContainerHigh = Color(0xFF212628),
-    outlineVariant = Color(0xFF282E30)
+    primary = Color(0xFF56E2BE),
+    onPrimary = Color(0xFF00382C),
+    primaryContainer = Color(0xFF0D4E40),
+    onPrimaryContainer = Color(0xFFBDFCEB),
+    secondary = Color(0xFF6CD6E3),
+    onSecondary = Color(0xFF00363D),
+    secondaryContainer = Color(0xFF134B54),
+    onSecondaryContainer = Color(0xFFC2F3FA),
+    tertiary = Color(0xFFFFCA6E),
+    onTertiary = Color(0xFF462A00),
+    tertiaryContainer = Color(0xFF633E00),
+    onTertiaryContainer = Color(0xFFFFE5B8),
+    error = Color(0xFFFFB4B0),
+    onError = Color(0xFF68000A),
+    errorContainer = Color(0xFF8C1D24),
+    onErrorContainer = Color(0xFFFFDAD8),
+    background = Color(0xFF0A1114),
+    onBackground = Color(0xFFE6F0EE),
+    surface = Color(0xFF0F181C),
+    onSurface = Color(0xFFE6F0EE),
+    surfaceVariant = Color(0xFF1F2D33),
+    onSurfaceVariant = Color(0xFF9FB2B6),
+    surfaceContainerLowest = Color(0xFF070C0E),
+    surfaceContainerLow = Color(0xFF121C21),
+    surfaceContainer = Color(0xFF17242A),
+    surfaceContainerHigh = Color(0xFF1E2D34),
+    surfaceContainerHighest = Color(0xFF273941),
+    outline = Color(0xFF6C8086),
+    outlineVariant = Color(0xFF283940)
 )
 
-private val EditorialTypography = Typography(
-    headlineLarge = TextStyle(
+private val ExpressiveTypography = Typography(
+    displaySmall = TextStyle(
         fontFamily = FontFamily.SansSerif,
-        fontWeight = FontWeight.SemiBold,
-        fontSize = 28.sp,
-        lineHeight = 34.sp,
+        fontWeight = FontWeight.Bold,
+        fontSize = 30.sp,
+        lineHeight = 36.sp,
         letterSpacing = (-0.5).sp
     ),
-    headlineMedium = TextStyle(
+    headlineSmall = TextStyle(
         fontFamily = FontFamily.SansSerif,
-        fontWeight = FontWeight.SemiBold,
-        fontSize = 22.sp,
-        lineHeight = 28.sp,
+        fontWeight = FontWeight.Bold,
+        fontSize = 21.sp,
+        lineHeight = 27.sp,
         letterSpacing = (-0.3).sp
     ),
     titleLarge = TextStyle(
@@ -120,96 +199,125 @@ private val EditorialTypography = Typography(
     ),
     titleMedium = TextStyle(
         fontFamily = FontFamily.SansSerif,
-        fontWeight = FontWeight.Medium,
+        fontWeight = FontWeight.SemiBold,
         fontSize = 15.sp,
         lineHeight = 21.sp
+    ),
+    titleSmall = TextStyle(
+        fontFamily = FontFamily.SansSerif,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 13.5.sp,
+        lineHeight = 18.sp
     ),
     bodyMedium = TextStyle(
         fontFamily = FontFamily.SansSerif,
         fontWeight = FontWeight.Normal,
-        fontSize = 14.sp,
-        lineHeight = 20.sp
+        fontSize = 13.5.sp,
+        lineHeight = 19.sp
     ),
     bodySmall = TextStyle(
         fontFamily = FontFamily.SansSerif,
         fontWeight = FontWeight.Normal,
         fontSize = 12.sp,
-        lineHeight = 16.sp
-    ),
-    labelLarge = TextStyle(
-        fontFamily = FontFamily.SansSerif,
-        fontWeight = FontWeight.SemiBold,
-        fontSize = 13.sp,
-        lineHeight = 18.sp
+        lineHeight = 16.5.sp
     ),
     labelMedium = TextStyle(
         fontFamily = FontFamily.SansSerif,
-        fontWeight = FontWeight.Medium,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 12.sp,
+        lineHeight = 16.sp,
+        letterSpacing = 0.1.sp
+    ),
+    labelSmall = TextStyle(
+        fontFamily = FontFamily.SansSerif,
+        fontWeight = FontWeight.SemiBold,
         fontSize = 11.sp,
         lineHeight = 14.sp
     )
 )
 
-private val MinimalShapes = Shapes(
-    small = RoundedCornerShape(10.dp),
-    medium = RoundedCornerShape(18.dp),
-    large = RoundedCornerShape(24.dp),
-    extraLarge = RoundedCornerShape(28.dp)
+private val ExpressiveShapes = Shapes(
+    extraSmall = RoundedCornerShape(10.dp),
+    small = RoundedCornerShape(14.dp),
+    medium = RoundedCornerShape(20.dp),
+    large = RoundedCornerShape(26.dp),
+    extraLarge = RoundedCornerShape(32.dp)
 )
 
 @Composable
+private fun animColor(target: Color): Color {
+    val c by animateColorAsState(
+        targetValue = target,
+        animationSpec = ExpressiveMotion.colorTween,
+        label = "themeColor"
+    )
+    return c
+}
+
+@Composable
 fun GomelEvTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = true,
+    darkTheme: Boolean,
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
-    val context = LocalContext.current
-    val baseScheme = when {
+    val targetScheme: ColorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val dyn = if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-            val fallback = if (darkTheme) DarkColors else LightColors
-            // Keep clean minimalist neutral surfaces & dynamic accent harmony
-            fallback.copy(
-                primary = dyn.primary,
-                primaryContainer = dyn.primaryContainer,
-                onPrimaryContainer = dyn.onPrimaryContainer
-            )
+            val ctx = LocalContext.current
+            if (darkTheme) dynamicDarkColorScheme(ctx) else dynamicLightColorScheme(ctx)
         }
         darkTheme -> DarkColors
         else -> LightColors
     }
 
-    val semantic = if (darkTheme) {
-        SemanticColors(
-            passContainer = Color(0xFF0E382C),
-            onPassContainer = Color(0xFF9DF5D6),
-            passAccent = Color(0xFF4CE0B3),
-            warnContainer = Color(0xFF3E2904),
-            onWarnContainer = Color(0xFFFFD88A),
-            failContainer = Color(0xFF421412),
-            onFailContainer = Color(0xFFFFB5AE),
-            studioBackdrop = Color(0xFF171B1D),
-            studioBorder = Color(0xFF272D30)
-        )
-    } else {
-        SemanticColors(
-            passContainer = Color(0xFFDDF5EC),
-            onPassContainer = Color(0xFF074936),
-            passAccent = Color(0xFF0E7C5D),
-            warnContainer = Color(0xFFFEF1D6),
-            onWarnContainer = Color(0xFF734500),
-            failContainer = Color(0xFFFDE4E1),
-            onFailContainer = Color(0xFF7B1B15),
-            studioBackdrop = Color(0xFFF1F4F3),
-            studioBorder = Color(0xFFE1E6E3)
-        )
-    }
+    val animatedScheme = targetScheme.copy(
+        primary = animColor(targetScheme.primary),
+        onPrimary = animColor(targetScheme.onPrimary),
+        primaryContainer = animColor(targetScheme.primaryContainer),
+        onPrimaryContainer = animColor(targetScheme.onPrimaryContainer),
+        secondary = animColor(targetScheme.secondary),
+        secondaryContainer = animColor(targetScheme.secondaryContainer),
+        onSecondaryContainer = animColor(targetScheme.onSecondaryContainer),
+        tertiary = animColor(targetScheme.tertiary),
+        tertiaryContainer = animColor(targetScheme.tertiaryContainer),
+        background = animColor(targetScheme.background),
+        onBackground = animColor(targetScheme.onBackground),
+        surface = animColor(targetScheme.surface),
+        onSurface = animColor(targetScheme.onSurface),
+        surfaceVariant = animColor(targetScheme.surfaceVariant),
+        onSurfaceVariant = animColor(targetScheme.onSurfaceVariant),
+        surfaceContainerLowest = animColor(targetScheme.surfaceContainerLowest),
+        surfaceContainerLow = animColor(targetScheme.surfaceContainerLow),
+        surfaceContainer = animColor(targetScheme.surfaceContainer),
+        surfaceContainerHigh = animColor(targetScheme.surfaceContainerHigh),
+        surfaceContainerHighest = animColor(targetScheme.surfaceContainerHighest),
+        outline = animColor(targetScheme.outline),
+        outlineVariant = animColor(targetScheme.outlineVariant)
+    )
 
-    CompositionLocalProvider(LocalSemanticColors provides semantic) {
+    val targetSem = if (darkTheme) DarkSemantic else LightSemantic
+    val animatedSemantic = SemanticColors(
+        passAccent = animColor(targetSem.passAccent),
+        passContainer = animColor(targetSem.passContainer),
+        onPassContainer = animColor(targetSem.onPassContainer),
+        warnContainer = animColor(targetSem.warnContainer),
+        onWarnContainer = animColor(targetSem.onWarnContainer),
+        failContainer = animColor(targetSem.failContainer),
+        onFailContainer = animColor(targetSem.onFailContainer),
+        studioBackdrop = animColor(targetSem.studioBackdrop),
+        studioBorder = animColor(targetSem.studioBorder),
+        stageTop = animColor(targetSem.stageTop),
+        stageBottom = animColor(targetSem.stageBottom),
+        stageSpot = animColor(targetSem.stageSpot),
+        brandGradientStart = animColor(targetSem.brandGradientStart),
+        brandGradientEnd = animColor(targetSem.brandGradientEnd),
+        isDark = darkTheme
+    )
+
+    CompositionLocalProvider(LocalSemanticColors provides animatedSemantic) {
         MaterialTheme(
-            colorScheme = baseScheme,
-            typography = EditorialTypography,
-            shapes = MinimalShapes,
+            colorScheme = animatedScheme,
+            typography = ExpressiveTypography,
+            shapes = ExpressiveShapes,
             content = content
         )
     }

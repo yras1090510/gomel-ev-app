@@ -4,10 +4,19 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Rect
 import android.net.Uri
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -16,6 +25,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -68,6 +79,7 @@ import com.gomelev.app.model.CarOffer
 import com.gomelev.app.model.MarketSnapshot
 import com.gomelev.app.model.PdnVerdict
 import com.gomelev.app.model.UserFinanceProfile
+import com.gomelev.app.ui.theme.ExpressiveMotion
 import com.gomelev.app.ui.theme.LocalSemanticColors
 import kotlin.math.roundToInt
 
@@ -147,33 +159,52 @@ fun MinimalistCarStage(
         color = sem.studioBackdrop,
         border = BorderStroke(0.8.dp, sem.studioBorder)
     ) {
-        Box(modifier = Modifier.fillMaxSize()) {
-            // Subtle gallery softbox spotlight radial backdrop
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(sem.stageTop, sem.stageBottom)
+                    )
+                )
+        ) {
+            // Soft Material 3 Expressive turntable spotlight behind car silhouette
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(
                         Brush.radialGradient(
                             colors = listOf(
-                                Color.White.copy(alpha = 0.55f),
+                                sem.stageSpot,
                                 Color.Transparent
                             )
                         )
                     )
             )
 
-            // Minimalist studio car vector artwork
-            Image(
-                painter = painterResource(id = car.imageRes),
-                contentDescription = car.brandModel,
-                contentScale = ContentScale.Fit,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(
-                        horizontal = if (compact) 18.dp else 28.dp,
-                        vertical = if (compact) 10.dp else 16.dp
-                    )
-            )
+            // Minimalist studio car vector artwork with smooth turntable transition
+            AnimatedContent(
+                targetState = car.id,
+                modifier = Modifier.fillMaxSize(),
+                transitionSpec = {
+                    (fadeIn(animationSpec = tween(220)) +
+                        scaleIn(initialScale = 0.94f, animationSpec = ExpressiveMotion.fastSpatial()))
+                        .togetherWith(fadeOut(animationSpec = tween(140)))
+                },
+                label = "carStageArt"
+            ) {
+                Image(
+                    painter = painterResource(id = car.imageRes),
+                    contentDescription = car.brandModel,
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(
+                            horizontal = if (compact) 16.dp else 26.dp,
+                            vertical = if (compact) 8.dp else 14.dp
+                        )
+                )
+            }
 
             // Top-left minimal fuel badge
             Surface(
@@ -236,8 +267,8 @@ fun PdnStatusPill(
         PdnVerdict.FAIL -> Triple(sem.failContainer, sem.onFailContainer, Icons.Rounded.ErrorOutline)
     }
 
-    val animatedBg by animateColorAsState(bg, label = "pdnBg")
-    val animatedFg by animateColorAsState(fg, label = "pdnFg")
+    val animatedBg by animateColorAsState(bg, animationSpec = ExpressiveMotion.colorTween, label = "pdnBg")
+    val animatedFg by animateColorAsState(fg, animationSpec = ExpressiveMotion.colorTween, label = "pdnFg")
 
     Surface(
         modifier = modifier,
@@ -262,13 +293,13 @@ fun PdnStatusPill(
                     fontWeight = FontWeight.SemiBold
                 ),
                 color = animatedFg,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
+                maxLines = 2
             )
         }
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun PdnControlBar(
     profile: UserFinanceProfile,
@@ -290,17 +321,29 @@ fun PdnControlBar(
 
     Surface(
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(22.dp),
         color = MaterialTheme.colorScheme.surfaceContainerLow,
         border = BorderStroke(0.8.dp, MaterialTheme.colorScheme.outlineVariant)
     ) {
-        Column(modifier = Modifier.padding(14.dp)) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    Brush.linearGradient(
+                        colors = listOf(
+                            sem.brandGradientStart.copy(alpha = if (sem.isDark) 0.12f else 0.06f),
+                            Color.Transparent
+                        )
+                    )
+                )
+                .padding(14.dp)
+        ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Column(modifier = Modifier.weight(1f)) {
+                Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     Text(
                         text = "Свободный лимит ПДН: ${Formatters.byn(profile.freePdnRoomByn)}/мес",
                         style = MaterialTheme.typography.titleMedium.copy(
@@ -309,14 +352,17 @@ fun PdnControlBar(
                         ),
                         color = sem.passAccent
                     )
-                    Text(
-                        text = "ЗП ${Formatters.bynShort(profile.salaryByn)} · Указ №240: −${Formatters.bynShort(profile.existingHousingCreditByn)} · 1$ = ${Formatters.rateFx(snapshot.usdBynRate)}",
-                        style = MaterialTheme.typography.bodySmall.copy(fontFeatureSettings = "tnum"),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        ControlMetaTag("ЗП ${Formatters.bynShort(profile.salaryByn)}")
+                        ControlMetaTag("Указ №240: −${Formatters.bynShort(profile.existingHousingCreditByn)}")
+                        ControlMetaTag("1$ = ${Formatters.rateFx(snapshot.usdBynRate)}")
+                    }
                 }
+
+                Spacer(modifier = Modifier.width(6.dp))
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     IconButton(onClick = onTriggerSync, enabled = !snapshot.isSyncing) {
@@ -352,29 +398,31 @@ fun PdnControlBar(
                 }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(10.dp))
             LinearProgressIndicator(
                 progress = { animatedRatio },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(5.dp)
+                    .height(6.dp)
                     .clip(CircleShape),
                 color = MaterialTheme.colorScheme.secondary,
                 trackColor = sem.passContainer
             )
 
-            // Quick PV pills always visible
-            Spacer(modifier = Modifier.height(8.dp))
-            Row(
+            // Quick PV pills always visible & wrapping cleanly on narrow screens
+            Spacer(modifier = Modifier.height(10.dp))
+            FlowRow(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
-                verticalAlignment = Alignment.CenterVertically
+                verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                Text(
-                    text = "Аванс:",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                Box(modifier = Modifier.align(Alignment.CenterVertically).padding(end = 2.dp)) {
+                    Text(
+                        text = "Аванс:",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
                 listOf(0, 10, 15, 20).forEach { pct ->
                     val selected = !profile.useCustomDownPaymentByn && profile.downPaymentPct == pct
                     FilterChip(
@@ -393,12 +441,17 @@ fun PdnControlBar(
                         colors = FilterChipDefaults.filterChipColors(
                             selectedContainerColor = MaterialTheme.colorScheme.primaryContainer
                         ),
-                        modifier = Modifier.height(28.dp)
+                        modifier = Modifier.height(32.dp)
                     )
                 }
             }
 
-            if (expanded) {
+            AnimatedVisibility(
+                visible = expanded,
+                enter = expandVertically(ExpressiveMotion.defaultSpatial()) + fadeIn(),
+                exit = shrinkVertically(ExpressiveMotion.fastSpatial()) + fadeOut()
+            ) {
+                Column {
                 Spacer(modifier = Modifier.height(10.dp))
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                 Spacer(modifier = Modifier.height(10.dp))
@@ -451,8 +504,24 @@ fun PdnControlBar(
                         }
                     )
                 }
+                }
             }
         }
+    }
+}
+
+@Composable
+private fun ControlMetaTag(text: String) {
+    Surface(
+        shape = CircleShape,
+        color = MaterialTheme.colorScheme.surfaceContainerHigh
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelSmall.copy(fontFeatureSettings = "tnum"),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+        )
     }
 }
 
