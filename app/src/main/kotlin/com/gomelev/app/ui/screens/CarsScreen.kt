@@ -1,11 +1,14 @@
 package com.gomelev.app.ui.screens
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -23,10 +26,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.automirrored.rounded.OpenInNew
+import androidx.compose.material.icons.automirrored.rounded.TrendingUp
 import androidx.compose.material.icons.rounded.Call
 import androidx.compose.material.icons.rounded.LocationOn
-import androidx.compose.material.icons.rounded.OpenInNew
-import androidx.compose.material.icons.rounded.TrendingUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FilterChip
@@ -68,6 +71,7 @@ import com.gomelev.app.ui.components.PdnStatusPill
 import com.gomelev.app.ui.components.dialPhone
 import com.gomelev.app.ui.components.openExternalUrl
 import com.gomelev.app.ui.components.openGeoLocation
+import com.gomelev.app.ui.theme.ExpressiveMotion
 import com.gomelev.app.ui.theme.LocalSemanticColors
 
 private enum class CarFilter(val label: String) {
@@ -148,17 +152,17 @@ fun CarsScreen(
                 }
 
                 item {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .horizontalScroll(rememberScrollState()),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    @OptIn(ExperimentalLayoutApi::class)
+                    FlowRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
                         CarFilter.entries.forEach { f ->
                             FilterChip(
                                 selected = activeFilter == f,
                                 onClick = { activeFilter = f },
-                                label = { Text(f.label, style = MaterialTheme.typography.labelLarge) }
+                                label = { Text(f.label, style = MaterialTheme.typography.labelMedium) }
                             )
                         }
                     }
@@ -196,6 +200,7 @@ fun CarsScreen(
     )
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun CarListCard(
     car: CarOffer,
@@ -204,11 +209,21 @@ private fun CarListCard(
     selected: Boolean,
     onClick: () -> Unit
 ) {
-    val border = if (selected) {
-        BorderStroke(1.6.dp, MaterialTheme.colorScheme.primary)
-    } else {
-        BorderStroke(0.8.dp, MaterialTheme.colorScheme.outlineVariant)
-    }
+    val borderColor by animateColorAsState(
+        targetValue = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
+        animationSpec = ExpressiveMotion.colorTween,
+        label = "carBorder"
+    )
+    val borderWidth by animateDpAsState(
+        targetValue = if (selected) 1.8.dp else 0.8.dp,
+        animationSpec = ExpressiveMotion.fastSpatial(),
+        label = "carBorderW"
+    )
+    val cardBg by animateColorAsState(
+        targetValue = if (selected) MaterialTheme.colorScheme.surfaceContainerLow else MaterialTheme.colorScheme.surfaceContainerLowest,
+        animationSpec = ExpressiveMotion.colorTween,
+        label = "carBg"
+    )
 
     Surface(
         modifier = Modifier
@@ -216,8 +231,8 @@ private fun CarListCard(
             .clip(RoundedCornerShape(22.dp))
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(22.dp),
-        color = if (selected) MaterialTheme.colorScheme.surfaceContainerLow else MaterialTheme.colorScheme.surfaceContainerLowest,
-        border = border
+        color = cardBg,
+        border = BorderStroke(borderWidth, borderColor)
     ) {
         Column(modifier = Modifier.padding(14.dp)) {
             MinimalistCarStage(car = car, usdBynRate = usdBynRate, compact = true)
@@ -233,14 +248,14 @@ private fun CarListCard(
                     Text(
                         text = car.brandModel,
                         style = MaterialTheme.typography.titleLarge,
-                        maxLines = 1,
+                        maxLines = 2,
                         overflow = TextOverflow.Ellipsis
                     )
                     Text(
                         text = car.trimAndYear,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1,
+                        maxLines = 2,
                         overflow = TextOverflow.Ellipsis
                     )
                 }
@@ -264,20 +279,19 @@ private fun CarListCard(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            Row(
+            FlowRow(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 Text(
                     text = car.cityNote,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.weight(1f),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.padding(end = 6.dp)
                 )
-                Spacer(modifier = Modifier.width(8.dp))
                 if (bestEval != null) {
                     PdnStatusPill(
                         verdict = bestEval.verdict,
@@ -416,7 +430,12 @@ private fun CarDetailPane(
                             modifier = Modifier.weight(1f)
                         )
                     }
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    @OptIn(ExperimentalLayoutApi::class)
+                    FlowRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
                         if (dealer.phones.isNotEmpty()) {
                             Button(
                                 onClick = { dialPhone(context, dealer.phones.first()) },
@@ -432,7 +451,7 @@ private fun CarDetailPane(
                             onClick = { openExternalUrl(context, car.listingUrl) },
                             contentPadding = PaddingValues(horizontal = 14.dp, vertical = 8.dp)
                         ) {
-                            Icon(Icons.Rounded.OpenInNew, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Icon(Icons.AutoMirrored.Rounded.OpenInNew, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(Modifier.width(6.dp))
                             Text("Сайт дилера")
                         }
@@ -441,6 +460,8 @@ private fun CarDetailPane(
                             contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
                         ) {
                             Icon(Icons.Rounded.LocationOn, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Spacer(Modifier.width(4.dp))
+                            Text("Карта")
                         }
                     }
                 }
@@ -458,9 +479,11 @@ private fun CarDetailPane(
                     "Первоначальный взнос (ПВ): ${profile.downPaymentPct}% (${Formatters.byn(car.priceByn * profile.downPaymentPct / 100.0)})",
                     style = MaterialTheme.typography.labelLarge.copy(fontFeatureSettings = "tnum")
                 )
-                Row(
-                    modifier = Modifier.horizontalScroll(rememberScrollState()),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                @OptIn(ExperimentalLayoutApi::class)
+                FlowRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     listOf(0, 10, 15, 20, 25, 30).forEach { pct ->
                         FilterChip(
@@ -494,7 +517,7 @@ private fun CarDetailPane(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    Icon(Icons.Rounded.TrendingUp, contentDescription = null, modifier = Modifier.size(18.dp), tint = MaterialTheme.colorScheme.primary)
+                    Icon(Icons.AutoMirrored.Rounded.TrendingUp, contentDescription = null, modifier = Modifier.size(18.dp), tint = MaterialTheme.colorScheme.primary)
                     Text(
                         "Прогноз цены на сентябрь 2027 (${scenario.labelRu})",
                         style = MaterialTheme.typography.titleMedium
@@ -564,16 +587,21 @@ private fun CarDetailPane(
                         color = if (ev.verdict == PdnVerdict.PASS) sem.passAccent else MaterialTheme.colorScheme.onSurfaceVariant
                     )
 
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    @OptIn(ExperimentalLayoutApi::class)
+                    FlowRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
                         OutlinedButton(
                             onClick = { openExternalUrl(context, ev.program.officialUrl) },
-                            contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)
+                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
                         ) {
                             Text("Сайт банка", style = MaterialTheme.typography.labelMedium)
                         }
                         OutlinedButton(
                             onClick = { openExternalUrl(context, ev.program.myfinUrl) },
-                            contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)
+                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
                         ) {
                             Text("Myfin.by", style = MaterialTheme.typography.labelMedium)
                         }
