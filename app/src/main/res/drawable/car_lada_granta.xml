@@ -1,49 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
     android:width="320dp"
     android:height="150dp"
     android:viewportWidth="320"
     android:viewportHeight="150">
-    <!-- Floor shadow -->
+
+    <!-- LADA Granta Sedan (ДВС): Classic 3-box notchback trunk profile in Mars Cherry + Chrome X-Face -->
+    <path android:pathData="M34,126 C34,121 90,119 160,119 C230,119 286,121 286,126 C286,131 230,133 160,133 C90,133 34,131 34,126 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="radial"
+                android:centerX="160"
+                android:centerY="126"
+                android:gradientRadius="128">
+                <item android:color="#48210609" android:offset="0.0" />
+                <item android:color="#1E210609" android:offset="0.65" />
+                <item android:color="#00210609" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Unmistakable 3-BOX SEDAN profile: flat trunk deck on left + upright cabin + hood on right -->
+    <path android:pathData="M36,104 L38,76 L72,71 L94,46 L168,46 C192,47 210,59 228,74 L276,80 C282,82 285,91 283,104 L279,112 L36,112 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="160"
+                android:startY="46"
+                android:endX="160"
+                android:endY="112">
+                <item android:color="#D94550" android:offset="0.0" />
+                <item android:color="#AD2630" android:offset="0.52" />
+                <item android:color="#6E131B" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Black bumper lower Valance + exhaust pipe tip (ICE telltale) -->
+    <path android:fillColor="#181C20" android:pathData="M35,104 L282,104 L279,112 L36,112 Z" />
+    <path android:fillColor="#9CA8B5" android:pathData="M31,106 L38,106 L38,110 L31,110 Z" />
+
+    <!-- Classic sedan windows -->
+    <path android:pathData="M80,71 L99,49 L164,49 C185,50 202,60 218,73 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="140"
+                android:startY="49"
+                android:endX="158"
+                android:endY="73">
+                <item android:color="#2E3642" android:offset="0.0" />
+                <item android:color="#151A22" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <path android:fillColor="#171A21" android:pathData="M138,49 L146,49 L145,73 L137,73 Z" />
+
+    <!-- Open Combustion Radiator Grille + LADA Chrome X-boomerang + Halogen Headlights -->
+    <path android:fillColor="#16191E" android:pathData="M262,85 L284,84 L282,104 L260,104 Z" />
     <path
-        android:fillColor="#180F1413"
-        android:pathData="M30,124 C30,119 90,116 160,116 C230,116 290,119 290,124 C290,129 230,132 160,132 C90,132 30,129 30,124 Z" />
-    <!-- Lower trim -->
-    <path
-        android:fillColor="#1D2224"
-        android:pathData="M42,109 L276,109 L273,115 L45,115 Z" />
-    <!-- LADA Granta classic compact 3-box sedan -->
-    <path
-        android:fillColor="#E6E9EC"
-        android:pathData="M40,94 C40,79 42,67 48,66 L76,65 C84,48 99,37 122,36 L168,36 C192,36 212,48 232,69 L274,74 C280,78 281,94 277,109 L44,109 C40,106 40,100 40,94 Z" />
-    <path
-        android:fillColor="#D4D9DD"
-        android:pathData="M48,93 L272,93 L271,108 L46,108 Z" />
-    <!-- Sedan greenhouse -->
-    <path
-        android:fillColor="#22292D"
-        android:pathData="M86,65 C94,49 106,42 124,41 L168,41 C188,41 206,50 222,67 L84,67 Z" />
-    <path
-        android:strokeColor="#AEB6BC"
-        android:strokeWidth="1.4"
-        android:pathData="M148,41 L148,108 M206,67 L206,106" />
-    <!-- Conventional halogen headlamp & sedan taillight -->
-    <path
-        android:fillColor="#D8DFE4"
-        android:pathData="M262,75 L278,77 L277,86 L260,86 Z" />
-    <path
-        android:fillColor="#D94B4B"
-        android:pathData="M41,70 L53,70 L53,82 L40,82 Z" />
-    <!-- Classic 14-inch wheels -->
-    <path
-        android:fillColor="#161A1C"
-        android:pathData="M86,110 m-18.5,0 a18.5,18.5 0 1,0 37,0 a18.5,18.5 0 1,0 -37,0" />
-    <path
-        android:fillColor="#CFD5DA"
-        android:pathData="M86,110 m-11,0 a11,11 0 1,0 22,0 a11,11 0 1,0 -22,0" />
-    <path
-        android:fillColor="#161A1C"
-        android:pathData="M234,110 m-18.5,0 a18.5,18.5 0 1,0 37,0 a18.5,18.5 0 1,0 -37,0" />
-    <path
-        android:fillColor="#CFD5DA"
-        android:pathData="M234,110 m-11,0 a11,11 0 1,0 22,0 a11,11 0 1,0 -22,0" />
+        android:strokeColor="#E8EEF5"
+        android:strokeWidth="2.0"
+        android:pathData="M256,82 C263,88 263,97 256,104" />
+    <path android:fillColor="#FFF7E0" android:pathData="M249,77 L279,80 L277,86 L248,83 Z" />
+    <path android:fillColor="#FF3D47" android:pathData="M38,77 L53,75 L52,85 L38,87 Z" />
+
+    <!-- Side belt trim & door handles -->
+    <path android:fillColor="#22252A" android:pathData="M112,81 L124,81 L124,84 L112,84 Z" />
+    <path android:fillColor="#22252A" android:pathData="M168,81 L180,81 L180,84 L168,84 Z" />
+
+    <!-- Wheel arches -->
+    <path android:fillColor="#171A1E" android:pathData="M65,112 A23,23 0 1,1 111,112 Z" />
+    <path android:fillColor="#171A1E" android:pathData="M210,112 A23,23 0 1,1 256,112 Z" />
+
+    <!-- Classic 5-spoke silver alloy rims -->
+    <path android:fillColor="#15181C" android:pathData="M88,112 m-19,0 a19,19 0 1,0 38,0 a19,19 0 1,0 -38,0" />
+    <path android:fillColor="#D4DCE5" android:pathData="M88,112 m-12.5,0 a12.5,12.5 0 1,0 25,0 a12.5,12.5 0 1,0 -25,0" />
+    <path android:fillColor="#262C33" android:pathData="M88,112 L84,100 L92,100 Z M88,112 L99,107 L97,115 Z M88,112 L93,123 L85,123 Z M88,112 L77,118 L79,110 Z M88,112 L78,104 L85,101 Z" />
+    <path android:fillColor="#63707E" android:pathData="M88,112 m-3.5,0 a3.5,3.5 0 1,0 7,0 a3.5,3.5 0 1,0 -7,0" />
+
+    <path android:fillColor="#15181C" android:pathData="M233,112 m-19,0 a19,19 0 1,0 38,0 a19,19 0 1,0 -38,0" />
+    <path android:fillColor="#D4DCE5" android:pathData="M233,112 m-12.5,0 a12.5,12.5 0 1,0 25,0 a12.5,12.5 0 1,0 -25,0" />
+    <path android:fillColor="#262C33" android:pathData="M233,112 L229,100 L237,100 Z M233,112 L244,107 L242,115 Z M233,112 L238,123 L230,123 Z M233,112 L222,118 L224,110 Z M233,112 L223,104 L230,101 Z" />
+    <path android:fillColor="#63707E" android:pathData="M233,112 m-3.5,0 a3.5,3.5 0 1,0 7,0 a3.5,3.5 0 1,0 -7,0" />
 </vector>

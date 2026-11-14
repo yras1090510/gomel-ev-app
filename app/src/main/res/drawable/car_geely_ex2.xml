@@ -1,57 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
     android:width="320dp"
     android:height="150dp"
     android:viewportWidth="320"
     android:viewportHeight="150">
-    <!-- Floor shadow -->
+
+    <!-- Geely EX2 Pro: Glacier Sky Blue rounded modern EV hatchback -->
+    <path android:pathData="M42,126 C42,121 96,119 162,119 C228,119 278,121 278,126 C278,131 228,133 162,133 C96,133 42,131 42,126 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="radial"
+                android:centerX="160"
+                android:centerY="126"
+                android:gradientRadius="120">
+                <item android:color="#480A1E2E" android:offset="0.0" />
+                <item android:color="#1E0A1E2E" android:offset="0.65" />
+                <item android:color="#000A1E2E" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Main sculpted hatchback body -->
+    <path android:pathData="M49,95 L54,73 C58,56 76,47 104,45 L164,45 C195,46 218,58 238,75 L268,82 C276,84 281,92 279,104 L276,112 L46,112 C44,106 46,99 49,95 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="160"
+                android:startY="45"
+                android:endX="160"
+                android:endY="114">
+                <item android:color="#8ED2FA" android:offset="0.0" />
+                <item android:color="#61ACE0" android:offset="0.48" />
+                <item android:color="#397FB3" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Lower sculpted shadow crease -->
     <path
-        android:fillColor="#180F1413"
-        android:pathData="M34,124 C34,119 92,116 160,116 C228,116 286,119 286,124 C286,129 228,132 160,132 C92,132 34,129 34,124 Z" />
-    <!-- Lower splitter skirt -->
+        android:fillColor="#264C70"
+        android:fillAlpha="0.32"
+        android:pathData="M50,104 L276,104 L275,112 L47,112 Z" />
+
+    <!-- Satin silver rocker sill garnish -->
     <path
-        android:fillColor="#1C2225"
-        android:pathData="M48,110 L274,110 L271,116 L51,116 Z" />
-    <!-- Geely EX2 sleek urban hatchback body -->
+        android:fillColor="#DCEBF7"
+        android:pathData="M114,107 L206,107 L203,111 L117,111 Z" />
+
+    <!-- Greenhouse glass -->
+    <path android:pathData="M68,75 L82,54 C88,49 97,48 112,48 L158,48 C184,49 205,60 222,76 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="125"
+                android:startY="48"
+                android:endX="155"
+                android:endY="78">
+                <item android:color="#2E455C" android:offset="0.0" />
+                <item android:color="#192938" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- B-pillar divider & gloss wing mirror -->
     <path
-        android:fillColor="#F0F3F5"
-        android:pathData="M46,101 C46,84 53,67 74,47 C90,39 114,37 154,37 C192,37 216,44 242,67 L268,75 C277,79 279,92 275,108 L50,111 C46,110 46,105 46,101 Z" />
-    <!-- Soft lower door tonal shade -->
+        android:fillColor="#16222E"
+        android:pathData="M142,48 L149,48 L147,76 L140,76 Z" />
     <path
-        android:fillColor="#DFE5E9"
-        android:pathData="M56,95 L268,95 L268,109 L54,109 Z" />
-    <!-- Smoked seamless greenhouse -->
+        android:fillColor="#488EC2"
+        android:pathData="M204,70 L216,69 L217,77 L204,77 Z" />
+
+    <!-- Gloss roof highlight & shoulder crease -->
     <path
-        android:fillColor="#1E272B"
-        android:pathData="M82,48 C98,42 124,41 154,41 C188,41 210,48 232,69 L156,70 L78,70 C78,61 79,54 82,48 Z" />
-    <!-- Window pillar divider & door cut -->
+        android:fillColor="#DFF3FF"
+        android:fillAlpha="0.45"
+        android:pathData="M86,47 C124,45 162,45 190,50 C160,48 118,48 86,49 Z" />
     <path
-        android:strokeColor="#B8C2C8"
+        android:strokeColor="#B8E4FF"
         android:strokeWidth="1.4"
-        android:pathData="M148,41 L148,108 M206,70 L206,106" />
-    <!-- Signature slim horizontal LED blade -->
+        android:strokeAlpha="0.6"
+        android:pathData="M58,83 C112,86 184,86 244,82" />
+
+    <!-- Flush rounded door handles -->
     <path
-        android:fillColor="#4CE0B3"
-        android:pathData="M248,79 L275,81 L273,85 L245,83 Z" />
+        android:fillColor="#D4ECFA"
+        android:pathData="M112,85 L125,85 L124,87.5 L112,87.5 Z" />
     <path
-        android:fillColor="#D94B4B"
-        android:pathData="M47,73 L64,74 L63,79 L46,79 Z" />
-    <!-- Wheel arches + minimal 5-spoke aero wheels -->
+        android:fillColor="#D4ECFA"
+        android:pathData="M168,85 L181,85 L180,87.5 L168,87.5 Z" />
+
+    <!-- Front closed EV nose smile & C-DRL headlight -->
     <path
-        android:fillColor="#15191B"
-        android:pathData="M88,110 m-20,0 a20,20 0 1,0 40,0 a20,20 0 1,0 -40,0" />
+        android:fillColor="#244B6E"
+        android:fillAlpha="0.55"
+        android:pathData="M256,96 L277,94 L274,104 L256,104 Z" />
     <path
-        android:fillColor="#CBD4DA"
-        android:pathData="M88,110 m-12.5,0 a12.5,12.5 0 1,0 25,0 a12.5,12.5 0 1,0 -25,0" />
+        android:fillColor="#F0FBFF"
+        android:pathData="M243,80 C257,79 271,82 275,88 C264,89 250,86 243,80 Z" />
     <path
-        android:fillColor="#252E32"
-        android:pathData="M88,110 m-5,0 a5,5 0 1,0 10,0 a5,5 0 1,0 -10,0" />
+        android:fillColor="#5CE1E6"
+        android:pathData="M249,83 L271,86 L269,88 L248,85 Z" />
+
+    <!-- Rear wraparound hatch taillight -->
     <path
-        android:fillColor="#15191B"
-        android:pathData="M234,110 m-20,0 a20,20 0 1,0 40,0 a20,20 0 1,0 -40,0" />
+        android:fillColor="#E63946"
+        android:pathData="M48,79 L62,77 L61,85 L47,87 Z" />
+
+    <!-- Wheel arches -->
     <path
-        android:fillColor="#CBD4DA"
-        android:pathData="M234,110 m-12.5,0 a12.5,12.5 0 1,0 25,0 a12.5,12.5 0 1,0 -25,0" />
+        android:fillColor="#16202A"
+        android:pathData="M71,112 A24,24 0 1,1 119,112 Z" />
     <path
-        android:fillColor="#252E32"
-        android:pathData="M234,110 m-5,0 a5,5 0 1,0 10,0 a5,5 0 1,0 -10,0" />
+        android:fillColor="#16202A"
+        android:pathData="M201,112 A24,24 0 1,1 249,112 Z" />
+
+    <!-- Rear Wheel: 5-petal bright aero alloy -->
+    <path android:fillColor="#181F26" android:pathData="M95,112 m-20,0 a20,20 0 1,0 40,0 a20,20 0 1,0 -40,0" />
+    <path android:fillColor="#D8E5F0" android:pathData="M95,112 m-13.5,0 a13.5,13.5 0 1,0 27,0 a13.5,13.5 0 1,0 -27,0" />
+    <path android:fillColor="#233240" android:pathData="M95,112 L91,100 L99,100 Z M95,112 L106,106 L104,114 Z M95,112 L101,123 L94,124 Z M95,112 L84,120 L86,113 Z M95,112 L84,105 L91,102 Z" />
+    <path android:fillColor="#61ACE0" android:pathData="M95,112 m-3.5,0 a3.5,3.5 0 1,0 7,0 a3.5,3.5 0 1,0 -7,0" />
+
+    <!-- Front Wheel -->
+    <path android:fillColor="#181F26" android:pathData="M225,112 m-20,0 a20,20 0 1,0 40,0 a20,20 0 1,0 -40,0" />
+    <path android:fillColor="#D8E5F0" android:pathData="M225,112 m-13.5,0 a13.5,13.5 0 1,0 27,0 a13.5,13.5 0 1,0 -27,0" />
+    <path android:fillColor="#233240" android:pathData="M225,112 L221,100 L229,100 Z M225,112 L236,106 L234,114 Z M225,112 L231,123 L224,124 Z M225,112 L214,120 L216,113 Z M225,112 L214,105 L221,102 Z" />
+    <path android:fillColor="#61ACE0" android:pathData="M225,112 m-3.5,0 a3.5,3.5 0 1,0 7,0 a3.5,3.5 0 1,0 -7,0" />
 </vector>

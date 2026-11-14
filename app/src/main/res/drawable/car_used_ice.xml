@@ -1,47 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
     android:width="320dp"
     android:height="150dp"
     android:viewportWidth="320"
     android:viewportHeight="150">
-    <!-- Floor shadow -->
+
+    <!-- Used ICE (Vesta / Rio X / Polo ДВС): Metallic Silver 3-box sedan + stacked secondary ghost car -->
+    <path android:pathData="M32,126 C32,121 90,119 160,119 C230,119 288,121 288,126 C288,131 230,133 160,133 C90,133 32,131 32,126 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="radial"
+                android:centerX="160"
+                android:centerY="126"
+                android:gradientRadius="130">
+                <item android:color="#46141A21" android:offset="0.0" />
+                <item android:color="#1C141A21" android:offset="0.65" />
+                <item android:color="#00141A21" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Subtle secondary ghost fleet sedan offset above-left (signifying used ICE fleet) -->
     <path
-        android:fillColor="#180F1413"
-        android:pathData="M32,124 C32,119 92,116 160,116 C228,116 288,119 288,124 C288,129 228,132 160,132 C92,132 32,129 32,124 Z" />
-    <!-- Lower rocker -->
+        android:fillColor="#7B8C9E"
+        android:fillAlpha="0.34"
+        android:pathData="M56,92 L62,68 L94,63 L114,39 L186,39 C208,40 226,52 242,67 L280,74 L278,92 Z" />
+
+    <!-- Foreground Metallic Silver 3-box sedan -->
+    <path android:pathData="M36,104 L40,74 L74,69 L97,45 L172,45 C196,46 216,58 235,73 L278,79 C284,81 286,91 283,104 L279,112 L36,112 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="160"
+                android:startY="45"
+                android:endX="160"
+                android:endY="112">
+                <item android:color="#D2DCE6" android:offset="0.0" />
+                <item android:color="#9AA8B8" android:offset="0.52" />
+                <item android:color="#616F7E" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <path android:fillColor="#1E252D" android:pathData="M36,104 L282,104 L279,112 L36,112 Z" />
+    <!-- ICE dual exhaust tip -->
+    <path android:fillColor="#B8C4D0" android:pathData="M31,106 L38,106 L38,110 L31,110 Z" />
+
+    <!-- Greenhouse & chrome beltline -->
+    <path android:pathData="M83,70 L102,48 L168,48 C189,49 208,59 224,72 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="140"
+                android:startY="48"
+                android:endX="162"
+                android:endY="72">
+                <item android:color="#313C47" android:offset="0.0" />
+                <item android:color="#151C24" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <path android:fillColor="#181F26" android:pathData="M142,48 L149,48 L148,72 L141,72 Z" />
+    <path android:fillColor="#EBF2F7" android:pathData="M80,71 L226,71 L226,73.5 L80,73.5 Z" />
+
+    <!-- Combustion grille & halogen amber-accent headlights -->
+    <path android:fillColor="#1C2229" android:pathData="M262,84 L284,83 L282,103 L260,103 Z" />
+    <path android:fillColor="#FFF8E3" android:pathData="M248,76 L278,79 L276,84 L247,81 Z" />
+    <path android:fillColor="#F59E0B" android:pathData="M248,80 L254,80.5 L254,83 L248,82.5 Z" />
+    <path android:fillColor="#E63946" android:pathData="M39,76 L55,74 L54,83 L39,85 Z" />
+
+    <path android:fillColor="#3A4552" android:pathData="M114,81 L126,81 L126,84 L114,84 Z" />
+    <path android:fillColor="#3A4552" android:pathData="M170,81 L182,81 L182,84 L170,84 Z" />
+
+    <!-- Wheel arches -->
+    <path android:fillColor="#171D24" android:pathData="M65,112 A23,23 0 1,1 111,112 Z" />
+    <path android:fillColor="#171D24" android:pathData="M208,112 A23,23 0 1,1 254,112 Z" />
+
+    <!-- Multi-spoke classic silver alloy rims -->
+    <path android:fillColor="#161B20" android:pathData="M88,112 m-19,0 a19,19 0 1,0 38,0 a19,19 0 1,0 -38,0" />
+    <path android:fillColor="#D4DEE8" android:pathData="M88,112 m-12.5,0 a12.5,12.5 0 1,0 25,0 a12.5,12.5 0 1,0 -25,0" />
     <path
-        android:fillColor="#1B2023"
-        android:pathData="M45,109 L275,109 L272,115 L48,115 Z" />
-    <!-- Timeless European compact sedan/hatchback (Polo/Golf/Emgrand/Accent style) -->
+        android:strokeColor="#3A4552"
+        android:strokeWidth="1.9"
+        android:pathData="M88,100 L88,124 M76,112 L100,112 M79,103 L97,121 M79,121 L97,103" />
+    <path android:fillColor="#5B6775" android:pathData="M88,112 m-3.5,0 a3.5,3.5 0 1,0 7,0 a3.5,3.5 0 1,0 -7,0" />
+
+    <path android:fillColor="#161B20" android:pathData="M231,112 m-19,0 a19,19 0 1,0 38,0 a19,19 0 1,0 -38,0" />
+    <path android:fillColor="#D4DEE8" android:pathData="M231,112 m-12.5,0 a12.5,12.5 0 1,0 25,0 a12.5,12.5 0 1,0 -25,0" />
     <path
-        android:fillColor="#DCE0E4"
-        android:pathData="M43,96 C43,80 48,66 64,53 C82,40 112,37 152,37 C186,37 210,47 234,68 L270,75 C278,79 279,95 274,109 L46,109 C43,106 43,101 43,96 Z" />
-    <path
-        android:fillColor="#C9CFD5"
-        android:pathData="M52,93 L269,93 L268,108 L50,108 Z" />
-    <path
-        android:fillColor="#21272B"
-        android:pathData="M78,51 C96,43 122,42 152,42 C184,42 206,50 226,68 L74,68 C74,60 75,55 78,51 Z" />
-    <path
-        android:strokeColor="#A6AEB5"
-        android:strokeWidth="1.4"
-        android:pathData="M146,42 L146,108" />
-    <path
-        android:fillColor="#E9EEF2"
-        android:pathData="M258,76 L276,78 L275,85 L256,84 Z" />
-    <path
-        android:fillColor="#D94B4B"
-        android:pathData="M44,71 L58,72 L57,80 L43,80 Z" />
-    <!-- Alloy wheels -->
-    <path
-        android:fillColor="#15191B"
-        android:pathData="M88,110 m-19,0 a19,19 0 1,0 38,0 a19,19 0 1,0 -38,0" />
-    <path
-        android:fillColor="#C5CCD2"
-        android:pathData="M88,110 m-11.5,0 a11.5,11.5 0 1,0 23,0 a11.5,11.5 0 1,0 -23,0" />
-    <path
-        android:fillColor="#15191B"
-        android:pathData="M232,110 m-19,0 a19,19 0 1,0 38,0 a19,19 0 1,0 -38,0" />
-    <path
-        android:fillColor="#C5CCD2"
-        android:pathData="M232,110 m-11.5,0 a11.5,11.5 0 1,0 23,0 a11.5,11.5 0 1,0 -23,0" />
+        android:strokeColor="#3A4552"
+        android:strokeWidth="1.9"
+        android:pathData="M231,100 L231,124 M219,112 L243,112 M222,103 L240,121 M222,121 L240,103" />
+    <path android:fillColor="#5B6775" android:pathData="M231,112 m-3.5,0 a3.5,3.5 0 1,0 7,0 a3.5,3.5 0 1,0 -7,0" />
 </vector>

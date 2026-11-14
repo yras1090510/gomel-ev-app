@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="320dp"
+    android:height="150dp"
+    android:viewportWidth="320"
+    android:viewportHeight="150">
+
+    <!-- Geely EX2 Max 410: Two-tone Aurora Emerald + Gloss Black Sport Roof -->
+    <path android:pathData="M38,126 C38,121 94,119 160,119 C226,119 282,121 282,126 C282,131 226,133 160,133 C94,133 38,131 38,126 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="radial"
+                android:centerX="160"
+                android:centerY="126"
+                android:gradientRadius="124">
+                <item android:color="#4D071F19" android:offset="0.0" />
+                <item android:color="#22071F19" android:offset="0.65" />
+                <item android:color="#00071F19" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Gloss black contrast roof & rear wing spoiler -->
+    <path android:pathData="M48,73 L64,47 C72,43 90,42 114,42 L168,42 C196,43 218,56 237,74 L63,75 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="140"
+                android:startY="42"
+                android:endX="140"
+                android:endY="75">
+                <item android:color="#374350" android:offset="0.0" />
+                <item android:color="#171E26" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <path
+        android:fillColor="#0D1116"
+        android:pathData="M48,54 L68,45 L72,49 L52,58 Z" />
+    <path
+        android:strokeColor="#A7F3D0"
+        android:strokeWidth="1.2"
+        android:strokeAlpha="0.45"
+        android:pathData="M66,47 C90,42 135,42 168,43 C194,44 214,54 232,71" />
+
+    <!-- Aurora Emerald metallic lower body -->
+    <path android:pathData="M46,96 L53,73 L237,73 L271,81 C279,83 283,91 281,103 L278,112 L44,112 C42,106 43,100 46,96 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="160"
+                android:startY="72"
+                android:endX="160"
+                android:endY="114">
+                <item android:color="#5CF0C8" android:offset="0.0" />
+                <item android:color="#33B895" android:offset="0.5" />
+                <item android:color="#186E59" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Sport black lower splitter + champagne bronze rocker blade -->
+    <path
+        android:fillColor="#111A1E"
+        android:pathData="M45,105 L279,105 L277,112 L44,112 Z" />
+    <path
+        android:fillColor="#D9B372"
+        android:pathData="M116,107 L204,107 L201,111 L119,111 Z" />
+
+    <!-- Smoked coupe windows -->
+    <path
+        android:fillColor="#152329"
+        android:pathData="M71,73 L84,53 C90,48 100,47 115,47 L160,47 C185,48 205,59 221,73 Z" />
+    <path
+        android:fillColor="#0C1317"
+        android:pathData="M142,47 L150,47 L148,73 L140,73 Z" />
+    <path
+        android:fillColor="#0C1317"
+        android:pathData="M203,69 L217,68 L218,75 L203,75 Z" />
+
+    <!-- Sharp shoulder highlight & flush black handles -->
+    <path
+        android:strokeColor="#B8FFEE"
+        android:strokeWidth="1.5"
+        android:strokeAlpha="0.65"
+        android:pathData="M56,82 C112,85 186,85 247,80" />
+    <path android:fillColor="#132622" android:pathData="M112,84 L126,84 L125,87 L112,87 Z" />
+    <path android:fillColor="#132622" android:pathData="M167,84 L181,84 L180,87 L167,87 Z" />
+
+    <!-- Sport front grille & glowing mint-ice LED signature -->
+    <path
+        android:fillColor="#0E1719"
+        android:pathData="M254,95 L280,93 L277,104 L254,104 Z" />
+    <path
+        android:fillColor="#E8FFFF"
+        android:pathData="M241,79 C257,78 272,81 277,87 C266,89 250,86 241,79 Z" />
+    <path
+        android:fillColor="#38F2C0"
+        android:pathData="M247,82 L273,85 L271,87.5 L246,84.5 Z" />
+    <path
+        android:fillColor="#FF3D4E"
+        android:pathData="M46,79 L63,76 L62,84 L45,86 Z" />
+
+    <!-- Wheel wells -->
+    <path android:fillColor="#0E1517" android:pathData="M68,112 A24.5,24.5 0 1,1 117,112 Z" />
+    <path android:fillColor="#0E1517" android:pathData="M200,112 A24.5,24.5 0 1,1 249,112 Z" />
+
+    <!-- Dark diamond-cut sport twin-spoke rims + emerald calipers -->
+    <path android:fillColor="#12181C" android:pathData="M92.5,112 m-20,0 a20,20 0 1,0 40,0 a20,20 0 1,0 -40,0" />
+    <path android:fillColor="#2C3942" android:pathData="M92.5,112 m-13.5,0 a13.5,13.5 0 1,0 27,0 a13.5,13.5 0 1,0 -27,0" />
+    <path android:fillColor="#2EF2BE" android:pathData="M82,107 C80,110 80,114 82,117 L85,115 C84,113 84,111 85,109 Z" />
+    <path
+        android:strokeColor="#E2ECF2"
+        android:strokeWidth="2.1"
+        android:pathData="M92.5,99 L92.5,125 M80,107 L105,117 M80,117 L105,107" />
+    <path android:fillColor="#141B20" android:pathData="M92.5,112 m-4,0 a4,4 0 1,0 8,0 a4,4 0 1,0 -8,0" />
+
+    <path android:fillColor="#12181C" android:pathData="M224.5,112 m-20,0 a20,20 0 1,0 40,0 a20,20 0 1,0 -40,0" />
+    <path android:fillColor="#2C3942" android:pathData="M224.5,112 m-13.5,0 a13.5,13.5 0 1,0 27,0 a13.5,13.5 0 1,0 -27,0" />
+    <path android:fillColor="#2EF2BE" android:pathData="M214,107 C212,110 212,114 214,117 L217,115 C216,113 216,111 217,109 Z" />
+    <path
+        android:strokeColor="#E2ECF2"
+        android:strokeWidth="2.1"
+        android:pathData="M224.5,99 L224.5,125 M212,107 L237,117 M212,117 L237,107" />
+    <path android:fillColor="#141B20" android:pathData="M224.5,112 m-4,0 a4,4 0 1,0 8,0 a4,4 0 1,0 -8,0" />
+</vector>
