@@ -1,7 +1,7 @@
 {
-  "versionCode": 1,
-  "versionName": "1.0.0",
-  "changelogRu": "Релиз Gomel EV v1.0.0: 15 авто, 21 дилер Гомеля, 45 банковских/лизинговых программ, ПДН-скоринг, прогноз до сентября 2027 и синхронизация НБРБ / Myfin.",
-  "apkUrl": "https://github.com/yras1090510/gomel-ev-app/releases/download/v1.0.0/GomelEV-v1.0.0.apk",
+  "versionCode": 2,
+  "versionName": "2.0.0",
+  "changelogRu": "Релиз Gomel EV v2.0.0: Material 3 Expressive, тёмная тема, центрированное меню на Fold, нижняя панель на внешнем экране, 15 уникальных иллюстраций авто, фикс обрезания кнопок и новая иконка.",
+  "apkUrl": "https://github.com/yras1090510/gomel-ev-app/releases/download/v2.0.0/GomelEV-v2.0.0.apk",
   "usdBynRate": 3.0026
 }

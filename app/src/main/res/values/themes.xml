@@ -1,5 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="Theme.GomelEV" parent="android:Theme.Material.Light.NoActionBar">
-        <item name="android:windowBackground">#FAFAFA</item>
+        <item name="android:windowBackground">#F4F7F6</item>
     </style>
 </resources>

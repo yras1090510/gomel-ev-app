@@ -45,18 +45,25 @@ jobs:
 
       - name: Prepare release artifact
         run: |
-          cp app/build/outputs/apk/release/app-release.apk GomelEV-v1.0.0.apk
-          ls -lh GomelEV-v1.0.0.apk
+          cp app/build/outputs/apk/release/app-release.apk GomelEV-v2.0.0.apk
+          ls -lh GomelEV-v2.0.0.apk
 
-      - name: Publish GitHub Release v1.0.0
+      - name: Publish GitHub Release v2.0.0
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v1.0.0
-          name: Gomel EV v1.0.0
+          tag_name: v2.0.0
+          name: Gomel EV v2.0.0 (Material 3 Expressive)
           generate_release_notes: false
           body: |
-            Релиз нативного Android-приложения **Gomel EV v1.0.0** (APK с поддержкой Galaxy Z Fold / Material 3 Adaptive).
+            Релиз нативного Android-приложения **Gomel EV v2.0.0** по гайдлайнам Google Material 3 Expressive для Galaxy Z Fold и обычных смартфонов:
 
-            Скачайте файл `GomelEV-v1.0.0.apk` ниже и подтвердите установку из браузера на смартфоне.
+            - Адаптивная навигация: на узком внешнем экране панель **снизу**, в развёрнутом режиме Fold меню слева **посередине экрана** (`NavigationRail`).
+            - Адаптивная разметка `FlowRow` — номера телефонов дилеров, фильтры и кнопки больше не обрезаются.
+            - **15 уникальных иллюстраций автомобилей** с factory-окраской, тенями и детализацией кузова (включая `Geely EX2 Max`, `BYD Yuan UP`, `JAC E30X` б/у).
+            - Полноценная **тёмная и светлая темы** (`Авто / Светлая / Тёмная`), весенняя физика анимаций (`ExpressiveMotion`) и студийные градиенты.
+            - Новая адаптивная иконка Material 3 (включая `monochrome` для тематических иконок).
+            - Убрана техническая карточка GitHub/OTA из интерфейса.
+
+            Скачайте `GomelEV-v2.0.0.apk` ниже и подтвердите установку на смартфоне.
           files: |
-            GomelEV-v1.0.0.apk
+            GomelEV-v2.0.0.apk

@@ -8,6 +8,12 @@ enum class DealerCategory(val labelRu: String) {
     IMPORTER("Под заказ")
 }
 
+enum class AppThemeMode(val labelRu: String) {
+    SYSTEM("Авто"),
+    LIGHT("Светлая"),
+    DARK("Тёмная")
+}
+
 enum class StockStatus(val labelRu: String) {
     IN_GOMEL("В наличии в Гомеле"),
     RB_WAREHOUSE("Склад сети / РБ"),
@@ -164,18 +170,8 @@ data class MarketSnapshot(
     val lastFullSyncEpochMs: Long? = null,
     val isSyncing: Boolean = false,
     val syncLogs: List<SyncSourceLog> = emptyList(),
-    val appUpdateManifestUrl: String = DEFAULT_UPDATE_MANIFEST_URL,
-    val remoteVersionCode: Int? = null,
-    val remoteVersionName: String? = null,
-    val remoteChangelog: String? = null,
-    val remoteApkUrl: String? = null,
     val updateStatusMessage: String? = null
-) {
-    companion object {
-        const val DEFAULT_UPDATE_MANIFEST_URL =
-            "https://raw.githubusercontent.com/yras1090510/gomel-ev-app/main/manifest.json"
-    }
-}
+)
 
 data class MacroDriver2027(
     val title: String,

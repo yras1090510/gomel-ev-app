@@ -1,6 +1,7 @@
 package com.gomelev.app.data
 
 import android.content.Context
+import com.gomelev.app.model.AppThemeMode
 import com.gomelev.app.model.CarOffer
 import com.gomelev.app.model.CreditProgram
 import com.gomelev.app.model.DealerEntity
@@ -12,7 +13,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import org.json.JSONArray
 import org.json.JSONObject
 
 class CatalogRepository(private val appContext: Context) {
@@ -41,6 +41,15 @@ class CatalogRepository(private val appContext: Context) {
     private val _autoSyncEnabled = MutableStateFlow(prefs.getBoolean("auto_sync_enabled", true))
     val autoSyncEnabled: StateFlow<Boolean> = _autoSyncEnabled.asStateFlow()
 
+    private val _themeMode = MutableStateFlow(restoreThemeMode())
+    val themeMode: StateFlow<AppThemeMode> = _themeMode.asStateFlow()
+
+    private fun restoreThemeMode(): AppThemeMode {
+        val raw = prefs.getString("theme_mode", AppThemeMode.SYSTEM.name)
+        return runCatching { AppThemeMode.valueOf(raw ?: AppThemeMode.SYSTEM.name) }
+            .getOrDefault(AppThemeMode.SYSTEM)
+    }
+
     private fun restoreProfile(): UserFinanceProfile {
         return UserFinanceProfile(
             salaryByn = prefs.getFloat("salary_byn", 2000f).toDouble(),
@@ -59,11 +68,7 @@ class CatalogRepository(private val appContext: Context) {
             usdBynRate = prefs.getFloat("usd_byn_rate", 3.0026f).toDouble(),
             nbrbDateLabel = prefs.getString("nbrb_date_label", "13.11.2026 (база)") ?: "13.11.2026 (база)",
             rvsrPct = prefs.getFloat("rvsr_pct", 16.94f).toDouble(),
-            lastFullSyncEpochMs = lastSync,
-            appUpdateManifestUrl = prefs.getString(
-                "manifest_url",
-                MarketSnapshot.DEFAULT_UPDATE_MANIFEST_URL
-            ) ?: MarketSnapshot.DEFAULT_UPDATE_MANIFEST_URL
+            lastFullSyncEpochMs = lastSync
         )
     }
 
@@ -112,9 +117,9 @@ class CatalogRepository(private val appContext: Context) {
         prefs.edit().putBoolean("auto_sync_enabled", enabled).apply()
     }
 
-    fun updateManifestUrl(url: String) {
-        _snapshot.update { it.copy(appUpdateManifestUrl = url) }
-        prefs.edit().putString("manifest_url", url).apply()
+    fun setThemeMode(mode: AppThemeMode) {
+        _themeMode.value = mode
+        prefs.edit().putString("theme_mode", mode.name).apply()
     }
 
     suspend fun syncLiveWebData() {
@@ -188,28 +193,6 @@ class CatalogRepository(private val appContext: Context) {
                     updateStatusMessage = "Ошибка синхронизации: ${t.message}"
                 )
             }
-        }
-    }
-
-    suspend fun checkAppRemoteUpdate() {
-        val url = _snapshot.value.appUpdateManifestUrl.trim()
-        _snapshot.update { it.copy(updateStatusMessage = "Проверка удалённого манифеста...") }
-        val res = syncEngine.checkRemoteManifest(url)
-        _snapshot.update {
-            it.copy(
-                remoteVersionCode = res.remoteVersionCode,
-                remoteVersionName = res.remoteVersionName,
-                remoteChangelog = res.changelogRu,
-                remoteApkUrl = res.apkUrl,
-                usdBynRate = res.remoteUsdRate ?: it.usdBynRate,
-                updateStatusMessage = res.statusMessage
-            )
-        }
-    }
-
-    suspend fun installRemoteApk(apkUrl: String) {
-        syncEngine.downloadAndInstallApk(appContext, apkUrl) { msg ->
-            _snapshot.update { it.copy(updateStatusMessage = msg) }
         }
     }
 }
