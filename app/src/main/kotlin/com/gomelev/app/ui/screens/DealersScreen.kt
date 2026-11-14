@@ -1,13 +1,16 @@
 package com.gomelev.app.ui.screens
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -25,9 +28,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.automirrored.rounded.OpenInNew
 import androidx.compose.material.icons.rounded.Call
 import androidx.compose.material.icons.rounded.LocationOn
-import androidx.compose.material.icons.rounded.OpenInNew
 import androidx.compose.material.icons.rounded.Schedule
 import androidx.compose.material3.Button
 import androidx.compose.material3.FilterChip
@@ -59,6 +62,7 @@ import com.gomelev.app.ui.components.Formatters
 import com.gomelev.app.ui.components.dialPhone
 import com.gomelev.app.ui.components.openExternalUrl
 import com.gomelev.app.ui.components.openGeoLocation
+import com.gomelev.app.ui.theme.ExpressiveMotion
 import com.gomelev.app.ui.theme.LocalSemanticColors
 
 private enum class DealerFilter(val label: String) {
@@ -120,16 +124,18 @@ fun DealersScreen(
             ) {
                 item {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text("Все дилеры и автохаусы Гомеля", style = MaterialTheme.typography.headlineMedium)
-                        Row(
-                            modifier = Modifier.horizontalScroll(rememberScrollState()),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        Text("Все дилеры и автохаусы Гомеля", style = MaterialTheme.typography.headlineSmall)
+                        @OptIn(ExperimentalLayoutApi::class)
+                        FlowRow(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
                             DealerFilter.entries.forEach { f ->
                                 FilterChip(
                                     selected = filter == f,
                                     onClick = { filter = f },
-                                    label = { Text(f.label, style = MaterialTheme.typography.labelLarge) }
+                                    label = { Text(f.label, style = MaterialTheme.typography.labelMedium) }
                                 )
                             }
                         }
@@ -169,17 +175,29 @@ private fun DealerRowCard(
     onClick: () -> Unit
 ) {
     val sem = LocalSemanticColors.current
+    val borderColor by animateColorAsState(
+        targetValue = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
+        animationSpec = ExpressiveMotion.colorTween,
+        label = "dealerBorder"
+    )
+    val borderWidth by animateDpAsState(
+        targetValue = if (selected) 1.8.dp else 0.8.dp,
+        animationSpec = ExpressiveMotion.fastSpatial(),
+        label = "dealerBorderW"
+    )
+    val bg by animateColorAsState(
+        targetValue = if (selected) MaterialTheme.colorScheme.surfaceContainerLow else MaterialTheme.colorScheme.surfaceContainerLowest,
+        animationSpec = ExpressiveMotion.colorTween,
+        label = "dealerBg"
+    )
     Surface(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(18.dp))
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(18.dp),
-        color = if (selected) MaterialTheme.colorScheme.surfaceContainerLow else MaterialTheme.colorScheme.surfaceContainerLowest,
-        border = BorderStroke(
-            width = if (selected) 1.5.dp else 0.8.dp,
-            color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant
-        )
+        color = bg,
+        border = BorderStroke(width = borderWidth, color = borderColor)
     ) {
         Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Row(
@@ -310,14 +328,16 @@ private fun DealerDetailPane(
                     }
                 }
 
-                Row(
-                    modifier = Modifier.horizontalScroll(rememberScrollState()),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                @OptIn(ExperimentalLayoutApi::class)
+                FlowRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     dealer.phones.forEach { phone ->
                         Button(
                             onClick = { dialPhone(context, phone) },
-                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
+                            contentPadding = PaddingValues(horizontal = 14.dp, vertical = 8.dp)
                         ) {
                             Icon(Icons.Rounded.Call, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(Modifier.width(6.dp))
@@ -326,9 +346,14 @@ private fun DealerDetailPane(
                     }
                 }
 
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                @OptIn(ExperimentalLayoutApi::class)
+                FlowRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
                     OutlinedButton(onClick = { openExternalUrl(context, dealer.websiteUrl) }) {
-                        Icon(Icons.Rounded.OpenInNew, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Icon(Icons.AutoMirrored.Rounded.OpenInNew, contentDescription = null, modifier = Modifier.size(16.dp))
                         Spacer(Modifier.width(6.dp))
                         Text("Открыть сайт")
                     }

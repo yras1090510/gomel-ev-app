@@ -1,11 +1,6 @@
 package com.gomelev.app.network
 
-import android.content.Context
-import android.content.Intent
-import android.net.Uri
 import android.util.Log
-import androidx.core.content.FileProvider
-import com.gomelev.app.BuildConfig
 import com.gomelev.app.model.CarOffer
 import com.gomelev.app.model.DealerEntity
 import com.gomelev.app.model.SyncSourceLog
@@ -17,7 +12,6 @@ import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONObject
-import java.io.File
 import java.util.concurrent.TimeUnit
 
 data class NbrbSyncResult(
@@ -41,16 +35,6 @@ data class DealerSyncPatch(
     val latencyMs: Long,
     val hint: String?,
     val epochMs: Long
-)
-
-data class RemoteUpdateCheckResult(
-    val ok: Boolean,
-    val remoteVersionCode: Int? = null,
-    val remoteVersionName: String? = null,
-    val changelogRu: String? = null,
-    val apkUrl: String? = null,
-    val remoteUsdRate: Double? = null,
-    val statusMessage: String
 )
 
 class LiveWebSyncEngine {
@@ -303,82 +287,5 @@ class LiveWebSyncEngine {
         val plain = html.replace(Regex("<[^>]+>"), " ").replace(Regex("\\s+"), " ")
         val rates = Regex("""(\d{1,2}[.,]\d{1,2})\s*%""").findAll(plain).take(2).map { it.value }.toList()
         return if (rates.isNotEmpty()) "Упомянуты ставки: ${rates.joinToString(", ")}" else "Страница банка доступна"
-    }
-
-    suspend fun checkRemoteManifest(manifestUrl: String): RemoteUpdateCheckResult = withContext(Dispatchers.IO) {
-        if (manifestUrl.isBlank()) {
-            return@withContext RemoteUpdateCheckResult(false, statusMessage = "URL манифеста пустой")
-        }
-        val (code, latency, body) = fetchText(manifestUrl)
-        if (code != 200 || body == null) {
-            return@withContext RemoteUpdateCheckResult(
-                ok = false,
-                statusMessage = "Сервер обновлений вернул HTTP ${code ?: "нет ответа"} (${latency}мс). " +
-                    "Локальная база от 13.11.2026 и прямой парсинг сайтов работают напрямую."
-            )
-        }
-        try {
-            val json = JSONObject(body)
-            val vCode = json.optInt("versionCode", BuildConfig.VERSION_CODE)
-            val vName = json.optString("versionName", BuildConfig.VERSION_NAME)
-            val changelog = json.optString("changelogRu", "")
-            val apkUrl = json.optString("apkUrl", "").takeIf { it.isNotBlank() }
-            val usd = json.optDouble("usdBynRate", -1.0).takeIf { it > 0.5 }
-            val msg = if (vCode > BuildConfig.VERSION_CODE && apkUrl != null) {
-                "Доступна новая версия $vName (сборка $vCode)!"
-            } else {
-                "Установлена актуальная версия ${BuildConfig.VERSION_NAME} (${latency}мс)"
-            }
-            RemoteUpdateCheckResult(
-                ok = true,
-                remoteVersionCode = vCode,
-                remoteVersionName = vName,
-                changelogRu = changelog,
-                apkUrl = apkUrl,
-                remoteUsdRate = usd,
-                statusMessage = msg
-            )
-        } catch (t: Throwable) {
-            RemoteUpdateCheckResult(false, statusMessage = "Ошибка разбора JSON манифеста: ${t.message}")
-        }
-    }
-
-    suspend fun downloadAndInstallApk(
-        context: Context,
-        apkUrl: String,
-        onStatus: (String) -> Unit
-    ) = withContext(Dispatchers.IO) {
-        try {
-            onStatus("Скачивание APK обновления...")
-            val updatesDir = File(context.cacheDir, "updates").apply { mkdirs() }
-            val outFile = File(updatesDir, "GomelEV-update.apk")
-            val req = Request.Builder().url(apkUrl).header("User-Agent", userAgent).build()
-            client.newCall(req).execute().use { resp ->
-                if (!resp.isSuccessful) {
-                    onStatus("Ошибка загрузки APK: HTTP ${resp.code}")
-                    return@withContext
-                }
-                val bytes = resp.body?.bytes() ?: run {
-                    onStatus("Пустой ответ от сервера APK")
-                    return@withContext
-                }
-                outFile.writeBytes(bytes)
-            }
-            withContext(Dispatchers.Main) {
-                onStatus("Запуск установщика Android...")
-                val uri: Uri = FileProvider.getUriForFile(
-                    context,
-                    "${context.packageName}.fileprovider",
-                    outFile
-                )
-                val intent = Intent(Intent.ACTION_VIEW).apply {
-                    setDataAndType(uri, "application/vnd.android.package-archive")
-                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
-                }
-                context.startActivity(intent)
-            }
-        } catch (t: Throwable) {
-            onStatus("Не удалось загрузить APK: ${t.message}")
-        }
     }
 }

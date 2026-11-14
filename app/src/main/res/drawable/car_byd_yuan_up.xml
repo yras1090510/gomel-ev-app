@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="320dp"
+    android:height="150dp"
+    android:viewportWidth="320"
+    android:viewportHeight="150">
+
+    <!-- BYD Yuan UP: Modern angular Dragon-Face Urban B-SUV (NO spare pod) in Sage Lime -->
+    <path android:pathData="M38,126 C38,121 94,119 160,119 C226,119 282,121 282,126 C282,131 226,133 160,133 C94,133 38,131 38,126 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="radial"
+                android:centerX="160"
+                android:centerY="126"
+                android:gradientRadius="124">
+                <item android:color="#4A11240C" android:offset="0.0" />
+                <item android:color="#1E11240C" android:offset="0.65" />
+                <item android:color="#0011240C" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Sleek angular crossover body (clean hatch, zero spare tire) -->
+    <path android:pathData="M46,96 L52,70 L68,44 L178,43 C200,44 218,57 234,72 L272,77 C279,79 283,88 281,102 L277,112 L44,112 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="162"
+                android:startY="43"
+                android:endX="162"
+                android:endY="114">
+                <item android:color="#A7E084" android:offset="0.0" />
+                <item android:color="#78BA54" android:offset="0.52" />
+                <item android:color="#49822D" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Floating blacked-out roof trim + signature diagonal dark C-pillar fin -->
+    <path
+        android:fillColor="#18211E"
+        android:pathData="M53,69 L68,44 L86,44 L73,70 Z" />
+    <path
+        android:fillColor="#1A2226"
+        android:pathData="M45,103 L278,103 L277,112 L44,112 Z" />
+    <!-- Signature jagged angular Yuan UP grey/titanium armor sill insert -->
+    <path
+        android:fillColor="#C6D1CC"
+        android:pathData="M118,98 L198,98 L204,108 L113,108 Z" />
+    <path
+        android:fillColor="#2D3835"
+        android:pathData="M124,101 L194,101 L196,105 L122,105 Z" />
+
+    <!-- Sleek blacked-out Dragon-Face visor + crisp LED blades -->
+    <path
+        android:fillColor="#141C1A"
+        android:pathData="M242,75 L278,78 L279,84 L244,82 Z" />
+    <path
+        android:fillColor="#F4FFE8"
+        android:pathData="M246,77 L274,80 L273,82.5 L245,79.5 Z" />
+    <path
+        android:fillColor="#161E1D"
+        android:pathData="M259,92 L281,90 L278,103 L258,103 Z" />
+
+    <!-- Angular geometric windows -->
+    <path android:pathData="M78,70 L90,48 L175,47 C192,48 206,58 220,70 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="135"
+                android:startY="47"
+                android:endX="155"
+                android:endY="72">
+                <item android:color="#2E3F3B" android:offset="0.0" />
+                <item android:color="#16211F" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <path android:fillColor="#141C1A" android:pathData="M144,47 L152,47 L150,70 L142,70 Z" />
+    <path android:fillColor="#1E2825" android:pathData="M206,66 L218,65 L219,73 L206,73 Z" />
+
+    <!-- Recessed semi-flush handles & strong fender creases -->
+    <path android:fillColor="#E4F7D8" android:fillAlpha="0.85" android:pathData="M114,82 L127,82 L126,85 L114,85 Z" />
+    <path android:fillColor="#E4F7D8" android:fillAlpha="0.85" android:pathData="M168,82 L181,82 L180,85 L168,85 Z" />
+    <path android:fillColor="#FF4252" android:pathData="M48,74 L63,72 L62,80 L47,82 Z" />
+
+    <!-- Wheel arches -->
+    <path android:fillColor="#151D1B" android:pathData="M68,112 A25,25 0 1,1 118,112 Z" />
+    <path android:fillColor="#151D1B" android:pathData="M200,112 A25,25 0 1,1 250,112 Z" />
+
+    <!-- Tri-blade machined urban crossover wheels -->
+    <path android:fillColor="#151B19" android:pathData="M93,112 m-20,0 a20,20 0 1,0 40,0 a20,20 0 1,0 -40,0" />
+    <path android:fillColor="#DFE8E3" android:pathData="M93,112 m-13.5,0 a13.5,13.5 0 1,0 27,0 a13.5,13.5 0 1,0 -27,0" />
+    <path android:fillColor="#25302D" android:pathData="M93,112 L88,99 L98,99 Z M93,112 L106,115 L100,123 Z M93,112 L81,115 L85,123 Z" />
+    <path android:fillColor="#78BA54" android:pathData="M93,112 m-3.5,0 a3.5,3.5 0 1,0 7,0 a3.5,3.5 0 1,0 -7,0" />
+
+    <path android:fillColor="#151B19" android:pathData="M225,112 m-20,0 a20,20 0 1,0 40,0 a20,20 0 1,0 -40,0" />
+    <path android:fillColor="#DFE8E3" android:pathData="M225,112 m-13.5,0 a13.5,13.5 0 1,0 27,0 a13.5,13.5 0 1,0 -27,0" />
+    <path android:fillColor="#25302D" android:pathData="M225,112 L220,99 L230,99 Z M225,112 L238,115 L232,123 Z M225,112 L213,115 L217,123 Z" />
+    <path android:fillColor="#78BA54" android:pathData="M225,112 m-3.5,0 a3.5,3.5 0 1,0 7,0 a3.5,3.5 0 1,0 -7,0" />
+</vector>

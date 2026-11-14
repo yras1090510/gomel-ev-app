@@ -1,55 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
     android:width="320dp"
     android:height="150dp"
     android:viewportWidth="320"
     android:viewportHeight="150">
-    <!-- Floor shadow -->
+
+    <!-- Arcfox T1: Futuristic aero Cyber Cyan low-slung fastback hatch -->
+    <path android:pathData="M36,126 C36,121 94,119 160,119 C226,119 284,121 284,126 C284,131 226,133 160,133 C94,133 36,131 36,126 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="radial"
+                android:centerX="160"
+                android:centerY="126"
+                android:gradientRadius="126">
+                <item android:color="#4A062229" android:offset="0.0" />
+                <item android:color="#1E062229" android:offset="0.65" />
+                <item android:color="#00062229" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Sharp aero wedge fastback hatch -->
+    <path android:pathData="M43,96 L56,68 C67,52 86,46 114,46 L168,46 C198,47 224,62 246,75 L278,84 C284,87 285,96 280,106 L275,112 L42,112 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="162"
+                android:startY="46"
+                android:endX="162"
+                android:endY="112">
+                <item android:color="#52E5EB" android:offset="0.0" />
+                <item android:color="#27B2BD" android:offset="0.52" />
+                <item android:color="#116773" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Lower aero skirt & triangular cyan/black Z-crease on doors -->
     <path
-        android:fillColor="#180F1413"
-        android:pathData="M32,124 C32,119 90,116 160,116 C230,116 288,119 288,124 C288,129 230,132 160,132 C90,132 32,129 32,124 Z" />
-    <!-- Gloss black lower aero splitter & arch molding -->
+        android:fillColor="#111D21"
+        android:pathData="M43,105 L277,105 L275,112 L42,112 Z" />
     <path
-        android:fillColor="#14181B"
-        android:pathData="M45,109 L276,109 L273,116 L48,116 Z" />
-    <!-- ARCFOX T1 sculpted geometric hatchback -->
+        android:fillColor="#0E4E59"
+        android:fillAlpha="0.55"
+        android:pathData="M104,95 L198,81 L203,92 L112,102 Z" />
+
+    <!-- Fastback panoramic canopy -->
+    <path android:pathData="M67,70 L88,50 C96,47 108,47 124,47 L166,47 C194,48 214,61 232,74 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="140"
+                android:startY="47"
+                android:endX="165"
+                android:endY="74">
+                <item android:color="#27424D" android:offset="0.0" />
+                <item android:color="#101E24" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <path android:fillColor="#0E171B" android:pathData="M144,47 L152,47 L150,72 L142,72 Z" />
+
+    <!-- Arcfox sharp Fox-Eye LED lightbar & aero bumper fang -->
     <path
-        android:fillColor="#F4F6F8"
-        android:pathData="M44,98 C45,82 54,66 72,48 C90,37 118,35 162,36 C198,37 224,46 248,68 L273,77 C280,82 281,96 275,110 L48,110 C44,107 44,103 44,98 Z" />
+        android:fillColor="#E6FFFF"
+        android:pathData="M244,77 L278,84 L274,88 L244,81 Z" />
     <path
-        android:fillColor="#E1E6EA"
-        android:pathData="M54,93 L272,93 L270,108 L52,108 Z" />
-    <!-- Tinted canopy with black D-pillar -->
+        android:fillColor="#0E171B"
+        android:pathData="M254,94 L283,93 L279,106 L252,106 Z" />
     <path
-        android:fillColor="#1B2226"
-        android:pathData="M78,48 C96,41 124,40 160,40 C192,40 218,47 239,68 L74,68 C75,59 76,53 78,48 Z" />
-    <path
-        android:strokeColor="#BAC3CA"
-        android:strokeWidth="1.5"
-        android:pathData="M150,40 L150,108 M128,80 L138,80 M188,80 L198,80" />
-    <!-- Signature futuristic piercing ARCFOX light-bar -->
-    <path
-        android:fillColor="#4CE0B3"
-        android:pathData="M250,76 L278,80 L277,84 L248,80 Z" />
-    <path
-        android:fillColor="#E04848"
-        android:pathData="M45,70 L66,71 L65,75 L44,75 Z" />
-    <!-- Aero turbine wheels -->
-    <path
-        android:fillColor="#121618"
-        android:pathData="M88,110 m-20,0 a20,20 0 1,0 40,0 a20,20 0 1,0 -40,0" />
-    <path
-        android:fillColor="#CBD2D7"
-        android:pathData="M88,110 m-12.5,0 a12.5,12.5 0 1,0 25,0 a12.5,12.5 0 1,0 -25,0" />
-    <path
-        android:fillColor="#1E262A"
-        android:pathData="M88,110 m-5,0 a5,5 0 1,0 10,0 a5,5 0 1,0 -10,0" />
-    <path
-        android:fillColor="#121618"
-        android:pathData="M236,110 m-20,0 a20,20 0 1,0 40,0 a20,20 0 1,0 -40,0" />
-    <path
-        android:fillColor="#CBD2D7"
-        android:pathData="M236,110 m-12.5,0 a12.5,12.5 0 1,0 25,0 a12.5,12.5 0 1,0 -25,0" />
-    <path
-        android:fillColor="#1E262A"
-        android:pathData="M236,110 m-5,0 a5,5 0 1,0 10,0 a5,5 0 1,0 -10,0" />
+        android:fillColor="#FF3D4E"
+        android:pathData="M46,78 L63,75 L61,81 L44,84 Z" />
+
+    <!-- Wheel arches -->
+    <path android:fillColor="#10191C" android:pathData="M66,112 A24.5,24.5 0 1,1 115,112 Z" />
+    <path android:fillColor="#10191C" android:pathData="M202,112 A24.5,24.5 0 1,1 251,112 Z" />
+
+    <!-- Turbine-blade aero wheels -->
+    <path android:fillColor="#121A1D" android:pathData="M90.5,112 m-20,0 a20,20 0 1,0 40,0 a20,20 0 1,0 -40,0" />
+    <path android:fillColor="#263B42" android:pathData="M90.5,112 m-13.5,0 a13.5,13.5 0 1,0 27,0 a13.5,13.5 0 1,0 -27,0" />
+    <path android:fillColor="#8DF7FA" android:pathData="M90.5,112 L88,99 L94,99 Z M90.5,112 L103,108 L103,115 Z M90.5,112 L94,124 L87,124 Z M90.5,112 L78,114 L78,108 Z" />
+    <path android:fillColor="#E0F8FF" android:pathData="M90.5,112 m-3.5,0 a3.5,3.5 0 1,0 7,0 a3.5,3.5 0 1,0 -7,0" />
+
+    <path android:fillColor="#121A1D" android:pathData="M226.5,112 m-20,0 a20,20 0 1,0 40,0 a20,20 0 1,0 -40,0" />
+    <path android:fillColor="#263B42" android:pathData="M226.5,112 m-13.5,0 a13.5,13.5 0 1,0 27,0 a13.5,13.5 0 1,0 -27,0" />
+    <path android:fillColor="#8DF7FA" android:pathData="M226.5,112 L224,99 L230,99 Z M226.5,112 L239,108 L239,115 Z M226.5,112 L230,124 L223,124 Z M226.5,112 L214,114 L214,108 Z" />
+    <path android:fillColor="#E0F8FF" android:pathData="M226.5,112 m-3.5,0 a3.5,3.5 0 1,0 7,0 a3.5,3.5 0 1,0 -7,0" />
 </vector>

@@ -2,72 +2,98 @@ package com.gomelev.app
 
 import com.gomelev.app.data.PreloadedCatalog
 import com.gomelev.app.domain.CreditCalculator
+import com.gomelev.app.model.AppThemeMode
 import com.gomelev.app.model.PdnVerdict
 import com.gomelev.app.model.UserFinanceProfile
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import kotlin.math.roundToInt
 
 class CreditCalculatorTest {
 
-    private val sampleProfile = UserFinanceProfile(
-        salaryByn = 2000.0,
-        existingHousingCreditByn = 0.0,
+    private val baseProfile = UserFinanceProfile(
+        salaryByn = 2500.0,
+        existingHousingCreditByn = 320.0,
         pdnRatioCap = 0.40,
         downPaymentPct = 0
     )
 
     @Test
-    fun `default sample pdn limit equals 800 byn`() {
-        assertEquals(800.0, sampleProfile.freePdnRoomByn, 0.001)
+    fun `user free pdn limit equals 680 byn`() {
+        assertEquals(680.0, baseProfile.freePdnRoomByn, 0.001)
     }
 
     @Test
-    fun `pdn subtracts existing obligation cleanly`() {
-        val burdened = sampleProfile.copy(salaryByn = 3000.0, existingHousingCreditByn = 200.0)
-        assertEquals(1000.0, burdened.freePdnRoomByn, 0.001)
-    }
-
-    @Test
-    fun `priorbank 84m max loan scales proportionally with pdn`() {
+    fun `priorbank 84m max loan matches python reference`() {
         val prior = PreloadedCatalog.creditPrograms.first { it.id == "prior_bel_4" }
-        val (maxLoan, conservative, _) = CreditCalculator.maxProgramLimits(prior, sampleProfile)
-        assertTrue(maxLoan > 45000.0 && conservative < maxLoan)
+        val (maxLoan, conservative, _) = CreditCalculator.maxProgramLimits(prior, baseProfile)
+        assertEquals(39287, maxLoan.roundToInt())
+        assertEquals(37944, conservative.roundToInt())
     }
 
     @Test
-    fun `dabrabyt annuity vs belarusbank diff limits remain ordered`() {
+    fun `dabrabyt annuity and belarusbank diff limits match python reference`() {
         val dabFix = PreloadedCatalog.creditPrograms.first { it.id == "dabrabyt_avtonado_fix" }
         val dabDiff = PreloadedCatalog.creditPrograms.first { it.id == "dabrabyt_avtonado_diff" }
         val belEx2 = PreloadedCatalog.creditPrograms.first { it.id == "belarus_ex2" }
 
-        val fixLimit = CreditCalculator.maxProgramLimits(dabFix, sampleProfile).first
-        val diffLimit = CreditCalculator.maxProgramLimits(dabDiff, sampleProfile).first
-        val belLimit = CreditCalculator.maxProgramLimits(belEx2, sampleProfile).first
-        assertTrue(fixLimit > belLimit && belLimit > diffLimit)
+        assertEquals(39212, CreditCalculator.maxProgramLimits(dabFix, baseProfile).first.roundToInt())
+        assertEquals(30290, CreditCalculator.maxProgramLimits(dabDiff, baseProfile).first.roundToInt())
+        assertEquals(33443, CreditCalculator.maxProgramLimits(belEx2, baseProfile).first.roundToInt())
     }
 
     @Test
-    fun `xiaoma passes with 0 pct pv while geely ex2 requires higher pv or budget`() {
+    fun `xiaoma passes with 0 pct pv while geely ex2 requires pv 10 to 15 pct`() {
         val xiaoma = PreloadedCatalog.cars.first { it.id == "faw_xiaoma" }
         val ex2 = PreloadedCatalog.cars.first { it.id == "geely_ex2_pro" }
         val dabFix = PreloadedCatalog.creditPrograms.first { it.id == "dabrabyt_avtonado_fix" }
         val prior = PreloadedCatalog.creditPrograms.first { it.id == "prior_bel_4" }
+        val bgpb = PreloadedCatalog.creditPrograms.first { it.id == "bgpb_drive_24" }
 
-        val xiaomaEval = CreditCalculator.evaluateCarWithProgram(xiaoma, dabFix, sampleProfile)
+        val xiaomaEval = CreditCalculator.evaluateCarWithProgram(xiaoma, dabFix, baseProfile)
         assertEquals(PdnVerdict.PASS, xiaomaEval.verdict)
+        assertEquals(433, xiaomaEval.decidingMonthlyByn.roundToInt())
 
-        val pv0Profile = sampleProfile.copy(salaryByn = 1700.0, existingHousingCreditByn = 0.0)
-        assertEquals(PdnVerdict.FAIL, CreditCalculator.evaluateCarWithProgram(ex2, prior, pv0Profile).verdict)
+        // EX2 Pro at 0% PV fails Priorbank (777 > 680)
+        val ex2Fail = CreditCalculator.evaluateCarWithProgram(ex2, prior, baseProfile)
+        assertEquals(PdnVerdict.FAIL, ex2Fail.verdict)
 
-        val pv20Profile = pv0Profile.copy(downPaymentPct = 20)
-        assertEquals(PdnVerdict.PASS, CreditCalculator.evaluateCarWithProgram(ex2, prior, pv20Profile).verdict)
+        // EX2 Pro at 10% PV passes BGPB Drive (630 <= 680), borderline in Priorbank (699)
+        val pv10Profile = baseProfile.copy(downPaymentPct = 10)
+        assertEquals(PdnVerdict.PASS, CreditCalculator.evaluateCarWithProgram(ex2, bgpb, pv10Profile).verdict)
+        assertEquals(PdnVerdict.BORDERLINE, CreditCalculator.evaluateCarWithProgram(ex2, prior, pv10Profile).verdict)
+
+        // EX2 Pro at 15% PV passes Priorbank (661 <= 680)
+        val pv15Profile = baseProfile.copy(downPaymentPct = 15)
+        val ex2Prior15 = CreditCalculator.evaluateCarWithProgram(ex2, prior, pv15Profile)
+        assertEquals(PdnVerdict.PASS, ex2Prior15.verdict)
+        assertEquals(661, ex2Prior15.decidingMonthlyByn.roundToInt())
     }
 
     @Test
     fun `savings deposit simulator grows above 10x monthly contribution`() {
         val saved = CreditCalculator.simulateDepositSavings(600.0, months = 10, annualRatePct = 12.0)
         assertTrue(saved > 6300.0 && saved < 6500.0)
+    }
+
+    @Test
+    fun `default production profile has 2000 salary and 800 byn free pdn limit`() {
+        val def = UserFinanceProfile()
+        assertEquals(2000.0, def.salaryByn, 0.001)
+        assertEquals(0.0, def.existingHousingCreditByn, 0.001)
+        assertEquals(800.0, def.freePdnRoomByn, 0.001)
+    }
+
+    @Test
+    fun `every car variant uses its distinct illustration drawable`() {
+        val carsById = PreloadedCatalog.cars.associateBy { it.id }
+        assertNotEquals(carsById.getValue("faw_xiaoma").imageRes, carsById.getValue("peugeot_ion").imageRes)
+        assertNotEquals(carsById.getValue("geely_ex2_pro").imageRes, carsById.getValue("geely_ex2_max").imageRes)
+        assertNotEquals(carsById.getValue("byd_yuan_pro").imageRes, carsById.getValue("byd_yuan_up").imageRes)
+        assertNotEquals(carsById.getValue("jac_e30x_used").imageRes, carsById.getValue("jac_e30x_new").imageRes)
+        assertEquals(PreloadedCatalog.cars.size, PreloadedCatalog.cars.map { it.imageRes }.distinct().size)
+        assertEquals(3, AppThemeMode.entries.size)
     }
 }

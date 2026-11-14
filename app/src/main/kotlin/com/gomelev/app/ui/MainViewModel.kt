@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
 import com.gomelev.app.GomelEvApp
+import com.gomelev.app.model.AppThemeMode
 import com.gomelev.app.model.ForecastScenario
 import com.gomelev.app.model.UserFinanceProfile
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,7 +17,7 @@ enum class AppDestination(val labelRu: String) {
     CARS("Авто"),
     DEALERS("Дилеры"),
     CREDITS("Кредиты"),
-    FORECAST_SYNC("2027 · Сеть")
+    FORECAST_SYNC("Прогноз")
 }
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
@@ -31,6 +32,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val snapshot = repo.snapshot
     val scenario = repo.scenario
     val autoSyncEnabled = repo.autoSyncEnabled
+    val themeMode = repo.themeMode
 
     private val _destination = MutableStateFlow(AppDestination.CARS)
     val destination: StateFlow<AppDestination> = _destination.asStateFlow()
@@ -96,19 +98,16 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun updateManifestUrl(url: String) {
-        repo.updateManifestUrl(url)
+    fun setThemeMode(mode: AppThemeMode) {
+        repo.setThemeMode(mode)
     }
 
-    fun checkRemoteUpdate() {
-        viewModelScope.launch {
-            repo.checkAppRemoteUpdate()
+    fun cycleThemeMode() {
+        val next = when (themeMode.value) {
+            AppThemeMode.SYSTEM -> AppThemeMode.DARK
+            AppThemeMode.DARK -> AppThemeMode.LIGHT
+            AppThemeMode.LIGHT -> AppThemeMode.SYSTEM
         }
-    }
-
-    fun installRemoteApk(apkUrl: String) {
-        viewModelScope.launch {
-            repo.installRemoteApk(apkUrl)
-        }
+        repo.setThemeMode(next)
     }
 }

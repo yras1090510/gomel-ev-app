@@ -1,11 +1,14 @@
 package com.gomelev.app.ui.screens
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -13,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -22,7 +26,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.rounded.OpenInNew
+import androidx.compose.material.icons.automirrored.rounded.OpenInNew
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -56,6 +60,7 @@ import com.gomelev.app.ui.components.FoldableTwoPane
 import com.gomelev.app.ui.components.Formatters
 import com.gomelev.app.ui.components.PdnControlBar
 import com.gomelev.app.ui.components.openExternalUrl
+import com.gomelev.app.ui.theme.ExpressiveMotion
 import com.gomelev.app.ui.theme.LocalSemanticColors
 import kotlin.math.roundToInt
 
@@ -137,15 +142,17 @@ fun CreditsScreen(
                             onUpdateProfile = onUpdateProfile,
                             onTriggerSync = onTriggerSync
                         )
-                        Row(
-                            modifier = Modifier.horizontalScroll(rememberScrollState()),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        @OptIn(ExperimentalLayoutApi::class)
+                        FlowRow(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
                             CreditFilter.entries.forEach { f ->
                                 FilterChip(
                                     selected = filter == f,
                                     onClick = { filter = f },
-                                    label = { Text(f.label, style = MaterialTheme.typography.labelLarge) }
+                                    label = { Text(f.label, style = MaterialTheme.typography.labelMedium) }
                                 )
                             }
                         }
@@ -193,23 +200,37 @@ private fun CreditProgramCard(
     val pvFactor = (1.0 - program.minDownPaymentPct / 100.0).coerceAtLeast(0.10)
     val maxCarPrice = maxLoan / pvFactor
 
+    val borderColor by animateColorAsState(
+        targetValue = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
+        animationSpec = ExpressiveMotion.colorTween,
+        label = "creditBorder"
+    )
+    val borderWidth by animateDpAsState(
+        targetValue = if (selected) 1.8.dp else 0.8.dp,
+        animationSpec = ExpressiveMotion.fastSpatial(),
+        label = "creditBorderW"
+    )
+    val cardBg by animateColorAsState(
+        targetValue = if (selected) MaterialTheme.colorScheme.surfaceContainerLow else MaterialTheme.colorScheme.surfaceContainerLowest,
+        animationSpec = ExpressiveMotion.colorTween,
+        label = "creditBg"
+    )
+
     Surface(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(18.dp))
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(18.dp),
-        color = if (selected) MaterialTheme.colorScheme.surfaceContainerLow else MaterialTheme.colorScheme.surfaceContainerLowest,
-        border = BorderStroke(
-            width = if (selected) 1.5.dp else 0.8.dp,
-            color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant
-        )
+        color = cardBg,
+        border = BorderStroke(width = borderWidth, color = borderColor)
     ) {
         Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Row(
+            @OptIn(ExperimentalLayoutApi::class)
+            FlowRow(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 Text(
                     program.bankName,
@@ -390,14 +411,19 @@ private fun CreditProgramDetailPane(
                     }
                 }
 
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                @OptIn(ExperimentalLayoutApi::class)
+                FlowRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
                     OutlinedButton(onClick = { openExternalUrl(context, program.officialUrl) }) {
-                        Icon(Icons.Rounded.OpenInNew, contentDescription = null, modifier = Modifier.width(16.dp))
+                        Icon(Icons.AutoMirrored.Rounded.OpenInNew, contentDescription = null, modifier = Modifier.size(16.dp))
                         Spacer(Modifier.width(6.dp))
                         Text("Сайт банка")
                     }
                     OutlinedButton(onClick = { openExternalUrl(context, program.myfinUrl) }) {
-                        Icon(Icons.Rounded.OpenInNew, contentDescription = null, modifier = Modifier.width(16.dp))
+                        Icon(Icons.AutoMirrored.Rounded.OpenInNew, contentDescription = null, modifier = Modifier.size(16.dp))
                         Spacer(Modifier.width(6.dp))
                         Text("Myfin.by")
                     }

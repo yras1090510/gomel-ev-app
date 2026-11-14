@@ -1,9 +1,12 @@
 package com.gomelev.app.ui.screens
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -15,16 +18,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CheckCircle
-import androidx.compose.material.icons.rounded.CloudDownload
 import androidx.compose.material.icons.rounded.ErrorOutline
 import androidx.compose.material.icons.rounded.Refresh
-import androidx.compose.material.icons.rounded.SystemUpdate
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
@@ -32,22 +33,20 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.gomelev.app.BuildConfig
 import com.gomelev.app.data.PreloadedCatalog
 import com.gomelev.app.domain.CreditCalculator
 import com.gomelev.app.model.CarOffer
@@ -57,6 +56,7 @@ import com.gomelev.app.model.SyncSourceLog
 import com.gomelev.app.model.UserFinanceProfile
 import com.gomelev.app.ui.components.Formatters
 import com.gomelev.app.ui.components.openExternalUrl
+import com.gomelev.app.ui.theme.ExpressiveMotion
 import com.gomelev.app.ui.theme.LocalSemanticColors
 import kotlin.math.roundToInt
 
@@ -72,9 +72,6 @@ fun ForecastAndSyncScreen(
     onUpdateProfile: ((UserFinanceProfile) -> UserFinanceProfile) -> Unit,
     onTriggerSync: () -> Unit,
     onToggleAutoSync: (Boolean) -> Unit,
-    onUpdateManifestUrl: (String) -> Unit,
-    onCheckRemoteUpdate: () -> Unit,
-    onInstallRemoteApk: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     if (isExpandedWidth) {
@@ -99,9 +96,6 @@ fun ForecastAndSyncScreen(
                 autoSyncEnabled = autoSyncEnabled,
                 onTriggerSync = onTriggerSync,
                 onToggleAutoSync = onToggleAutoSync,
-                onUpdateManifestUrl = onUpdateManifestUrl,
-                onCheckRemoteUpdate = onCheckRemoteUpdate,
-                onInstallRemoteApk = onInstallRemoteApk,
                 modifier = Modifier
                     .weight(0.48f)
                     .fillMaxSize()
@@ -130,10 +124,7 @@ fun ForecastAndSyncScreen(
                     snapshot = snapshot,
                     autoSyncEnabled = autoSyncEnabled,
                     onTriggerSync = onTriggerSync,
-                    onToggleAutoSync = onToggleAutoSync,
-                    onUpdateManifestUrl = onUpdateManifestUrl,
-                    onCheckRemoteUpdate = onCheckRemoteUpdate,
-                    onInstallRemoteApk = onInstallRemoteApk
+                    onToggleAutoSync = onToggleAutoSync
                 )
             }
             items(snapshot.syncLogs) { log ->
@@ -174,9 +165,6 @@ private fun BoxSyncPane(
     autoSyncEnabled: Boolean,
     onTriggerSync: () -> Unit,
     onToggleAutoSync: (Boolean) -> Unit,
-    onUpdateManifestUrl: (String) -> Unit,
-    onCheckRemoteUpdate: () -> Unit,
-    onInstallRemoteApk: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
@@ -189,10 +177,7 @@ private fun BoxSyncPane(
                 snapshot = snapshot,
                 autoSyncEnabled = autoSyncEnabled,
                 onTriggerSync = onTriggerSync,
-                onToggleAutoSync = onToggleAutoSync,
-                onUpdateManifestUrl = onUpdateManifestUrl,
-                onCheckRemoteUpdate = onCheckRemoteUpdate,
-                onInstallRemoteApk = onInstallRemoteApk
+                onToggleAutoSync = onToggleAutoSync
             )
         }
         items(snapshot.syncLogs) { log ->
@@ -201,6 +186,7 @@ private fun BoxSyncPane(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun ForecastSectionContent(
     cars: List<CarOffer>,
@@ -214,17 +200,30 @@ private fun ForecastSectionContent(
         CreditCalculator.simulateDepositSavings(profile.monthlySavingsFor2027Byn, months = 10, annualRatePct = 12.0)
     }
 
-    Text("Прогноз цен: сентябрь 2027", style = MaterialTheme.typography.headlineMedium)
+    Text("Прогноз цен: сентябрь 2027", style = MaterialTheme.typography.headlineSmall)
 
-    Row(
-        modifier = Modifier.horizontalScroll(rememberScrollState()),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    FlowRow(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
         ForecastScenario.entries.forEach { sc ->
+            val selected = scenario == sc
+            val labelColor by animateColorAsState(
+                targetValue = if (selected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
+                animationSpec = ExpressiveMotion.colorTween,
+                label = "scColor"
+            )
             FilterChip(
-                selected = scenario == sc,
+                selected = selected,
                 onClick = { onSelectScenario(sc) },
-                label = { Text(sc.labelRu, style = MaterialTheme.typography.labelLarge) }
+                label = {
+                    Text(
+                        text = sc.labelRu,
+                        style = MaterialTheme.typography.labelMedium,
+                        color = labelColor
+                    )
+                }
             )
         }
     }
@@ -234,14 +233,31 @@ private fun ForecastSectionContent(
         color = MaterialTheme.colorScheme.onSurfaceVariant
     )
 
-    // Wealth accumulation simulator for Sept 2027
+    // Wealth accumulation simulator for Sept 2027 with subtle M3 gradient accent
     Surface(
         shape = RoundedCornerShape(22.dp),
         color = MaterialTheme.colorScheme.surfaceContainerLow,
         border = BorderStroke(0.8.dp, MaterialTheme.colorScheme.outlineVariant)
     ) {
-        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text("Стратегия: брать сейчас или копить до сентября 2027?", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    Brush.linearGradient(
+                        colors = listOf(
+                            sem.brandGradientStart.copy(alpha = if (sem.isDark) 0.12f else 0.06f),
+                            Color.Transparent
+                        )
+                    )
+                )
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                "Стратегия: брать сейчас или копить до сентября 2027?",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold
+            )
             Text(
                 "Откладывать в месяц (10 мес под ~12%): ${Formatters.byn(profile.monthlySavingsFor2027Byn)} → Накоплено: ${Formatters.byn(savedBy2027)}",
                 style = MaterialTheme.typography.bodyMedium.copy(fontFeatureSettings = "tnum"),
@@ -256,8 +272,8 @@ private fun ForecastSectionContent(
                 valueRange = 200f..1000f
             )
             Text(
-                "Вывод: с 0% ПВ прямо сейчас уверенно проходит только FAW Xiaoma (24 990) и ДВС/Peugeot iOn. " +
-                    "Накопив ${Formatters.bynShort(savedBy2027)} BYN к сентябрю 2027, вы закроете 12–15% ПВ для Geely EX2 (Приорбанк 4%→12,5% / БГПБ 12 лет) или подешевевшего б/у BYD Seagull.",
+                "При свободном ПДН ${profile.freePdnRoomByn.toInt()} BYN/мес: с 0% ПВ сразу доступны FAW Xiaoma, Peugeot iOn, Geely EX2 Pro и BYD Seagull б/у (БГПБ 12 лет). " +
+                    "Накопив ${Formatters.bynShort(savedBy2027)} BYN к сентябрю 2027, можно добавить первый взнос и выйти на более высокий класс EV.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -356,24 +372,31 @@ private fun SyncControlSection(
     snapshot: MarketSnapshot,
     autoSyncEnabled: Boolean,
     onTriggerSync: () -> Unit,
-    onToggleAutoSync: (Boolean) -> Unit,
-    onUpdateManifestUrl: (String) -> Unit,
-    onCheckRemoteUpdate: () -> Unit,
-    onInstallRemoteApk: (String) -> Unit
+    onToggleAutoSync: (Boolean) -> Unit
 ) {
     val sem = LocalSemanticColors.current
-    var manifestInput by remember(snapshot.appUpdateManifestUrl) {
-        mutableStateOf(snapshot.appUpdateManifestUrl)
-    }
 
-    Text("Живая связь с сайтами и обновления", style = MaterialTheme.typography.headlineMedium)
+    Text("Живая связь с сайтами и курсами", style = MaterialTheme.typography.headlineSmall)
 
     Surface(
         shape = RoundedCornerShape(22.dp),
-        color = MaterialTheme.colorScheme.surfaceContainerLowest,
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
         border = BorderStroke(0.8.dp, MaterialTheme.colorScheme.outlineVariant)
     ) {
-        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    Brush.linearGradient(
+                        colors = listOf(
+                            sem.brandGradientEnd.copy(alpha = if (sem.isDark) 0.14f else 0.07f),
+                            Color.Transparent
+                        )
+                    )
+                )
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -428,55 +451,12 @@ private fun SyncControlSection(
                 }
                 Switch(checked = autoSyncEnabled, onCheckedChange = onToggleAutoSync)
             }
-        }
-    }
-
-    // OTA App Update Checker
-    Surface(
-        shape = RoundedCornerShape(22.dp),
-        color = MaterialTheme.colorScheme.surfaceContainerLow,
-        border = BorderStroke(0.8.dp, MaterialTheme.colorScheme.outlineVariant)
-    ) {
-        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Icon(Icons.Rounded.SystemUpdate, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-                Column {
-                    Text("Обновление приложения (OTA APK + база)", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-                    Text("Текущая версия: v${BuildConfig.VERSION_NAME} (код ${BuildConfig.VERSION_CODE})", style = MaterialTheme.typography.labelMedium)
-                }
-            }
-
-            OutlinedTextField(
-                value = manifestInput,
-                onValueChange = {
-                    manifestInput = it
-                    onUpdateManifestUrl(it)
-                },
-                label = { Text("URL манифеста (manifest.json)") },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedButton(onClick = onCheckRemoteUpdate, modifier = Modifier.weight(1f)) {
-                    Text("Проверить APK / базу")
-                }
-                val apkUrl = snapshot.remoteApkUrl
-                val hasNewerApk = apkUrl != null && (snapshot.remoteVersionCode ?: 0) > BuildConfig.VERSION_CODE
-                if (hasNewerApk && apkUrl != null) {
-                    Button(onClick = { onInstallRemoteApk(apkUrl) }, modifier = Modifier.weight(1f)) {
-                        Icon(Icons.Rounded.CloudDownload, contentDescription = null, modifier = Modifier.size(16.dp))
-                        Spacer(Modifier.width(6.dp))
-                        Text("Установить APK")
-                    }
-                }
-            }
 
             if (snapshot.updateStatusMessage != null) {
                 Text(
                     snapshot.updateStatusMessage,
                     style = MaterialTheme.typography.bodySmall,
-                    color = sem.passAccent
+                    color = MaterialTheme.colorScheme.error
                 )
             }
         }

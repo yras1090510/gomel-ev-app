@@ -1,55 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
     android:width="320dp"
     android:height="150dp"
     android:viewportWidth="320"
     android:viewportHeight="150">
-    <!-- Floor shadow -->
+
+    <!-- BYD Yuan Pro: Ruby Red compact SUV with signature external tailgate spare tire -->
+    <path android:pathData="M34,126 C34,121 90,119 158,119 C226,119 282,121 282,126 C282,131 226,133 158,133 C90,133 34,131 34,126 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="radial"
+                android:centerX="158"
+                android:centerY="126"
+                android:gradientRadius="124">
+                <item android:color="#4A21080A" android:offset="0.0" />
+                <item android:color="#1E21080A" android:offset="0.65" />
+                <item android:color="#0021080A" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Silver SUV roof rails -->
     <path
-        android:fillColor="#180F1413"
-        android:pathData="M30,125 C30,120 90,117 160,117 C230,117 290,120 290,125 C290,130 230,133 160,133 C90,133 30,130 30,125 Z" />
-    <!-- Chunky urban SUV lower cladding -->
+        android:fillColor="#CBD6E2"
+        android:pathData="M78,38 L178,38 L184,42 L74,42 Z" />
     <path
-        android:fillColor="#191D20"
-        android:pathData="M43,106 L277,106 L273,115 L47,115 Z" />
-    <!-- BYD Yuan Up / Pro muscular compact SUV body -->
+        android:fillColor="#2A3138"
+        android:pathData="M82,39 L88,39 L88,43 L82,43 Z M170,39 L176,39 L176,43 L170,43 Z" />
+
+    <!-- SIGNATURE REAR TAILGATE SPARE TIRE POD ("рюкзак" на двери) -->
+    <path android:pathData="M36,68 C36,56 44,50 53,50 L58,50 L58,97 L53,97 C44,97 36,90 36,79 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="36"
+                android:startY="50"
+                android:endX="58"
+                android:endY="97">
+                <item android:color="#F05454" android:offset="0.0" />
+                <item android:color="#282E36" android:offset="0.55" />
+                <item android:color="#171B20" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
     <path
-        android:fillColor="#DEE4E9"
-        android:pathData="M42,92 C42,74 49,54 64,37 C80,30 112,29 162,29 C198,29 224,38 248,62 L274,70 C282,76 283,92 277,107 L45,107 C42,104 42,98 42,92 Z" />
+        android:fillColor="#DCE4EC"
+        android:pathData="M38,67 L54,67 L54,71 L38,71 Z" />
+
+    <!-- Upright SUV Ruby Red metallic body -->
+    <path android:pathData="M54,104 L57,64 L74,42 L182,42 C199,43 212,56 226,71 L269,76 C277,78 281,87 280,101 L276,112 L54,112 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="166"
+                android:startY="42"
+                android:endX="166"
+                android:endY="112">
+                <item android:color="#EB5050" android:offset="0.0" />
+                <item android:color="#C92B31" android:offset="0.52" />
+                <item android:color="#8C181E" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Matte SUV black rocker + front/rear bumpers -->
     <path
-        android:fillColor="#CBD3DA"
-        android:pathData="M52,90 L270,90 L269,106 L50,106 Z" />
-    <!-- Floating roof + dark glass canopy -->
+        android:fillColor="#1D2228"
+        android:pathData="M53,103 L278,103 L276,112 L54,112 Z" />
     <path
-        android:fillColor="#1E262B"
-        android:pathData="M68,40 C86,34 118,33 160,33 C192,33 218,41 238,63 L64,63 C65,53 66,45 68,40 Z" />
+        android:fillColor="#B8C4D0"
+        android:pathData="M118,106 L202,106 L200,110 L120,110 Z" />
+
+    <!-- Upright SUV 3-window greenhouse -->
+    <path android:pathData="M73,70 L81,48 C84,45 92,45 104,45 L176,45 C190,46 202,57 215,70 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="130"
+                android:startY="45"
+                android:endX="155"
+                android:endY="72">
+                <item android:color="#2E3B4A" android:offset="0.0" />
+                <item android:color="#16202A" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <!-- B and C pillars + floating black D pillar -->
+    <path android:fillColor="#141B22" android:pathData="M107,45 L114,45 L113,70 L106,70 Z" />
+    <path android:fillColor="#141B22" android:pathData="M148,45 L155,45 L153,70 L146,70 Z" />
+    <path android:fillColor="#141B22" android:pathData="M57,64 L73,44 L80,46 L68,70 L57,70 Z" />
+
+    <!-- Dragon-Face chrome nose bar & swept headlights -->
     <path
-        android:strokeColor="#AAB5BF"
-        android:strokeWidth="1.5"
-        android:pathData="M148,33 L148,106" />
-    <!-- Slim Dragon Face LED bar -->
+        android:fillColor="#EBF2F7"
+        android:pathData="M244,77 L279,78 L279,82 L245,81 Z" />
     <path
-        android:fillColor="#4CE0B3"
-        android:pathData="M250,74 L277,76 L275,82 L248,79 Z" />
+        android:fillColor="#FFFFFF"
+        android:pathData="M244,76 C258,75 272,77 277,82 L252,82 Z" />
     <path
-        android:fillColor="#D94B4B"
-        android:pathData="M43,66 L62,67 L61,73 L42,73 Z" />
-    <!-- SUV wheels -->
+        android:fillColor="#161C22"
+        android:pathData="M258,90 L279,88 L277,102 L258,102 Z" />
     <path
-        android:fillColor="#14181A"
-        android:pathData="M86,108 m-21,0 a21,21 0 1,0 42,0 a21,21 0 1,0 -42,0" />
+        android:fillColor="#FF4F5E"
+        android:pathData="M55,74 L68,72 L67,82 L55,83 Z" />
+
+    <!-- Highlight line & chrome handles -->
     <path
-        android:fillColor="#C6CFD6"
-        android:pathData="M86,108 m-13,0 a13,13 0 1,0 26,0 a13,13 0 1,0 -26,0" />
-    <path
-        android:fillColor="#242C30"
-        android:pathData="M86,108 m-5,0 a5,5 0 1,0 10,0 a5,5 0 1,0 -10,0" />
-    <path
-        android:fillColor="#14181A"
-        android:pathData="M234,108 m-21,0 a21,21 0 1,0 42,0 a21,21 0 1,0 -42,0" />
-    <path
-        android:fillColor="#C6CFD6"
-        android:pathData="M234,108 m-13,0 a13,13 0 1,0 26,0 a13,13 0 1,0 -26,0" />
-    <path
-        android:fillColor="#242C30"
-        android:pathData="M234,108 m-5,0 a5,5 0 1,0 10,0 a5,5 0 1,0 -10,0" />
+        android:strokeColor="#FFA8AE"
+        android:strokeWidth="1.4"
+        android:strokeAlpha="0.6"
+        android:pathData="M68,78 L234,78" />
+    <path android:fillColor="#E6EDF4" android:pathData="M118,82 L131,82 L131,85 L118,85 Z" />
+    <path android:fillColor="#E6EDF4" android:pathData="M168,82 L181,82 L181,85 L168,85 Z" />
+
+    <!-- Rugged SUV flared black arches -->
+    <path android:fillColor="#1A2026" android:pathData="M71,112 A26,26 0 1,1 123,112 Z" />
+    <path android:fillColor="#1A2026" android:pathData="M201,112 A26,26 0 1,1 253,112 Z" />
+
+    <!-- Rugged gunmetal 5-spoke SUV wheels -->
+    <path android:fillColor="#14191F" android:pathData="M97,112 m-21,0 a21,21 0 1,0 42,0 a21,21 0 1,0 -42,0" />
+    <path android:fillColor="#5B6775" android:pathData="M97,112 m-13.5,0 a13.5,13.5 0 1,0 27,0 a13.5,13.5 0 1,0 -27,0" />
+    <path android:fillColor="#1D242C" android:pathData="M97,112 L92,99 L102,99 Z M97,112 L109,107 L106,116 Z M97,112 L103,124 L94,124 Z M97,112 L84,119 L87,111 Z M97,112 L86,105 L93,101 Z" />
+    <path android:fillColor="#D93B42" android:pathData="M97,112 m-3.5,0 a3.5,3.5 0 1,0 7,0 a3.5,3.5 0 1,0 -7,0" />
+
+    <path android:fillColor="#14191F" android:pathData="M227,112 m-21,0 a21,21 0 1,0 42,0 a21,21 0 1,0 -42,0" />
+    <path android:fillColor="#5B6775" android:pathData="M227,112 m-13.5,0 a13.5,13.5 0 1,0 27,0 a13.5,13.5 0 1,0 -27,0" />
+    <path android:fillColor="#1D242C" android:pathData="M227,112 L222,99 L232,99 Z M227,112 L239,107 L236,116 Z M227,112 L233,124 L224,124 Z M227,112 L214,119 L217,111 Z M227,112 L216,105 L223,101 Z" />
+    <path android:fillColor="#D93B42" android:pathData="M227,112 m-3.5,0 a3.5,3.5 0 1,0 7,0 a3.5,3.5 0 1,0 -7,0" />
 </vector>

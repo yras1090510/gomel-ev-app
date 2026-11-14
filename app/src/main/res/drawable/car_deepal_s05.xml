@@ -1,55 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
     android:width="320dp"
     android:height="150dp"
     android:viewportWidth="320"
     android:viewportHeight="150">
-    <!-- Floor shadow -->
+
+    <!-- Deepal S05: Stealth Graphite coupe-SUV fastback with razor split LEDs & red calipers -->
+    <path android:pathData="M30,126 C30,121 90,119 160,119 C230,119 290,121 290,126 C290,131 230,133 160,133 C90,133 30,131 30,126 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="radial"
+                android:centerX="160"
+                android:centerY="126"
+                android:gradientRadius="130">
+                <item android:color="#4D0A0E14" android:offset="0.0" />
+                <item android:color="#220A0E14" android:offset="0.65" />
+                <item android:color="#000A0E14" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Long muscular coupe-SUV silhouette -->
+    <path android:pathData="M36,92 L48,67 C66,46 92,41 128,41 L176,41 C208,42 232,57 254,71 L284,78 C290,81 291,92 287,104 L283,112 L36,112 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="160"
+                android:startY="41"
+                android:endX="160"
+                android:endY="112">
+                <item android:color="#7B8E9E" android:offset="0.0" />
+                <item android:color="#4C5D6E" android:offset="0.52" />
+                <item android:color="#283440" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Gloss black lower cladding & metallic splitter blade -->
+    <path android:fillColor="#14191F" android:pathData="M37,102 L285,102 L283,112 L36,112 Z" />
+    <path android:fillColor="#94A7B8" android:pathData="M116,105 L208,105 L205,109 L119,109 Z" />
+
+    <!-- Frameless fastback canopy + signature C-pillar charge ring -->
+    <path android:pathData="M62,69 L88,47 C96,44 110,44 126,44 L174,44 C202,45 224,57 240,71 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="140"
+                android:startY="44"
+                android:endX="170"
+                android:endY="72">
+                <item android:color="#24303D" android:offset="0.0" />
+                <item android:color="#0E141C" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <path android:fillColor="#11171F" android:pathData="M144,44 L152,44 L150,70 L142,70 Z" />
+    <!-- Signature Deepal C-pillar glowing cyan charge halo -->
+    <path android:fillColor="#38F2FF" android:pathData="M56,57 m-3,0 a3,3 0 1,0 6,0 a3,3 0 1,0 -6,0" />
+
+    <!-- Razor split Starlight DRLs & aggressive aero splitter -->
+    <path android:fillColor="#EBFBFF" android:pathData="M248,74 L283,79 L280,82.5 L247,77.5 Z" />
+    <path android:fillColor="#5CE1E6" android:pathData="M258,86 L286,87 L285,90 L258,89 Z" />
+    <path android:fillColor="#FF2E43" android:pathData="M38,74 L58,72 L56,79 L36,80 Z" />
+
+    <!-- Flush handles & sculptural side crease -->
+    <path android:fillColor="#B2C4D4" android:pathData="M112,81 L126,81 L125,83.5 L112,83.5 Z" />
+    <path android:fillColor="#B2C4D4" android:pathData="M170,81 L184,81 L183,83.5 L170,83.5 Z" />
     <path
-        android:fillColor="#180F1413"
-        android:pathData="M24,125 C24,120 84,117 160,117 C236,117 296,120 296,125 C296,130 236,133 160,133 C84,133 24,130 24,125 Z" />
-    <!-- Black aero sill -->
+        android:strokeColor="#A3B8CC"
+        android:strokeWidth="1.5"
+        android:strokeAlpha="0.55"
+        android:pathData="M56,77 C118,82 192,82 252,75" />
+
+    <!-- Wide SUV wheel arches -->
+    <path android:fillColor="#10141A" android:pathData="M61,112 A26.5,26.5 0 1,1 114,112 Z" />
+    <path android:fillColor="#10141A" android:pathData="M206,112 A26.5,26.5 0 1,1 259,112 Z" />
+
+    <!-- 5-double-blade aero sport rims + RED calipers -->
+    <path android:fillColor="#11151A" android:pathData="M87.5,112 m-21.5,0 a21.5,21.5 0 1,0 43,0 a21.5,21.5 0 1,0 -43,0" />
+    <path android:fillColor="#2C3540" android:pathData="M87.5,112 m-14.5,0 a14.5,14.5 0 1,0 29,0 a14.5,14.5 0 1,0 -29,0" />
+    <path android:fillColor="#E62E3D" android:pathData="M76,106 C74,110 74,114 76,118 L79,116 C78,113 78,111 79,108 Z" />
     <path
-        android:fillColor="#161A1D"
-        android:pathData="M38,108 L282,108 L278,114 L42,114 Z" />
-    <!-- Deepal S05 sleek fastback aerodynamic EV SUV -->
+        android:strokeColor="#DDE6EE"
+        android:strokeWidth="2.1"
+        android:pathData="M87.5,98 L87.5,126 M74,106 L101,118 M74,118 L101,106" />
+    <path android:fillColor="#14191F" android:pathData="M87.5,112 m-4,0 a4,4 0 1,0 8,0 a4,4 0 1,0 -8,0" />
+
+    <path android:fillColor="#11151A" android:pathData="M232.5,112 m-21.5,0 a21.5,21.5 0 1,0 43,0 a21.5,21.5 0 1,0 -43,0" />
+    <path android:fillColor="#2C3540" android:pathData="M232.5,112 m-14.5,0 a14.5,14.5 0 1,0 29,0 a14.5,14.5 0 1,0 -29,0" />
+    <path android:fillColor="#E62E3D" android:pathData="M221,106 C219,110 219,114 221,118 L224,116 C223,113 223,111 224,108 Z" />
     <path
-        android:fillColor="#E3E7EB"
-        android:pathData="M36,93 C39,77 52,58 78,40 C98,32 132,30 166,31 C202,32 232,44 256,66 L282,75 C289,80 289,94 282,108 L40,108 C36,104 35,99 36,93 Z" />
-    <path
-        android:fillColor="#CFD6DC"
-        android:pathData="M50,91 L276,91 L274,107 L48,107 Z" />
-    <!-- Fastback coupe-SUV glass silhouette -->
-    <path
-        android:fillColor="#1C2328"
-        android:pathData="M78,43 C98,36 128,35 164,35 C196,35 222,44 244,65 L72,64 C72,54 74,47 78,43 Z" />
-    <!-- Flush handles + split blade DRL -->
-    <path
-        android:strokeColor="#AAB3BB"
-        android:strokeWidth="1.4"
-        android:pathData="M150,35 L148,107 M124,78 L135,78 M194,78 L205,78" />
-    <path
-        android:fillColor="#4CE0B3"
-        android:pathData="M256,74 L283,79 L281,83 L254,78 Z" />
-    <path
-        android:fillColor="#E04B4B"
-        android:pathData="M38,68 L64,69 L63,74 L37,74 Z" />
-    <!-- Large dynamic wheels -->
-    <path
-        android:fillColor="#131719"
-        android:pathData="M84,109 m-21,0 a21,21 0 1,0 42,0 a21,21 0 1,0 -42,0" />
-    <path
-        android:fillColor="#C4CCD3"
-        android:pathData="M84,109 m-13.5,0 a13.5,13.5 0 1,0 27,0 a13.5,13.5 0 1,0 -27,0" />
-    <path
-        android:fillColor="#1F262B"
-        android:pathData="M84,109 m-5,0 a5,5 0 1,0 10,0 a5,5 0 1,0 -10,0" />
-    <path
-        android:fillColor="#131719"
-        android:pathData="M240,109 m-21,0 a21,21 0 1,0 42,0 a21,21 0 1,0 -42,0" />
-    <path
-        android:fillColor="#C4CCD3"
-        android:pathData="M240,109 m-13.5,0 a13.5,13.5 0 1,0 27,0 a13.5,13.5 0 1,0 -27,0" />
-    <path
-        android:fillColor="#1F262B"
-        android:pathData="M240,109 m-5,0 a5,5 0 1,0 10,0 a5,5 0 1,0 -10,0" />
+        android:strokeColor="#DDE6EE"
+        android:strokeWidth="2.1"
+        android:pathData="M232.5,98 L232.5,126 M219,106 L246,118 M219,118 L246,106" />
+    <path android:fillColor="#14191F" android:pathData="M232.5,112 m-4,0 a4,4 0 1,0 8,0 a4,4 0 1,0 -8,0" />
 </vector>

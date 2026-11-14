@@ -1,60 +1,103 @@
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
     android:width="320dp"
     android:height="150dp"
     android:viewportWidth="320"
     android:viewportHeight="150">
-    <!-- Floor shadow -->
+    <!-- Ground shadow -->
     <path
-        android:fillColor="#180F1413"
-        android:pathData="M38,124 C38,119 95,116 160,116 C225,116 282,119 282,124 C282,129 225,132 160,132 C95,132 38,129 38,124 Z" />
-    <!-- Black lower diffuser -->
+        android:fillColor="#220A1916"
+        android:pathData="M34,125 C34,120 90,117 160,117 C230,117 286,120 286,125 C286,130 230,133 160,133 C90,133 34,130 34,125 Z" />
+
+    <!-- Sharp black roof wing spoiler & floating C-pillar kick -->
     <path
-        android:fillColor="#191E22"
-        android:pathData="M54,110 L268,110 L265,116 L57,116 Z" />
-    <!-- BYD Seagull sharp faceted compact wedge hatchback -->
+        android:fillColor="#FF161C20"
+        android:pathData="M56,42 L84,38 L82,46 L52,47 Z" />
+
+    <!-- BYD Seagull origami angular wedge in signature Citrus/Apricity Yellow -->
+    <path android:pathData="M48,96 L52,70 L68,46 L94,39 L154,39 C188,39 216,49 246,72 L272,81 C279,86 280,99 275,109 C273,111 268,112 262,112 L254,112 C254,99 245,90 232,90 C219,90 210,99 210,112 L111,112 C111,99 102,90 89,90 C76,90 67,99 67,112 L54,112 C50,111 47,104 48,96 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="160"
+                android:startY="39"
+                android:endX="160"
+                android:endY="112">
+                <item android:color="#FFFAEB57" android:offset="0.0" />
+                <item android:color="#FFE3C822" android:offset="0.62" />
+                <item android:color="#FFB89B0D" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Black aerodynamic lower chin fang, splitter & skirt -->
     <path
-        android:fillColor="#E3EEF6"
-        android:pathData="M50,96 C51,80 57,66 72,49 C88,40 116,38 154,39 C190,40 218,50 245,70 L269,79 C276,84 277,97 271,110 L53,110 C50,107 50,102 50,96 Z" />
-    <!-- Dynamic upswept BYD beltline crease -->
+        android:fillColor="#FF161B1F"
+        android:pathData="M111,107 L210,107 L210,113 L111,113 Z M255,95 L278,96 L275,110 L254,110 Z" />
+
+    <!-- Angular upswept window greenhouse + floating black C-pillar kick -->
+    <path android:pathData="M78,48 L96,43 L156,43 C186,43 211,52 234,71 L188,73 L74,64 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="90"
+                android:startY="43"
+                android:endX="225"
+                android:endY="73">
+                <item android:color="#FF222D36" android:offset="0.0" />
+                <item android:color="#FF12181D" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <!-- Gloss sheen & sharp origami beltline highlight -->
     <path
-        android:fillColor="#CFDCE6"
-        android:pathData="M62,92 L262,89 L266,108 L58,108 Z" />
-    <!-- Sharp wedge greenhouse -->
+        android:fillColor="#38FFFFFF"
+        android:pathData="M128,43 L148,43 L134,68 L117,67 Z" />
     <path
-        android:fillColor="#1C242A"
-        android:pathData="M81,50 C98,44 126,43 156,43 C186,43 212,51 236,70 L180,71 C146,72 108,71 78,66 Z" />
-    <!-- Black floating C-pillar accent -->
+        android:fillColor="#FF141B20"
+        android:pathData="M66,49 L80,47 L75,65 L59,66 Z" />
     <path
-        android:fillColor="#182025"
-        android:pathData="M71,52 L83,49 L81,66 L68,66 Z" />
+        android:strokeColor="#FF8B7407"
+        android:strokeWidth="1.8"
+        android:pathData="M72,82 L240,86 M146,43 L147,106" />
+
+    <!-- Sharp Ocean-X quad LED headlamp & red taillight slash -->
     <path
-        android:strokeColor="#B2C4D2"
-        android:strokeWidth="1.5"
-        android:pathData="M148,43 L150,108 M78,72 L240,76" />
-    <!-- Angular quad LED headlamp -->
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M242,76 L271,82 L267,87 L238,81 Z" />
     <path
-        android:fillColor="#4CE0B3"
-        android:pathData="M244,77 L270,82 L265,87 L240,83 Z" />
+        android:fillColor="#FF4CE0B3"
+        android:pathData="M245,78 L266,83 L264,85 L243,80 Z" />
     <path
-        android:fillColor="#D94B4B"
-        android:pathData="M51,70 L66,72 L65,77 L50,76 Z" />
-    <!-- Wheels -->
+        android:fillColor="#FFE83838"
+        android:pathData="M50,69 L68,71 L67,76 L49,74 Z" />
+
+    <!-- Gunmetal 5-twin-spoke wheels with emerald brake hub -->
     <path
-        android:fillColor="#14181A"
-        android:pathData="M91,110 m-19,0 a19,19 0 1,0 38,0 a19,19 0 1,0 -38,0" />
+        android:fillColor="#FF12171A"
+        android:pathData="M89,112 m-18.5,0 a18.5,18.5 0 1,0 37,0 a18.5,18.5 0 1,0 -37,0" />
     <path
-        android:fillColor="#C6D5E1"
-        android:pathData="M91,110 m-11.5,0 a11.5,11.5 0 1,0 23,0 a11.5,11.5 0 1,0 -23,0" />
+        android:fillColor="#FF44525D"
+        android:pathData="M89,112 m-12,0 a12,12 0 1,0 24,0 a12,12 0 1,0 -24,0" />
     <path
-        android:fillColor="#20282E"
-        android:pathData="M91,110 m-4.5,0 a4.5,4.5 0 1,0 9,0 a4.5,4.5 0 1,0 -9,0" />
+        android:strokeColor="#FFD9E4EC"
+        android:strokeWidth="2.2"
+        android:pathData="M89,101 L89,123 M78.5,108 L99.5,116 M78.5,116 L99.5,108" />
     <path
-        android:fillColor="#14181A"
-        android:pathData="M231,110 m-19,0 a19,19 0 1,0 38,0 a19,19 0 1,0 -38,0" />
+        android:fillColor="#FF3CE3B5"
+        android:pathData="M89,112 m-4,0 a4,4 0 1,0 8,0 a4,4 0 1,0 -8,0" />
+
     <path
-        android:fillColor="#C6D5E1"
-        android:pathData="M231,110 m-11.5,0 a11.5,11.5 0 1,0 23,0 a11.5,11.5 0 1,0 -23,0" />
+        android:fillColor="#FF12171A"
+        android:pathData="M232,112 m-18.5,0 a18.5,18.5 0 1,0 37,0 a18.5,18.5 0 1,0 -37,0" />
     <path
-        android:fillColor="#20282E"
-        android:pathData="M231,110 m-4.5,0 a4.5,4.5 0 1,0 9,0 a4.5,4.5 0 1,0 -9,0" />
+        android:fillColor="#FF44525D"
+        android:pathData="M232,112 m-12,0 a12,12 0 1,0 24,0 a12,12 0 1,0 -24,0" />
+    <path
+        android:strokeColor="#FFD9E4EC"
+        android:strokeWidth="2.2"
+        android:pathData="M232,101 L232,123 M221.5,108 L242.5,116 M221.5,116 L242.5,108" />
+    <path
+        android:fillColor="#FF3CE3B5"
+        android:pathData="M232,112 m-4,0 a4,4 0 1,0 8,0 a4,4 0 1,0 -8,0" />
 </vector>

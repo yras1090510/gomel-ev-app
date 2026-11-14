@@ -1,60 +1,94 @@
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
     android:width="320dp"
     android:height="150dp"
     android:viewportWidth="320"
     android:viewportHeight="150">
-    <!-- Floor shadow -->
+    <!-- Ground contact shadow -->
     <path
-        android:fillColor="#180F1413"
-        android:pathData="M34,124 C34,119 92,116 160,116 C228,116 286,119 286,124 C286,129 228,132 160,132 C92,132 34,129 34,124 Z" />
-    <!-- Gloss black rocker trim -->
+        android:fillColor="#220A1916"
+        android:pathData="M34,125 C34,120 92,117 160,117 C228,117 286,120 286,125 C286,130 228,133 160,133 C92,133 34,130 34,125 Z" />
+
+    <!-- Pure White iconic contrast floating roof arch -->
     <path
-        android:fillColor="#181C1E"
-        android:pathData="M48,110 L272,110 L269,116 L51,116 Z" />
-    <!-- Dongfeng BOX warm champagne-cream rounded neo hatch -->
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M70,48 C88,36 116,33 158,33 C192,33 216,40 233,54 L222,54 C206,43 184,41 154,41 L82,42 Z" />
+
+    <!-- Dongfeng BOX smooth rounded pebble body in Aurora Lavender-Violet -->
+    <path android:pathData="M45,98 C45,82 52,65 71,48 L226,51 C238,59 246,66 254,71 L270,76 C278,80 280,94 274,109 C272,111 268,112 262,112 L254,112 C254,99 245,90 232,90 C219,90 210,99 210,112 L110,112 C110,99 101,90 88,90 C75,90 66,99 66,112 L52,112 C47,111 45,105 45,98 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="160"
+                android:startY="48"
+                android:endX="160"
+                android:endY="112">
+                <item android:color="#FFD5C3F5" android:offset="0.0" />
+                <item android:color="#FF9C80D6" android:offset="0.62" />
+                <item android:color="#FF6D53A8" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Black lower rocker sill & sleek smoked frameless glass canopy -->
     <path
-        android:fillColor="#EFECE4"
-        android:pathData="M47,98 C47,82 54,66 72,49 C89,37 116,35 156,35 C195,35 219,43 244,67 L268,74 C276,78 279,92 274,109 L50,110 C47,108 47,103 47,98 Z" />
-    <!-- Iconic floating contrast obsidian roof -->
+        android:fillColor="#FF1B1926"
+        android:pathData="M110,108 L210,108 L210,113 L110,113 Z" />
+    <path android:pathData="M78,46 L195,46 C210,50 223,58 235,69 L73,69 C74,59 75,52 78,46 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="85"
+                android:startY="46"
+                android:endX="230"
+                android:endY="70">
+                <item android:color="#FF242134" android:offset="0.0" />
+                <item android:color="#FF12101B" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
     <path
-        android:fillColor="#171C1E"
-        android:pathData="M73,47 C90,37 116,34 156,34 C190,34 212,40 230,54 L214,54 C196,43 176,41 148,41 L82,42 Z" />
-    <!-- Panoramic smoked glass -->
+        android:fillColor="#38FFFFFF"
+        android:pathData="M126,46 L146,46 L132,69 L115,69 Z" />
+
+    <!-- Flush pop-out door handles + white mirror cap -->
     <path
-        android:fillColor="#21292C"
-        android:pathData="M82,46 L192,46 C209,50 222,58 234,69 L77,69 C78,59 79,52 82,46 Z" />
-    <!-- Flush door handles & crisp body arc -->
+        android:strokeColor="#FF5F4894"
+        android:strokeWidth="1.5"
+        android:pathData="M148,46 L148,108" />
     <path
-        android:fillColor="#DCD7CC"
-        android:pathData="M56,94 L268,94 L268,108 L54,108 Z" />
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M122,80 L135,80 L135,83 L122,83 Z M182,80 L195,80 L195,83 L182,83 Z M202,65 L215,65 L214,71 L201,71 Z" />
+
+    <!-- Iconic Dongfeng BOX continuous LED strip + boomerang vertical DRL -->
     <path
-        android:strokeColor="#C2BDB1"
-        android:strokeWidth="1.4"
-        android:pathData="M148,46 L148,108 M124,80 L134,80 M182,80 L192,80" />
-    <!-- Continuous futuristic nose DRL light -->
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M244,75 L276,78 L274,82 L242,79 Z M265,80 L273,81 L269,92 L263,91 Z" />
     <path
-        android:fillColor="#4CE0B3"
-        android:pathData="M244,76 L275,78 L273,83 L242,81 Z" />
+        android:fillColor="#FF7CF7FF"
+        android:pathData="M246,76.5 L274,79 L273,81 L245,78.5 Z" />
     <path
-        android:fillColor="#D94B4B"
-        android:pathData="M48,74 L62,74 L62,79 L47,79 Z" />
-    <!-- Wheels -->
+        android:fillColor="#FFE54848"
+        android:pathData="M47,73 L63,74 L62,79 L46,79 Z" />
+
+    <!-- Iconic White-and-Obsidian Aero Disc Wheel Covers -->
     <path
-        android:fillColor="#14181A"
-        android:pathData="M89,110 m-20,0 a20,20 0 1,0 40,0 a20,20 0 1,0 -40,0" />
+        android:fillColor="#FF14131D"
+        android:pathData="M88,112 m-19,0 a19,19 0 1,0 38,0 a19,19 0 1,0 -38,0" />
     <path
-        android:fillColor="#E3DFD6"
-        android:pathData="M89,110 m-12.5,0 a12.5,12.5 0 1,0 25,0 a12.5,12.5 0 1,0 -25,0" />
+        android:fillColor="#FFF7F4FC"
+        android:pathData="M88,112 m-12.5,0 a12.5,12.5 0 1,0 25,0 a12.5,12.5 0 1,0 -25,0" />
     <path
-        android:fillColor="#22292B"
-        android:pathData="M89,110 m-4.5,0 a4.5,4.5 0 1,0 9,0 a4.5,4.5 0 1,0 -9,0" />
+        android:fillColor="#FF1F1B2E"
+        android:pathData="M88,112 m-6.5,0 a6.5,6.5 0 1,0 13,0 a6.5,6.5 0 1,0 -13,0" />
+
     <path
-        android:fillColor="#14181A"
-        android:pathData="M233,110 m-20,0 a20,20 0 1,0 40,0 a20,20 0 1,0 -40,0" />
+        android:fillColor="#FF14131D"
+        android:pathData="M232,112 m-19,0 a19,19 0 1,0 38,0 a19,19 0 1,0 -38,0" />
     <path
-        android:fillColor="#E3DFD6"
-        android:pathData="M233,110 m-12.5,0 a12.5,12.5 0 1,0 25,0 a12.5,12.5 0 1,0 -25,0" />
+        android:fillColor="#FFF7F4FC"
+        android:pathData="M232,112 m-12.5,0 a12.5,12.5 0 1,0 25,0 a12.5,12.5 0 1,0 -25,0" />
     <path
-        android:fillColor="#22292B"
-        android:pathData="M233,110 m-4.5,0 a4.5,4.5 0 1,0 9,0 a4.5,4.5 0 1,0 -9,0" />
+        android:fillColor="#FF1F1B2E"
+        android:pathData="M232,112 m-6.5,0 a6.5,6.5 0 1,0 13,0 a6.5,6.5 0 1,0 -13,0" />
 </vector>
