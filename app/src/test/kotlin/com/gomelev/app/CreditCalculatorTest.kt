@@ -75,7 +75,7 @@ class CreditCalculatorTest {
     fun `belarusbank EV defers principal but charges interest for six months`() {
         val car = PreloadedCatalog.cars.first { it.id == "faw_xiaoma" }
         val program = PreloadedCatalog.creditPrograms.first { it.id == "belarus_ev_general" }
-        val evaluation = CreditCalculator.evaluateCarWithProgram(car, program, UserFinanceProfile())
+        val evaluation = CreditCalculator.evaluateCarWithProgram(car, program, UserFinanceProfile(downPaymentPct = 0))
         assertEquals(338.40625, evaluation.graceMonthlyByn, 0.001)
         assertEquals(568.02928, evaluation.peakPostGraceMonthlyByn, 0.01)
         assertEquals(PdnVerdict.PASS, evaluation.verdict)
@@ -91,6 +91,7 @@ class CreditCalculatorTest {
     @Test
     fun `default profile uses stated income and monthly obligations`() {
         val profile = UserFinanceProfile()
+        assertEquals(10, profile.downPaymentPct)
         assertEquals(2400.0, profile.salaryByn, 0.001)
         assertEquals(320.0, profile.existingHousingCreditByn, 0.001)
         assertEquals(640.0, profile.freePdnRoomByn, 0.001)

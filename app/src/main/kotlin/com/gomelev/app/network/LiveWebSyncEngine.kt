@@ -262,10 +262,26 @@ class LiveWebSyncEngine {
     }
 
     private fun syncMyfinRates(now: Long): Pair<List<BankListing>?, SyncSourceLog> {
-        val (code, latency, body) = fetchText(BankListings.URL)
-        val listings = if (code == 200 && body != null) BankListings.parse(body) else null
+        val start = System.currentTimeMillis()
+        var code: Int? = null
+        val listings = runCatching {
+            val collected = linkedMapOf<String, BankListing>()
+            var url = BankListings.URL
+            val visited = mutableSetOf<String>()
+            while (visited.size < 20 && visited.add(url)) {
+                val result = fetchText(url)
+                code = result.first
+                require(code == 200)
+                val page = requireNotNull(result.third)
+                val parsed = requireNotNull(BankListings.parse(page))
+                parsed.forEach { collected[it.url] = it }
+                url = BankListings.nextPage(page) ?: return@runCatching collected.values.toList()
+            }
+            error("Неполная выдача программ")
+        }.getOrNull()
         return listings to SyncSourceLog("Myfin · предложения автокредитов", BankListings.URL, "Банки",
-            listings != null, code, latency, listings?.let { "Прочитано предложений: ${it.size}" } ?: "Каталог не прочитан", now)
+            listings != null, code, System.currentTimeMillis() - start,
+            listings?.let { "Прочитано предложений: ${it.size}" } ?: "Каталог не прочитан", now)
     }
 
     private fun syncAps(now: Long): Pair<JSONArray?, SyncSourceLog> {
@@ -273,8 +289,8 @@ class LiveWebSyncEngine {
         var code: Int? = null
         // The dealer uses a zero-based page number named offset and a fixed 35-row page.
         val rows = runCatching {
-            val all = JSONArray()
-            val ids = mutableSetOf<Long>()
+            val byId = linkedMapOf<Long, JSONObject>()
+            val pageSignatures = mutableSetOf<List<Long>>()
             for (page in 0 until 60) {
                 val query = JSONObject().put("offset", JSONArray().put(page)).put("sort", JSONArray().put(1))
                     .put("brands_id", JSONArray().put(2).put(31)).put("car_conditions_id", JSONArray().put(1))
@@ -283,10 +299,10 @@ class LiveWebSyncEngine {
                 code = response.first
                 require(code == 200)
                 val batch = JSONArray(requireNotNull(response.third))
-                for (i in 0 until batch.length()) require(ids.add(batch.getJSONObject(i).getLong("id")))
-                val parsed = DealerInventory.apsPage(batch)
-                for (i in 0 until parsed.length()) all.put(parsed.getJSONObject(i))
-                if (batch.length() < 35) return@runCatching all
+                val ids = (0 until batch.length()).map { batch.getJSONObject(it).getLong("id") }
+                require(pageSignatures.add(ids))
+                for ((i, id) in ids.withIndex()) byId[id] = batch.getJSONObject(i)
+                if (batch.length() < 35) return@runCatching DealerInventory.apsPage(JSONArray(byId.values))
             }
             error("Неполная выдача")
         }.getOrNull()

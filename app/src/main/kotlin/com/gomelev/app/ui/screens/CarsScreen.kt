@@ -102,13 +102,14 @@ fun CarsScreen(
     var inGomelOnly by rememberSaveable { mutableStateOf(false) }
     val listState = rememberLazyListState()
 
-    val evaluatedPairs = remember(cars, programs, profile) {
+    val evaluatedPairs = remember(cars, programs, profile, budget) {
         val loans = programs.filter { it.scope != CreditScope.LEASING }
-        cars.filter { it.isEv }.map { car ->
+        cars.filter { it.isEv && it.priceByn <= budget.ceiling }.map { car ->
             val availableDown = if (profile.useCustomDownPaymentByn) profile.customDownPaymentByn
                 else car.priceByn * profile.downPaymentPct / 100
             val feasible = loans.filter { car.priceByn * it.minDownPaymentPct / 100 <= availableDown + 0.01 }
-            car to CreditCalculator.bestEvaluationForCar(car, feasible, profile)
+            val checked = feasible.filter { it.liveRateNote != null && CreditCalculator.isProgramEligibleForCar(car, it) }
+            car to CreditCalculator.bestEvaluationForCar(car, checked.ifEmpty { feasible }, profile)
         }
     }
 
@@ -118,8 +119,9 @@ fun CarsScreen(
                 (!newOnly || !car.isUsed) &&
                 (!inGomelOnly || car.stockStatus == StockStatus.IN_GOMEL)
         }.sortedWith(
-            compareBy<Pair<CarOffer, PaymentEvaluation?>> { it.first.stockStatus.ordinal }
-                .thenBy { it.second?.verdict?.ordinal ?: Int.MAX_VALUE }
+            compareBy<Pair<CarOffer, PaymentEvaluation?>> { it.second?.verdict?.ordinal ?: Int.MAX_VALUE }
+                .thenBy { it.first.stockStatus.ordinal }
+                .thenByDescending { it.first.lastSyncedPriceNote != null }
                 .thenBy { it.first.priceByn }
         )
     }
@@ -336,7 +338,8 @@ private fun CarListCard(
             if (bestEval != null) {
                 Spacer(modifier = Modifier.height(6.dp))
                 Text(
-                    text = "Меньший платёж в расчёте: ${bestEval.program.bankName} · ПВ ${bestEval.appliedDownPaymentPct}%",
+                    text = "${bestEval.program.bankName} · ПВ ${bestEval.appliedDownPaymentPct}% · " +
+                        if (bestEval.program.liveRateNote == null) "сохранённые условия" else "условия сверены",
                     style = MaterialTheme.typography.labelMedium.copy(fontFeatureSettings = "tnum"),
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

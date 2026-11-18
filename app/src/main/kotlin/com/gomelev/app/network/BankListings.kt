@@ -5,6 +5,12 @@ import org.jsoup.Jsoup
 
 internal object BankListings {
     const val URL = "https://myfin.by/kredity/avto"
+    fun nextPage(html: String): String? {
+        val next = Jsoup.parse(html, URL).selectFirst(".pagination-new li.next:not(.hidden):not(.disabled) a[href]")
+            ?: return null
+        return next.absUrl("href").also { require(it.matches(Regex("""https://myfin\.by/kredity/avto\?page=\d+"""))) }
+    }
+
     fun parse(html: String): List<BankListing>? {
         val doc = Jsoup.parse(html, URL)
         val cards = doc.select("#list_products .products__product")
