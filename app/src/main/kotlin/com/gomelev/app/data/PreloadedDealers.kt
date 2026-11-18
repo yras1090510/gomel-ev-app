@@ -43,7 +43,7 @@ internal val preloadedDealersList: List<DealerEntity> = listOf(
             schedule = "Пн–Пт 09:00–19:00, Сб–Вс 09:00–18:00",
             phones = listOf("+375445212155", "+375445212166", "+375447272400"),
             websiteUrl = "https://geely-gomel.by/models/geely-ex2",
-            syncCheckUrl = "https://geely-gomel.by/specpredlozheniya",
+            syncCheckUrl = "https://belgee.by/dealers",
             stockSummaryRu = "Geely EX2 (Pro от 44 900 BYN без ТИ, Max от 49 900 BYN; 39 900 только с trade-in), EX5 от 73 900 BYN, Belgee S50/X50/X70.",
             hasLiveEvInGomel = true
         ),
@@ -57,7 +57,7 @@ internal val preloadedDealersList: List<DealerEntity> = listOf(
             schedule = "Пн–Сб 09:00–19:00, Вс 10:00–18:00",
             phones = listOf("+375291015500"),
             websiteUrl = "https://dongfeng.by/stock/?models=92",
-            syncCheckUrl = "https://dongfeng.by/models/box/",
+            syncCheckUrl = "https://dongfeng.by/box/",
             stockSummaryRu = "Хэтчбек Dongfeng BOX (ориентир по сети РБ ~36 700–43 900 BYN по версиям/акциям до ~48 800; гомельское наличие уточнять звонком).",
             hasLiveEvInGomel = true
         ),
@@ -70,8 +70,8 @@ internal val preloadedDealersList: List<DealerEntity> = listOf(
             geoQuery = "geo:52.4631,30.9852?q=Гомель,+ул.+Лазурная,+13а",
             schedule = "Пн–Сб 09:00–19:00, Вс вых.",
             phones = listOf("7768"),
-            websiteUrl = "https://franscentr.by/jac-e30x/",
-            syncCheckUrl = "https://franscentr.by/jac-e30x/",
+            websiteUrl = "https://franscentr.by/jac-ex-30/",
+            syncCheckUrl = "https://franscentr.by/jac-ex-30/",
             stockSummaryRu = "JAC E30X: Luxury (41 кВт·ч) от 54 900 BYN, Flagship (51,5 кВт·ч) от 59 900 BYN. Доставка 1–2 дня со склада импортёра.",
             hasLiveEvInGomel = false
         ),
@@ -227,7 +227,7 @@ internal val preloadedDealersList: List<DealerEntity> = listOf(
             schedule = "Пн–Вс 09:00–19:00",
             phones = listOf("+375445599777"),
             websiteUrl = "https://xn--80aaag4dxacw.xn--90ais/",
-            syncCheckUrl = "https://xn--80aaag4dxacw.xn--90ais/catalog?engine=electric",
+            syncCheckUrl = "https://xn--80aaag4dxacw.xn--90ais/",
             stockSummaryRu = "Пробег от ~1 590$ (в основном ДВС; по общей базе РБ редкие Tesla от ~57 000 BYN).",
             hasLiveEvInGomel = false
         ),

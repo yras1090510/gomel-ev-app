@@ -8,6 +8,8 @@ import com.gomelev.app.model.PaymentEvaluation
 import com.gomelev.app.model.PdnVerdict
 import com.gomelev.app.model.ScheduleType
 import com.gomelev.app.model.UserFinanceProfile
+import java.time.Year
+import java.time.ZoneId
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.pow
@@ -94,18 +96,30 @@ object CreditCalculator {
         graceRatePct: Double,
         graceMonths: Int,
         postRatePct: Double,
-        totalMonths: Int
+        totalMonths: Int,
+        principalGraceMonths: Int = 0
     ): DiffScheduleResult {
         if (principal <= 0.0 || totalMonths <= 0) {
             return DiffScheduleResult(0.0, 0.0, 0.0, 0.0)
         }
-        val od = principal / totalMonths
-        val m1Grace = od + principal * (graceRatePct / 100.0 / 12.0)
-        val remAtPost = principal * (1.0 - graceMonths.toDouble() / totalMonths.toDouble()).coerceAtLeast(0.0)
-        val peakPost = od + remAtPost * (postRatePct / 100.0 / 12.0)
-        val m1FullPost = od + principal * (postRatePct / 100.0 / 12.0)
-        val last = od + od * (postRatePct / 100.0 / 12.0)
-        return DiffScheduleResult(m1Grace, peakPost, m1FullPost, last)
+        val deferred = principalGraceMonths.coerceIn(0, totalMonths - 1)
+        val grace = graceMonths.coerceIn(0, totalMonths)
+        val principalPayment = principal / (totalMonths - deferred)
+        fun payment(month: Int, rate: Double): Double {
+            val opening = principal - principalPayment * (month - deferred - 1).coerceAtLeast(0)
+            return opening * rate / 1200 + if (month > deferred) principalPayment else 0.0
+        }
+        val peakDuring = when {
+            grace == 0 -> payment(1, postRatePct)
+            deferred < grace -> max(payment(1, graceRatePct), payment(deferred + 1, graceRatePct))
+            else -> payment(1, graceRatePct)
+        }
+        val peakAfter = if (grace < totalMonths) {
+            max(payment(grace + 1, postRatePct), payment(max(grace, deferred) + 1, postRatePct))
+        } else peakDuring
+        val fullRatePeak = payment(deferred + 1, postRatePct)
+        return DiffScheduleResult(peakDuring, peakAfter, fullRatePeak,
+            payment(totalMonths, if (grace == totalMonths) graceRatePct else postRatePct))
     }
 
     data class MaxDiffResult(
@@ -118,17 +132,14 @@ object CreditCalculator {
         graceRatePct: Double,
         graceMonths: Int,
         postRatePct: Double,
-        totalMonths: Int
+        totalMonths: Int,
+        principalGraceMonths: Int = 0
     ): MaxDiffResult {
         if (maxMonthlyPmt <= 0.0 || totalMonths <= 0) return MaxDiffResult(0.0, 0.0)
-        val fGrace = 1.0 / totalMonths + (graceRatePct / 100.0 / 12.0)
-        val fPostPeak = 1.0 / totalMonths +
-            (1.0 - graceMonths.toDouble() / totalMonths.toDouble()).coerceAtLeast(0.0) * (postRatePct / 100.0 / 12.0)
-        val peakFactor = max(fGrace, fPostPeak)
-        val strictFactor = 1.0 / totalMonths + (postRatePct / 100.0 / 12.0)
+        val probe = differentiatedDetails(1.0, graceRatePct, graceMonths, postRatePct, totalMonths, principalGraceMonths)
         return MaxDiffResult(
-            maxByPeakPostGrace = maxMonthlyPmt / peakFactor,
-            maxByStrictMonth1PostRate = maxMonthlyPmt / strictFactor
+            maxByPeakPostGrace = maxMonthlyPmt / max(probe.month1Grace, probe.peakPostGrace),
+            maxByStrictMonth1PostRate = maxMonthlyPmt / probe.month1FullPostRate
         )
     }
 
@@ -143,7 +154,8 @@ object CreditCalculator {
                 program.graceRatePct,
                 program.graceMonths,
                 program.postRatePct,
-                program.maxMonths
+                program.maxMonths,
+                program.principalGraceMonths
             )
             val chosen = if (profile.forceConservativeP0) dMax.maxByStrictMonth1PostRate else dMax.maxByPeakPostGrace
             Triple(min(chosen, program.maxAmountByn), min(dMax.maxByStrictMonth1PostRate, program.maxAmountByn), null)
@@ -185,6 +197,9 @@ object CreditCalculator {
                 }
             }
             CreditScope.EV_ALL -> car.isEv && !car.isUsed && car.isDealerLegalEntity
+            CreditScope.EV_UNDER_TEN_YEARS -> car.isEv && (!car.isUsed || car.modelYear?.let {
+                Year.now(ZoneId.of("Europe/Minsk")).value - it in 0..9
+            } == true)
             CreditScope.PARTNER_ALL -> car.isDealerLegalEntity
             CreditScope.USED_PARTNER -> car.isUsed && car.isDealerLegalEntity
             CreditScope.UNIVERSAL_AUTO -> if (car.isUsed) {
@@ -234,7 +249,8 @@ object CreditCalculator {
                 program.graceRatePct,
                 program.graceMonths,
                 program.postRatePct,
-                program.maxMonths
+                program.maxMonths,
+                program.principalGraceMonths
             )
             graceMonthly = d.month1Grace
             peakPost = d.peakPostGrace
@@ -306,6 +322,24 @@ object CreditCalculator {
             marginByn = margin,
             reasonRu = reason
         )
+    }
+
+    fun totalCreditPayments(evaluation: PaymentEvaluation): Double {
+        val program = evaluation.program
+        val months = program.maxMonths
+        val graceMonths = program.graceMonths.coerceIn(0, months)
+        if (program.scheduleType == ScheduleType.DIFFERENTIATED) {
+            val principal = evaluation.loanPrincipalByn
+            val deferred = program.principalGraceMonths.coerceIn(0, months - 1)
+            val monthlyPrincipal = principal / (months - deferred)
+            val interest = (1..months).sumOf { month ->
+                val opening = principal - monthlyPrincipal * (month - deferred - 1).coerceAtLeast(0)
+                val rate = if (month <= graceMonths) program.graceRatePct else program.postRatePct
+                opening * rate / 1200
+            }
+            return principal + interest
+        }
+        return evaluation.graceMonthlyByn * graceMonths + evaluation.peakPostGraceMonthlyByn * (months - graceMonths)
     }
 
     fun evaluateAllProgramsForCar(

@@ -30,6 +30,7 @@ enum class CreditScope(val labelRu: String) {
     GEELY_EV("Geely EX2 / EX5"),
     BEL_AUTO("Авто пр-ва РБ / Партнёрка"),
     EV_ALL("Электромобили (общий)"),
+    EV_UNDER_TEN_YEARS("Электромобили младше 10 лет"),
     PARTNER_ALL("Салоны-партнёры"),
     USED_PARTNER("Б/у у партнёров"),
     UNIVERSAL_AUTO("Любой новый / б/у"),
@@ -39,9 +40,9 @@ enum class CreditScope(val labelRu: String) {
 }
 
 enum class PdnVerdict(val labelRu: String) {
-    PASS("Проходит ПДН"),
-    BORDERLINE("На грани ПДН"),
-    FAIL("Превышает ПДН")
+    PASS("В расчётном лимите"),
+    BORDERLINE("Чуть выше лимита"),
+    FAIL("Выше лимита")
 }
 
 enum class ForecastScenario(val labelRu: String, val subtitleRu: String) {
@@ -51,17 +52,18 @@ enum class ForecastScenario(val labelRu: String, val subtitleRu: String) {
 }
 
 data class UserFinanceProfile(
-    val salaryByn: Double = 2000.0,
-    val existingHousingCreditByn: Double = 0.0,
+    val salaryByn: Double = 2400.0,
+    val existingHousingCreditByn: Double = 320.0,
     val pdnRatioCap: Double = 0.40,
-    val downPaymentPct: Int = 0,
+    val downPaymentPct: Int = 10,
     val customDownPaymentByn: Double = 0.0,
     val useCustomDownPaymentByn: Boolean = false,
     val monthlySavingsFor2027Byn: Double = 600.0,
-    val forceConservativeP0: Boolean = false
+    val forceConservativeP0: Boolean = false,
+    val otherMonthlyDebtByn: Double = 0.0
 ) {
     val totalPdnMaxByn: Double get() = salaryByn * pdnRatioCap
-    val freePdnRoomByn: Double get() = (totalPdnMaxByn - existingHousingCreditByn).coerceAtLeast(0.0)
+    val freePdnRoomByn: Double get() = (totalPdnMaxByn - existingHousingCreditByn - otherMonthlyDebtByn).coerceAtLeast(0.0)
 }
 
 data class CarOffer(
@@ -82,13 +84,17 @@ data class CarOffer(
     val stockStatus: StockStatus,
     val cityNote: String,
     val dealerId: String,
-    @DrawableRes val imageRes: Int,
+    @DrawableRes val imageRes: Int?,
+    val imageSource: String? = null,
+    val imageCredit: String? = null,
     val listingUrl: String,
     val forecast2027BullPct: Double,
     val forecast2027BasePct: Double,
     val forecast2027BearPct: Double,
     val forecastDriverRu: String,
-    val lastSyncedPriceNote: String? = null
+    val lastSyncedPriceNote: String? = null,
+    val modelYear: Int? = null,
+    val remotePhoto: String? = null
 )
 
 data class DealerEntity(
@@ -128,7 +134,8 @@ data class CreditProgram(
     val officialUrl: String,
     val myfinUrl: String,
     val notesRu: String,
-    val liveRateNote: String? = null
+    val liveRateNote: String? = null,
+    val principalGraceMonths: Int = 0
 )
 
 data class PaymentEvaluation(
@@ -162,11 +169,14 @@ data class SyncSourceLog(
     val timestampEpochMs: Long
 )
 
+data class BankListing(val name: String, val provider: String, val terms: String, val url: String)
+
 data class MarketSnapshot(
+    val bankListings: List<BankListing> = emptyList(),
+    val bankListChecked: Long? = null,
     val usdBynRate: Double = 3.0026,
     val nbrbDateLabel: String = "13.11.2026 (база)",
     val refinancingRatePct: Double = 9.25,
-    val rvsrPct: Double = 16.94,
     val lastFullSyncEpochMs: Long? = null,
     val isSyncing: Boolean = false,
     val syncLogs: List<SyncSourceLog> = emptyList(),

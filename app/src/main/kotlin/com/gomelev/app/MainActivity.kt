@@ -31,7 +31,6 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         setContent {
-            val windowSizeClass = calculateWindowSizeClass(this)
             val themeMode by viewModel.themeMode.collectAsStateWithLifecycle()
             val systemDark = isSystemInDarkTheme()
             val isDark = when (themeMode) {
@@ -66,7 +65,6 @@ class MainActivity : ComponentActivity() {
             GomelEvTheme(darkTheme = isDark, dynamicColor = false) {
                 GomelEvRoot(
                     viewModel = viewModel,
-                    windowSizeClass = windowSizeClass,
                     foldingFeature = foldingFeature
                 )
             }

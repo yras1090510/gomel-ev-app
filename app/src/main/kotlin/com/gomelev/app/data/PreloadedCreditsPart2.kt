@@ -225,10 +225,11 @@ internal val preloadedCreditsPart2List: List<CreditProgram> = listOf(
             id = "belarus_ev_general",
             bankName = "Беларусбанк",
             programName = "На приобретение электромобиля (общий 16,25% → 16,75%, ДИФФ)",
-            scope = CreditScope.EV_ALL,
+            scope = CreditScope.EV_UNDER_TEN_YEARS,
             scheduleType = ScheduleType.DIFFERENTIATED,
             graceRatePct = 16.25,
             graceMonths = 6,
+            principalGraceMonths = 6,
             postRatePct = 16.75,
             maxMonths = 120,
             minDownPaymentPct = 0,
@@ -238,7 +239,7 @@ internal val preloadedCreditsPart2List: List<CreditProgram> = listOf(
             requiresCasco = false,
             officialUrl = "https://belarusbank.by/fizicheskim_licam/kredit/consumer/kredit-na-priobretenie-avtomobilya-elektromobilya-/",
             myfinUrl = "https://myfin.by/kredity/avto/elektromobil",
-            notesRu = "ПВ 0%, без справки, неустойка до 50k; для обычных ДВС (б/у) ставка 16,6%→16,9% и срок до 84 мес. (потолок ~26,4k)."
+            notesRu = "Для электромобиля младше 10 лет. 6 месяцев платятся проценты, затем равные доли основного долга плюс проценты. Условия уточняйте в банке."
         ),
 
         // 11. Банк БелВЭБ (ДИФФ.)

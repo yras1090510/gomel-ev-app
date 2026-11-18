@@ -1,7 +1,6 @@
 package com.gomelev.app.network
 
 import android.util.Log
-import com.gomelev.app.model.CarOffer
 import com.gomelev.app.model.DealerEntity
 import com.gomelev.app.model.SyncSourceLog
 import kotlinx.coroutines.Dispatchers
@@ -10,8 +9,16 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody.Companion.toRequestBody
+import com.gomelev.app.model.BankListing
 import okhttp3.Request
 import org.json.JSONObject
+import org.json.JSONArray
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import java.io.IOException
 import java.util.concurrent.TimeUnit
 
 data class NbrbSyncResult(
@@ -20,10 +27,14 @@ data class NbrbSyncResult(
     val log: SyncSourceLog
 )
 
-data class LiveSyncOutcome(
+internal data class LiveSyncOutcome(
     val usdRate: Double?,
     val nbrbDateLabel: String?,
-    val detectedRvsrPct: Double?,
+    val refinancingRatePct: Double?,
+    val belarusbankTerms: Map<String, BelarusbankTerms>,
+    val inventories: Map<String, JSONArray>,
+    val belvebOnline: BelvebOnlineTerms?,
+    val bankListings: List<BankListing>?,
     val updatedCarPrices: Map<String, Pair<Double, String>>,
     val dealerStatusUpdates: Map<String, DealerSyncPatch>,
     val logs: List<SyncSourceLog>,
@@ -42,17 +53,19 @@ class LiveWebSyncEngine {
     private val client: OkHttpClient = OkHttpClient.Builder()
         .connectTimeout(9, TimeUnit.SECONDS)
         .readTimeout(11, TimeUnit.SECONDS)
+        .callTimeout(18, TimeUnit.SECONDS)
         .followRedirects(true)
         .build()
 
     private val userAgent =
         "Mozilla/5.0 (Linux; Android 15; SM-F966B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36"
 
-    private fun fetchText(url: String): Triple<Int?, Long, String?> {
+    private fun fetchText(url: String, query: JSONObject? = null): Triple<Int?, Long, String?> {
         val start = System.currentTimeMillis()
         return try {
             val req = Request.Builder()
                 .url(url)
+                .apply { if (query != null) post(query.toString().toRequestBody("application/json".toMediaType())) }
                 .header("User-Agent", userAgent)
                 .header("Accept-Language", "ru-BY,ru;q=0.9,en;q=0.7")
                 .build()
@@ -61,23 +74,31 @@ class LiveWebSyncEngine {
                 val body = if (resp.isSuccessful) resp.body?.string() else null
                 Triple(resp.code, latency, body)
             }
-        } catch (t: Throwable) {
+        } catch (t: IOException) {
             val latency = System.currentTimeMillis() - start
             Log.w("LiveWebSync", "Failed $url: ${t.message}")
             Triple(null, latency, t.javaClass.simpleName + ": " + (t.message ?: "error"))
         }
     }
 
-    suspend fun runFullLiveSync(
+    internal suspend fun runFullLiveSync(
         dealers: List<DealerEntity>,
-        currentCars: List<CarOffer>
     ): LiveSyncOutcome = withContext(Dispatchers.IO) {
         val now = System.currentTimeMillis()
 
         coroutineScope {
             val nbrbDeferred = async { syncNbrbRate(now) }
+            val refinancingDeferred = async { syncRefinancingRate(now) }
+            val apsDeferred = async { syncAps(now) }
+            val belvebDeferred = async {
+                val url = "https://www.belveb.by/credits/avtokredit-online/"
+                val (code, latency, html) = fetchText(url)
+                val terms = if (code == 200 && html != null) BelvebOnlineTerms.parse(html) else null
+                terms to SyncSourceLog("БелВЭБ · Автокредит онлайн", url, "Банки", terms != null, code, latency,
+                    if (terms == null) "Условия не прочитаны" else "Сверены ставки, срок и сумма", now)
+            }
             val myfinDeferred = async { syncMyfinRates(now) }
-            val keyCarSitesDeferred = async { syncKeyDealerCatalogs(currentCars, now) }
+            val keyCarSitesDeferred = async { syncKeyDealerCatalogs(now) }
 
             // Check dealer sites concurrently in small clean pool
             val dealerDeferreds = dealers.map { dealer ->
@@ -100,49 +121,76 @@ class LiveWebSyncEngine {
                         summary = hint ?: if (ok) "Доступен (${latency}мс)" else "Ошибка сети",
                         timestampEpochMs = now
                     )
-                    (dealer.id to patch) to log
+                    val stock = if (dealer.id == "nts_ev" && code == 200 && body != null)
+                        runCatching { DealerInventory.faw(body) }.getOrNull() else null
+                    val resultLog = if (dealer.id == "nts_ev") log.copy(ok = stock != null,
+                        summary = stock?.let { "Электромобилей на витрине: ${it.length()}" } ?: "Склад не обновлён") else log
+                    Triple(dealer.id to patch, resultLog, stock)
                 }
             }
 
             // Key bank sites check
             val bankUrls = listOf(
-                Triple("Приорбанк (4%→12,5%)", "Банки", "https://www.priorbank.by/offers/credits/credit-belorusskie-avto-partnery"),
+                Triple("Приорбанк · автокредит", "Банки", "https://www.priorbank.by/offers/credits/credit-belorusskie-avto-partnery"),
                 Triple("Белгазпромбанк (Авто ДРАЙВ)", "Банки", "https://belgazprombank.by/personal_banking/krediti/kredit_na_priobretenie_avtotransporta/Autodrive-credite-na-priobretenie-auto/"),
                 Triple("Дабрабыт (АВТОНАДО)", "Банки", "https://bankdabrabyt.by/personal/credit/avtonado/"),
+                Triple("Беларусбанк · электромобили", "Банки", "https://belarusbank.by/fizicheskim_licam/kredit/consumer/kredit-na-priobretenie-avtomobilya-elektromobilya-/"),
                 Triple("Беларусбанк (EX2/EX5)", "Банки", "https://belarusbank.by/fizicheskim_licam/kredit/consumer/kredit-na-priobretenie-u-dilerov-szao-beldzhi-elektromobiley-marki-geely-modeli-ex5/")
             )
             val bankDeferreds = bankUrls.map { (name, cat, url) ->
                 async {
                     val (code, latency, body) = fetchText(url)
                     val ok = code != null && code in 200..399
-                    val rateHint = if (ok && body != null) extractFirstRateHint(body) else "Статус: ${code ?: "ошибка"}"
-                    SyncSourceLog(
+                    val terms = if (body == null || !ok) null else when (name) {
+                        "Беларусбанк (EX2/EX5)" ->
+                            BelarusbankTerms.parse(body)?.let { "belarus_ex2" to it }
+                        "Беларусбанк · электромобили" ->
+                            BelarusbankTerms.parseGeneralEv(body)?.let { "belarus_ev_general" to it }
+                        else -> null
+                    }
+                    terms to SyncSourceLog(
                         sourceName = name,
                         url = url,
                         category = cat,
                         ok = ok,
                         httpCode = code,
                         latencyMs = latency,
-                        summary = rateHint,
+                        summary = when {
+                            terms != null -> "Условия программы прочитаны"
+                            ok -> "Страница доступна · условия не сверены"
+                            else -> "Статус: ${code ?: "ошибка сети"}"
+                        },
                         timestampEpochMs = now
                     )
                 }
             }
 
             val nbrbRes = nbrbDeferred.await()
-            val (detectedRvsr, myfinLogs) = myfinDeferred.await()
+            val (listings, myfinLog) = myfinDeferred.await()
+            val (aps, apsLog) = apsDeferred.await()
+            val (belveb, belvebLog) = belvebDeferred.await()
+            val (refinancingRate, refinancingLog) = refinancingDeferred.await()
             val (carUpdates, extraCarLogs) = keyCarSitesDeferred.await()
             val dealerResults = dealerDeferreds.awaitAll()
-            val bankLogs = bankDeferreds.awaitAll()
+            val bankResults = bankDeferreds.awaitAll()
+            val bankTerms = bankResults.mapNotNull { it.first }.toMap()
+            val bankLogs = bankResults.map { it.second }
 
             val patchMap = dealerResults.associate { it.first }
             val dealerLogs = dealerResults.map { it.second }
 
-            val allLogs = listOf(nbrbRes.log) + myfinLogs + bankLogs + extraCarLogs + dealerLogs
+            val allLogs = listOf(nbrbRes.log, refinancingLog, myfinLog, apsLog, belvebLog) + bankLogs + extraCarLogs + dealerLogs
             LiveSyncOutcome(
                 usdRate = nbrbRes.usdRate,
                 nbrbDateLabel = nbrbRes.dateLabel,
-                detectedRvsrPct = detectedRvsr,
+                refinancingRatePct = refinancingRate,
+                belarusbankTerms = bankTerms,
+                inventories = buildMap {
+                    dealerResults.forEach { result -> result.third?.let { put(result.first.first, it) } }
+                    aps?.let { put("autopromservis", it) }
+                },
+                bankListings = listings,
+                belvebOnline = belveb,
                 updatedCarPrices = carUpdates,
                 dealerStatusUpdates = patchMap,
                 logs = allLogs,
@@ -195,55 +243,63 @@ class LiveWebSyncEngine {
         )
     }
 
-    private fun syncMyfinRates(now: Long): Pair<Double?, List<SyncSourceLog>> {
-        val logs = mutableListOf<SyncSourceLog>()
-        var detectedRvsr: Double? = null
-        val urls = listOf(
-            "Myfin.by: Автокредиты РБ" to "https://myfin.by/kredity/avto",
-            "Myfin.by: На электромобили" to "https://myfin.by/kredity/avto/elektromobil",
-            "Myfin.by: На бел. товары" to "https://myfin.by/kredity/na-belorusskie-tovary-i-uslugi"
-        )
-        for ((title, url) in urls) {
-            val (code, latency, body) = fetchText(url)
-            val ok = code != null && code in 200..399
-            var note = if (ok) "Страница программ обновлена (${latency}мс)" else "HTTP ${code ?: "сеть"} (${latency}мс)"
-            if (ok && body != null) {
-                val rvsrMatch = Regex("""(1[5-9][.,]\d{2})\s*%""").find(body)
-                val parsed = rvsrMatch?.groupValues?.get(1)?.replace(",", ".")?.toDoubleOrNull()
-                if (parsed != null && parsed in 14.0..20.0) {
-                    if (detectedRvsr == null) detectedRvsr = parsed
-                    note = "Найдена базовая ставка ~${"%.2f".format(parsed)}% (${latency}мс)"
-                }
+    private fun syncRefinancingRate(now: Long): Pair<Double?, SyncSourceLog> {
+        val url = "https://api.nbrb.by/refinancingrate"
+        val (code, latency, body) = fetchText(url)
+        val today = SimpleDateFormat("yyyy-MM-dd", Locale.ROOT).apply {
+            timeZone = java.util.TimeZone.getTimeZone("Europe/Minsk")
+        }.format(Date(now))
+        val latest = runCatching {
+            val rows = JSONArray(body ?: "[]")
+            (0 until rows.length()).map { rows.getJSONObject(it) }
+                .filter { it.getString("Date").take(10) <= today }
+                .maxByOrNull { it.getString("Date") }
+        }.getOrNull()
+        val rate = latest?.optDouble("Value")?.takeIf { code == 200 && it in 0.1..100.0 }
+        val summary = if (rate != null) "Ставка $rate% с ${latest?.optString("Date")?.take(10)}"
+            else "Ставка не получена"
+        return rate to SyncSourceLog("НБ РБ · ставка рефинансирования", url, "Ставки", rate != null, code, latency, summary, now)
+    }
+
+    private fun syncMyfinRates(now: Long): Pair<List<BankListing>?, SyncSourceLog> {
+        val (code, latency, body) = fetchText(BankListings.URL)
+        val listings = if (code == 200 && body != null) BankListings.parse(body) else null
+        return listings to SyncSourceLog("Myfin · предложения автокредитов", BankListings.URL, "Банки",
+            listings != null, code, latency, listings?.let { "Прочитано предложений: ${it.size}" } ?: "Каталог не прочитан", now)
+    }
+
+    private fun syncAps(now: Long): Pair<JSONArray?, SyncSourceLog> {
+        val start = System.currentTimeMillis()
+        var code: Int? = null
+        // The dealer uses a zero-based page number named offset and a fixed 35-row page.
+        val rows = runCatching {
+            val all = JSONArray()
+            val ids = mutableSetOf<Long>()
+            for (page in 0 until 60) {
+                val query = JSONObject().put("offset", JSONArray().put(page)).put("sort", JSONArray().put(1))
+                    .put("brands_id", JSONArray().put(2).put(31)).put("car_conditions_id", JSONArray().put(1))
+                    .put("car_type_id", JSONArray().put(1))
+                val response = fetchText(DealerInventory.APS_API, query)
+                code = response.first
+                require(code == 200)
+                val batch = JSONArray(requireNotNull(response.third))
+                for (i in 0 until batch.length()) require(ids.add(batch.getJSONObject(i).getLong("id")))
+                val parsed = DealerInventory.apsPage(batch)
+                for (i in 0 until parsed.length()) all.put(parsed.getJSONObject(i))
+                if (batch.length() < 35) return@runCatching all
             }
-            logs.add(SyncSourceLog(title, url, "Myfin.by", ok, code, latency, note, now))
-        }
-        return detectedRvsr to logs
+            error("Неполная выдача")
+        }.getOrNull()
+        return rows to SyncSourceLog("Склад Dongfeng", "https://dongfeng.by/stock/", "Автомобили",
+            rows != null, code, System.currentTimeMillis() - start,
+            rows?.let { "Свободных предложений: ${it.length()}" } ?: "Полный склад не получен", now)
     }
 
     private fun syncKeyDealerCatalogs(
-        cars: List<CarOffer>,
         now: Long
     ): Pair<Map<String, Pair<Double, String>>, List<SyncSourceLog>> {
         val updates = mutableMapOf<String, Pair<Double, String>>()
         val extraLogs = mutableListOf<SyncSourceLog>()
-
-        // 1. Check NTS Xiaoma promo price
-        val xiaomaCar = cars.find { it.id == "faw_xiaoma" }
-        if (xiaomaCar != null) {
-            val (code, latency, body) = fetchText("https://faw-bestune.by/in-stock/gomel/")
-            if (code == 200 && body != null) {
-                val plain = body.replace(Regex("<[^>]+>"), " ").replace(Regex("\\s+"), " ")
-                val pMatch = Regex("""(?:Xiaoma|сяома)[^0-9]{0,120}(\d{2}\s?\d{3})\s*(?:BYN|руб)""", RegexOption.IGNORE_CASE)
-                    .find(plain)
-                val foundPrice = pMatch?.groupValues?.get(1)?.replace(" ", "")?.toDoubleOrNull()
-                if (foundPrice != null && foundPrice in 15_000.0..45_000.0) {
-                    updates["faw_xiaoma"] = foundPrice to "Сверено с faw-bestune.by"
-                    extraLogs.add(
-                        SyncSourceLog("Парсер цен: FAW Xiaoma Гомель", "https://faw-bestune.by/in-stock/gomel/", "Цены", true, 200, latency, "Цена на сайте: ${foundPrice.toInt()} BYN", now)
-                    )
-                }
-            }
-        }
 
         // 2. Check Red Dragon ARCFOX T1 price
         val (_, latRd, bodyRd) = fetchText("https://red-dragon-service.by/")
@@ -281,11 +337,5 @@ class LiveWebSyncEngine {
             }
             else -> "Сайт проверен и отвечает"
         }
-    }
-
-    private fun extractFirstRateHint(html: String): String {
-        val plain = html.replace(Regex("<[^>]+>"), " ").replace(Regex("\\s+"), " ")
-        val rates = Regex("""(\d{1,2}[.,]\d{1,2})\s*%""").findAll(plain).take(2).map { it.value }.toList()
-        return if (rates.isNotEmpty()) "Упомянуты ставки: ${rates.joinToString(", ")}" else "Страница банка доступна"
     }
 }

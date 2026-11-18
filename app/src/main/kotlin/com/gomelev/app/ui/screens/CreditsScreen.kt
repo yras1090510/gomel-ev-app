@@ -86,7 +86,9 @@ fun CreditsScreen(
     onTriggerSync: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var filter by remember { mutableStateOf(CreditFilter.ALL) }
+    var showListings by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(false) }
+    val context = LocalContext.current
+    var filter by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(CreditFilter.ALL) }
 
     val filtered = remember(programs, filter) {
         programs.filter { p ->
@@ -97,6 +99,7 @@ fun CreditsScreen(
                 CreditFilter.EV_GEELY -> p.scope in listOf(
                     CreditScope.GEELY_EV,
                     CreditScope.EV_ALL,
+                    CreditScope.EV_UNDER_TEN_YEARS,
                     CreditScope.BEL_AUTO
                 )
                 CreditFilter.USED -> p.scope in listOf(
@@ -142,6 +145,11 @@ fun CreditsScreen(
                             onUpdateProfile = onUpdateProfile,
                             onTriggerSync = onTriggerSync
                         )
+                        if (snapshot.bankListings.isNotEmpty()) {
+                            OutlinedButton(onClick = { showListings = !showListings }) {
+                                Text(if (showListings) "Скрыть витрину" else "Предложения Myfin · ${snapshot.bankListings.size}")
+                            }
+                        }
                         @OptIn(ExperimentalLayoutApi::class)
                         FlowRow(
                             modifier = Modifier.fillMaxWidth(),
@@ -159,6 +167,20 @@ fun CreditsScreen(
                     }
                 }
 
+                if (showListings) {
+                    item { Text("Витрина Myfin · ${snapshot.bankListChecked?.let(Formatters::timestamp).orEmpty()}. График и применимость уточняйте у банка.",
+                        style = MaterialTheme.typography.bodySmall) }
+                    items(snapshot.bankListings, key = { it.url }) { offer ->
+                        Surface(onClick = { openExternalUrl(context, offer.url) }, shape = RoundedCornerShape(16.dp),
+                            color = MaterialTheme.colorScheme.surfaceContainerLow) {
+                            Column(Modifier.fillMaxWidth().padding(12.dp)) {
+                                Text(offer.name, style = MaterialTheme.typography.titleMedium)
+                                Text(offer.provider, style = MaterialTheme.typography.labelLarge)
+                                Text(offer.terms, style = MaterialTheme.typography.bodySmall)
+                            }
+                        }
+                    }
+                }
                 items(filtered, key = { it.id }) { p ->
                     val selected = activeProgram?.id == p.id && isExpandedWidth
                     CreditProgramCard(
@@ -370,6 +392,11 @@ private fun CreditProgramDetailPane(
             Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(program.bankName, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
                 Text(program.programName, style = MaterialTheme.typography.headlineMedium)
+                Text(
+                    program.liveRateNote ?: "Условия из каталога · сверьте с банком",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
                 Text(program.notesRu, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
 
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
@@ -379,12 +406,18 @@ private fun CreditProgramDetailPane(
                     style = MaterialTheme.typography.bodySmall
                 )
                 Text(
-                    "Без залога до: ${Formatters.byn(program.noCollateralCapByn)} · Справка: ${if (program.requiresIncomeProof) "обязательна" else "не нужна (до лимита)"} · КАСКО: ${if (program.requiresCasco) "обязательно" else "нет"}",
+                    if (program.id == "belarus_ev_general") {
+                        "Обеспечение — поручительство. Требования к поручителю уточняйте в банке."
+                    } else if (program.id == "belarus_ex2" && program.liveRateNote != null) {
+                        "Залог и КАСКО зависят от вида обеспечения. Уточните справки и лимит в банке."
+                    } else {
+                        "Без залога до: ${Formatters.byn(program.noCollateralCapByn)} · Справка: ${if (program.requiresIncomeProof) "обязательна" else "по условиям банка"} · КАСКО: ${if (program.requiresCasco) "обязательно" else "уточните"}"
+                    },
                     style = MaterialTheme.typography.bodySmall.copy(fontFeatureSettings = "tnum"),
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
-                    "РВСР база по стране: ${Formatters.pct(snapshot.rvsrPct)} · СР НБ РБ: ${Formatters.pct(snapshot.refinancingRatePct)}",
+                    "Ставка рефинансирования НБ РБ: ${Formatters.pct(snapshot.refinancingRatePct)}",
                     style = MaterialTheme.typography.labelMedium.copy(fontFeatureSettings = "tnum"),
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
