@@ -11,6 +11,7 @@ import java.time.ZoneId
 /** A complete response is the replacement unit. A missing or malformed page keeps the previous snapshot. */
 internal object DealerInventory {
     const val FAW_URL = "https://faw-bestune.by/in-stock/gomel/"
+    const val SEAGULL_URL = "https://westmotors.by/catalog-avto-china/byd/seagull"
     const val GARAGE_URL = "https://autogarage.by/katalog/avto/?engine-type%5B%5D=electric&Status%5B%5D=in%20stock&filter=yes&price=no"
     const val APS_API = "https://apistock.aps.by/cars"
     private const val APS_URL = "https://dongfeng.by/stock/"
@@ -76,6 +77,35 @@ internal object DealerInventory {
         return rows to next
     }
 
+    fun seagullShowcase(html: String, fx: Double): JSONArray {
+        require(fx.isFinite() && fx > 0)
+        val cards = Jsoup.parse(html, SEAGULL_URL).select("article.catalog-card")
+        require(cards.isNotEmpty())
+        val rows = JSONArray()
+        for (card in cards) {
+            val quote = card.selectFirst("[data-calc-estimate][data-origin=china][data-fuel-type=electric][data-default-destination=by/minsk]")
+                ?: continue
+            // The nearby USD and BYN headline gives the price in China, before delivery.
+            val turnkey = quote.attr("data-turnkey-usd").toDoubleOrNull()?.takeIf { it > 0 } ?: continue
+            val link = card.selectFirst(".catalog-card__title a[href]") ?: continue
+            val url = link.absUrl("href")
+            require(url.startsWith("$SEAGULL_URL/"))
+            val specs = card.select(".catalog-card__spec").map { it.ownText() }
+            val condition = quote.attr("data-is-new")
+            rows.put(JSONObject().put("id", "west_" + url.trimEnd('/').substringAfterLast('/'))
+                .put("name", "BYD Seagull").put("trim", card.select(".catalog-card__equip").first()?.text())
+                .put("year", quote.attr("data-year").toIntOrNull()).put("stock", StockStatus.ORDER.name)
+                .put("location", "Китай → Минск").put("price", kotlin.math.round(turnkey * fx))
+                .put("priceNote", "Оценка под ключ в Минске · ${turnkey.toInt()} USD по курсу НБ РБ $fx")
+                .put("battery", specs.firstOrNull { it.endsWith("кВт·ч") })
+                .put("range", specs.firstOrNull { it.startsWith("Запас хода") })
+                .put("used", condition == "0").put("conditionKnown", condition in setOf("0", "1"))
+                .put("url", url).put("photo", card.selectFirst("img.catalog-card__img[src]")?.absUrl("src")))
+        }
+        require(rows.length() > 0)
+        return rows
+    }
+
     fun apsPage(raw: JSONArray): JSONArray {
         val rows = JSONArray()
         for (i in 0 until raw.length()) {
@@ -108,11 +138,11 @@ internal object DealerInventory {
 
     fun merge(base: List<CarOffer>, snapshots: JSONObject): List<CarOffer> {
         val result = base.toMutableList()
-        for (dealer in listOf("nts_ev", "autopromservis", "autogarage")) {
+        for (dealer in listOf("nts_ev", "autopromservis", "autogarage", "westmotors")) {
             val snapshot = snapshots.optJSONObject(dealer) ?: continue
             val rows = snapshot.getJSONArray("rows")
             val date = Instant.ofEpochMilli(snapshot.getLong("checked")).atZone(ZoneId.of("Europe/Minsk")).toLocalDate()
-            val seedId = when (dealer) { "nts_ev" -> "faw_xiaoma"; "autopromservis" -> "dongfeng_box"; else -> null }
+            val seedId = when (dealer) { "nts_ev" -> "faw_xiaoma"; "autopromservis" -> "dongfeng_box"; "westmotors" -> "byd_seagull"; else -> null }
             result.removeAll { it.id == seedId }
             for (i in 0 until rows.length()) {
                 val row = rows.getJSONObject(i)
@@ -123,16 +153,16 @@ internal object DealerInventory {
                     trimAndYear = listOfNotNull(row.optString("trim").ifBlank { null }, year?.toString(),
                         "Пробег и состояние уточняются".takeIf { !row.optBoolean("conditionKnown", true) }).joinToString(" · "),
                     bodyType = row.optString("body", seed?.bodyType ?: "Электромобиль"),
-                    batteryOrEngine = seed?.batteryOrEngine ?: "Электропривод",
+                    batteryOrEngine = row.optString("battery", seed?.batteryOrEngine ?: "Электропривод"),
                     rangeOrSpec = row.optString("range", seed?.rangeOrSpec ?: "Запас хода уточните у дилера"),
-                    priceByn = row.getDouble("price"), priceNote = row.optString("priceNote", "Цена витрины дилера"), isEv = true, isUsed = false,
+                    priceByn = row.getDouble("price"), priceNote = row.optString("priceNote", "Цена витрины дилера"), isEv = true, isUsed = row.optBoolean("used"),
                     isGeelyEx = false, isBelPartner = false, isDongfengIceOrForthing = false, isDealerLegalEntity = true,
                     stockStatus = StockStatus.valueOf(row.getString("stock")), cityNote = row.getString("location"),
                     dealerId = dealer, imageRes = seed?.imageRes, imageSource = url, imageCredit = "Фото дилера",
                     listingUrl = url, forecast2027BullPct = seed?.forecast2027BullPct ?: 0.0,
                     forecast2027BasePct = seed?.forecast2027BasePct ?: 0.0, forecast2027BearPct = seed?.forecast2027BearPct ?: 0.0,
                     forecastDriverRu = seed?.forecastDriverRu.orEmpty(), lastSyncedPriceNote = "Витрина · $date",
-                    modelYear = year, conditionKnown = row.optBoolean("conditionKnown", true), remotePhoto = row.optString("photo").takeIf { it.startsWith("https://") })
+                    modelYear = year, importEstimate = dealer == "westmotors", conditionKnown = row.optBoolean("conditionKnown", true), remotePhoto = row.optString("photo").takeIf { it.startsWith("https://") })
             }
         }
         return result

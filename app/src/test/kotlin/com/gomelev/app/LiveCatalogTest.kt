@@ -42,6 +42,20 @@ class LiveCatalogTest {
         assertEquals("IN_GOMEL", DealerInventory.apsPage(rows).getJSONObject(0).getString("stock"))
     }
 
+    @Test fun seagullUsesTurnkeyEstimateAndExcludesDealerLoans() {
+        val page = """<article class="catalog-card"><h3 class="catalog-card__title"><a href="/catalog-avto-china/byd/seagull/42">Seagull</a></h3>
+            <span class="catalog-card__spec">30,08 кВт·ч</span><div data-calc-estimate data-origin="china" data-fuel-type="electric"
+            data-default-destination="by/minsk" data-price="7000" data-turnkey-usd="10000" data-is-new="1"></div></article>"""
+        val rows = DealerInventory.seagullShowcase(page, 3.0)
+        val snapshot = JSONObject().put("westmotors", JSONObject().put("checked", 1L).put("rows", rows))
+        val car = DealerInventory.merge(PreloadedCatalog.cars, snapshot).single { it.id == "west_42" }
+        assertEquals(30000.0, car.priceByn, 0.01)
+        assertEquals("30,08 кВт·ч", car.batteryOrEngine)
+        assertTrue(car.importEstimate && !car.isUsed && car.conditionKnown)
+        val bank = PreloadedCatalog.creditPrograms.single { it.id == "belveb_online" }
+        assertFalse(com.gomelev.app.domain.CreditCalculator.isProgramEligibleForCar(car, bank))
+    }
+
     @Test fun garageUsesOnlyTheLocalPriceAndRecordsWhenConditionIsUnknown() {
         val page = """<section class="category-list-catalog"><a class="single-prod" href="/test-ev/">
             <span class="status-auto">В наличии</span><p class="catalog-title"><span>Test EV</span></p>

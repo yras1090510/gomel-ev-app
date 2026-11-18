@@ -89,6 +89,15 @@ class LiveWebSyncEngine {
         coroutineScope {
             val nbrbDeferred = async { syncNbrbRate(now) }
             val refinancingDeferred = async { syncRefinancingRate(now) }
+            val seagullDeferred = async {
+                val (code, elapsed, body) = fetchText(DealerInventory.SEAGULL_URL)
+                val rate = nbrbDeferred.await().usdRate
+                val rows = if (code == 200 && body != null && rate != null)
+                    runCatching { DealerInventory.seagullShowcase(body, rate) }.getOrNull() else null
+                rows to SyncSourceLog("WestMotors · витрина BYD Seagull", DealerInventory.SEAGULL_URL, "Автомобили",
+                    rows != null, code, elapsed, rows?.let { "На первой странице с оценкой под ключ: ${it.length()}" }
+                        ?: "Витрина или курс не получены", now)
+            }
             val garageDeferred = async { syncGarage(now, nbrbDeferred.await().usdRate) }
             val apsDeferred = async { syncAps(now) }
             val belvebDeferred = async {
@@ -168,6 +177,7 @@ class LiveWebSyncEngine {
 
             val nbrbRes = nbrbDeferred.await()
             val (listings, myfinLog) = myfinDeferred.await()
+            val (seagull, seagullLog) = seagullDeferred.await()
             val (garage, garageLog) = garageDeferred.await()
             val (aps, apsLog) = apsDeferred.await()
             val (belveb, belvebLog) = belvebDeferred.await()
@@ -181,7 +191,7 @@ class LiveWebSyncEngine {
             val patchMap = dealerResults.associate { it.first }
             val dealerLogs = dealerResults.map { it.second }
 
-            val allLogs = listOf(nbrbRes.log, refinancingLog, myfinLog, apsLog, garageLog, belvebLog) + bankLogs + extraCarLogs + dealerLogs
+            val allLogs = listOf(nbrbRes.log, refinancingLog, myfinLog, apsLog, garageLog, seagullLog, belvebLog) + bankLogs + extraCarLogs + dealerLogs
             LiveSyncOutcome(
                 usdRate = nbrbRes.usdRate,
                 nbrbDateLabel = nbrbRes.dateLabel,
@@ -189,6 +199,7 @@ class LiveWebSyncEngine {
                 belarusbankTerms = bankTerms,
                 inventories = buildMap {
                     dealerResults.forEach { result -> result.third?.let { put(result.first.first, it) } }
+                    seagull?.let { put("westmotors", it) }
                     garage?.let { put("autogarage", it) }
                     aps?.let { put("autopromservis", it) }
                 },

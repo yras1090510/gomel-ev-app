@@ -410,7 +410,7 @@ private fun SyncControlSection(
             }
 
             Text(
-                "Склады FAW, Dongfeng и AutoGarage, витрина Myfin и три банковские программы обновляются из сети. При сбое сохраняется предыдущая версия источника.",
+                "Склады FAW, Dongfeng и AutoGarage, витрины BYD Seagull на WestMotors и кредитов на Myfin и три банковские программы обновляются из сети. При сбое сохраняется предыдущая версия источника.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )

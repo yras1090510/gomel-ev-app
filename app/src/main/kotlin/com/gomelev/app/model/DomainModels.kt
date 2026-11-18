@@ -95,7 +95,8 @@ data class CarOffer(
     val lastSyncedPriceNote: String? = null,
     val modelYear: Int? = null,
     val remotePhoto: String? = null,
-    val conditionKnown: Boolean = true
+    val conditionKnown: Boolean = true,
+    val importEstimate: Boolean = false
 )
 
 data class DealerEntity(

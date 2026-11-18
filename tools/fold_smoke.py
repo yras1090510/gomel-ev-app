@@ -1,4 +1,5 @@
 """Exercise the installed debug APK on an Android emulator across three window sizes."""
+import json
 import os
 import re
 import subprocess
@@ -46,6 +47,18 @@ def capture(name):
     (out / (name + ".png")).write_bytes(data)
 
 
+def sync_record():
+    xml = adb("exec-out", "run-as", package, "cat", "shared_prefs/gomel_ev_prefs.xml")
+    prefs = {node.get("name"): node.get("value", node.text) for node in ET.fromstring(xml)}
+    inventories = json.loads(prefs.get("inventories", "{}"))
+    return {
+        "checked": int(prefs.get("last_sync_ms", "0")),
+        "inventories": {key: len(value["rows"]) for key, value in inventories.items()},
+        "bank_offers": len(json.loads(prefs.get("bank_list", "[]"))),
+        "bank_programs": sum(key.endswith("_terms") for key in prefs),
+    }
+
+
 try:
     shell("svc", "wifi", "disable")
     shell("svc", "data", "disable")
@@ -77,6 +90,22 @@ try:
     shell("input", "swipe", "180", "230", "180", "650", "250")
     find("Электромобили для доставки")
     capture("05-phone")
+    previous = sync_record()["checked"]
+    shell("svc", "wifi", "enable")
+    shell("svc", "data", "enable")
+    time.sleep(3)
+    tap(find("Проверить источники"))
+    deadline = time.monotonic() + 180
+    while time.monotonic() < deadline:
+        result = sync_record()
+        if result["checked"] > previous:
+            break
+        time.sleep(2)
+    else:
+        raise AssertionError("Manual refresh did not finish")
+    (out / "sync.json").write_text(json.dumps(result, indent=2))
+    print("Manual refresh", result, flush=True)
+    capture("06-refresh")
 except Exception:
     capture("failure")
     print([(n.get("text"), n.get("content-desc"), n.get("bounds")) for n in nodes()

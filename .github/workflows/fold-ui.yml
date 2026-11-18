@@ -17,6 +17,10 @@ jobs:
         with:
           gradle-version: '8.9'
       - run: gradle testDebugUnitTest assembleDebug
+      - uses: actions/upload-artifact@v4
+        with:
+          name: GomelEV-debug
+          path: app/build/outputs/apk/debug/app-debug.apk
       - name: Enable emulator acceleration
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
@@ -35,4 +39,4 @@ jobs:
         if: always()
         with:
           name: fold-screens
-          path: fold-screens/*.png
+          path: fold-screens/

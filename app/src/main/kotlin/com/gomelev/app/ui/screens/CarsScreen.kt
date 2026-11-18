@@ -93,7 +93,6 @@ fun CarsScreen(
     selectedCarId: String?,
     onSelectCar: (String?) -> Unit,
     onUpdateProfile: ((UserFinanceProfile) -> UserFinanceProfile) -> Unit,
-    onTriggerSync: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var budget by rememberSaveable { mutableStateOf(CarBudget.TARGET) }
@@ -162,9 +161,7 @@ fun CarsScreen(
                     Spacer(Modifier.height(8.dp))
                     PdnControlBar(
                         profile = profile,
-                        snapshot = snapshot,
-                        onUpdateProfile = onUpdateProfile,
-                        onTriggerSync = onTriggerSync
+                            onUpdateProfile = onUpdateProfile
                     )
                 }
 
@@ -209,7 +206,6 @@ fun CarsScreen(
                     CarListCard(
                         car = car,
                         bestEval = bestEval,
-                        usdBynRate = snapshot.usdBynRate,
                         selected = isSelected,
                         onClick = { onSelectCar(car.id) },
                         modifier = Modifier.animateItem()
@@ -242,7 +238,6 @@ fun CarsScreen(
 private fun CarListCard(
     car: CarOffer,
     bestEval: PaymentEvaluation?,
-    usdBynRate: Double,
     selected: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -273,7 +268,7 @@ private fun CarListCard(
         border = BorderStroke(borderWidth, borderColor)
     ) {
         Column(modifier = Modifier.padding(14.dp)) {
-            MinimalistCarStage(car = car, usdBynRate = usdBynRate, compact = true)
+            MinimalistCarStage(car = car, compact = true)
 
             Spacer(modifier = Modifier.height(12.dp))
 
@@ -379,7 +374,7 @@ private fun CarDetailPane(
             }
         }
 
-        MinimalistCarStage(car = car, usdBynRate = snapshot.usdBynRate, compact = false)
+        MinimalistCarStage(car = car, compact = false)
 
         // Header block
         Surface(
@@ -430,7 +425,7 @@ private fun CarDetailPane(
                 if (car.lastSyncedPriceNote != null) {
                     Surface(shape = CircleShape, color = sem.passContainer) {
                         Text(
-                            text = if (car.id.startsWith("ag_")) "${car.lastSyncedPriceNote} · ${car.priceNote}" else car.lastSyncedPriceNote,
+                            text = if (car.id.startsWith("ag_") || car.importEstimate) "${car.lastSyncedPriceNote} · ${car.priceNote}" else car.lastSyncedPriceNote,
                             style = MaterialTheme.typography.labelMedium,
                             color = sem.onPassContainer,
                             modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
@@ -537,6 +532,10 @@ private fun CarDetailPane(
             "Расчётный лимит: ${Formatters.byn(profile.freePdnRoomByn)}/мес. Банк проверяет доход, долги и соответствие дилера программе.",
             style = MaterialTheme.typography.bodySmall
         )
+        if (car.importEstimate) {
+            Text("Цена включает ориентир доставки в Минск. До подтверждения договора с продавцом в Беларуси расчёт доступен только по кредитам на любые цели.",
+                style = MaterialTheme.typography.bodySmall)
+        }
         evaluations.forEach { ev ->
             Surface(
                 shape = RoundedCornerShape(18.dp),

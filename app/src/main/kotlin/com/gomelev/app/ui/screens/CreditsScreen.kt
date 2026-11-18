@@ -83,7 +83,6 @@ fun CreditsScreen(
     selectedProgramId: String?,
     onSelectProgram: (String?) -> Unit,
     onUpdateProfile: ((UserFinanceProfile) -> UserFinanceProfile) -> Unit,
-    onTriggerSync: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var showListings by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(false) }
@@ -141,9 +140,7 @@ fun CreditsScreen(
                     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                         PdnControlBar(
                             profile = profile,
-                            snapshot = snapshot,
-                            onUpdateProfile = onUpdateProfile,
-                            onTriggerSync = onTriggerSync
+                            onUpdateProfile = onUpdateProfile
                         )
                         if (snapshot.bankListings.isNotEmpty()) {
                             OutlinedButton(onClick = { showListings = !showListings }) {

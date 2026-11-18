@@ -14,20 +14,16 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AccountBalance
@@ -54,8 +50,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
-import androidx.compose.material3.windowsizeclass.WindowSizeClass
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -77,7 +71,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.window.layout.FoldingFeature
 import com.gomelev.app.model.AppThemeMode
 import com.gomelev.app.model.MarketSnapshot
-import com.gomelev.app.model.UserFinanceProfile
 import com.gomelev.app.ui.screens.CarsScreen
 import com.gomelev.app.ui.screens.CreditsScreen
 import com.gomelev.app.ui.screens.DealersScreen
@@ -180,8 +173,7 @@ fun GomelEvRoot(
                             foldingFeature = foldingFeature,
                             selectedCarId = selectedCarId,
                             onSelectCar = viewModel::selectCar,
-                            onUpdateProfile = viewModel::updateProfile,
-                            onTriggerSync = refresh
+                            onUpdateProfile = viewModel::updateProfile
                         )
 
                         AppDestination.DEALERS -> DealersScreen(
@@ -202,8 +194,7 @@ fun GomelEvRoot(
                             foldingFeature = foldingFeature,
                             selectedProgramId = selectedProgramId,
                             onSelectProgram = viewModel::selectProgram,
-                            onUpdateProfile = viewModel::updateProfile,
-                            onTriggerSync = refresh
+                            onUpdateProfile = viewModel::updateProfile
                         )
 
                         AppDestination.FORECAST_SYNC -> ForecastAndSyncScreen(
