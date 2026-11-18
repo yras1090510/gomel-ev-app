@@ -9,7 +9,6 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
-import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
@@ -31,7 +30,6 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         setContent {
-            val windowSizeClass = calculateWindowSizeClass(this)
             val themeMode by viewModel.themeMode.collectAsStateWithLifecycle()
             val systemDark = isSystemInDarkTheme()
             val isDark = when (themeMode) {
@@ -66,7 +64,6 @@ class MainActivity : ComponentActivity() {
             GomelEvTheme(darkTheme = isDark, dynamicColor = false) {
                 GomelEvRoot(
                     viewModel = viewModel,
-                    windowSizeClass = windowSizeClass,
                     foldingFeature = foldingFeature
                 )
             }

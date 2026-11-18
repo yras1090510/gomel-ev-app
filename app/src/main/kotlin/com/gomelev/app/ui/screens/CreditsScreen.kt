@@ -83,10 +83,11 @@ fun CreditsScreen(
     selectedProgramId: String?,
     onSelectProgram: (String?) -> Unit,
     onUpdateProfile: ((UserFinanceProfile) -> UserFinanceProfile) -> Unit,
-    onTriggerSync: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var filter by remember { mutableStateOf(CreditFilter.ALL) }
+    var showListings by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(false) }
+    val context = LocalContext.current
+    var filter by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(CreditFilter.ALL) }
 
     val filtered = remember(programs, filter) {
         programs.filter { p ->
@@ -97,6 +98,7 @@ fun CreditsScreen(
                 CreditFilter.EV_GEELY -> p.scope in listOf(
                     CreditScope.GEELY_EV,
                     CreditScope.EV_ALL,
+                    CreditScope.EV_UNDER_TEN_YEARS,
                     CreditScope.BEL_AUTO
                 )
                 CreditFilter.USED -> p.scope in listOf(
@@ -138,10 +140,13 @@ fun CreditsScreen(
                     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                         PdnControlBar(
                             profile = profile,
-                            snapshot = snapshot,
-                            onUpdateProfile = onUpdateProfile,
-                            onTriggerSync = onTriggerSync
+                            onUpdateProfile = onUpdateProfile
                         )
+                        if (snapshot.bankListings.isNotEmpty()) {
+                            OutlinedButton(onClick = { showListings = !showListings }) {
+                                Text(if (showListings) "Скрыть витрину" else "Предложения Myfin · ${snapshot.bankListings.size}")
+                            }
+                        }
                         @OptIn(ExperimentalLayoutApi::class)
                         FlowRow(
                             modifier = Modifier.fillMaxWidth(),
@@ -159,6 +164,20 @@ fun CreditsScreen(
                     }
                 }
 
+                if (showListings) {
+                    item { Text("Витрина Myfin · ${snapshot.bankListChecked?.let(Formatters::timestamp).orEmpty()}. График и применимость уточняйте у банка.",
+                        style = MaterialTheme.typography.bodySmall) }
+                    items(snapshot.bankListings, key = { it.url }) { offer ->
+                        Surface(onClick = { openExternalUrl(context, offer.url) }, shape = RoundedCornerShape(16.dp),
+                            color = MaterialTheme.colorScheme.surfaceContainerLow) {
+                            Column(Modifier.fillMaxWidth().padding(12.dp)) {
+                                Text(offer.name, style = MaterialTheme.typography.titleMedium)
+                                Text(offer.provider, style = MaterialTheme.typography.labelLarge)
+                                Text(offer.terms, style = MaterialTheme.typography.bodySmall)
+                            }
+                        }
+                    }
+                }
                 items(filtered, key = { it.id }) { p ->
                     val selected = activeProgram?.id == p.id && isExpandedWidth
                     CreditProgramCard(
@@ -258,6 +277,10 @@ private fun CreditProgramCard(
                 overflow = TextOverflow.Ellipsis
             )
 
+            if (CreditCalculator.excludesApplicant(program, profile)) {
+                Text("Онлайн-программа недоступна сотрудникам МВД", style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.error)
+            }
             val rateStr = if (program.graceMonths > 0) {
                 "${Formatters.pct(program.graceRatePct)} (${program.graceMonths}м) → ${Formatters.pct(program.postRatePct)} · до ${program.maxMonths} мес."
             } else {
@@ -332,14 +355,15 @@ private fun CreditProgramDetailPane(
         CreditCalculator.steppedAnnuity(loan, program.graceRatePct, program.graceMonths, program.postRatePct, program.maxMonths)
     }
     val diff = remember(loan, program) {
-        CreditCalculator.differentiatedDetails(loan, program.graceRatePct, program.graceMonths, program.postRatePct, program.maxMonths)
+        CreditCalculator.differentiatedDetails(loan, program.graceRatePct, program.graceMonths, program.postRatePct, program.maxMonths, program.principalGraceMonths)
     }
     val currentPeak = if (program.scheduleType == ScheduleType.DIFFERENTIATED) {
         maxOf(diff.month1Grace, diff.peakPostGrace)
     } else {
         maxOf(stepped.graceMonthly, stepped.postGraceMonthly)
     }
-    val passes = currentPeak <= profile.freePdnRoomByn && loan <= program.maxAmountByn
+    val excluded = CreditCalculator.excludesApplicant(program, profile)
+    val passes = !excluded && currentPeak <= profile.freePdnRoomByn && loan <= program.maxAmountByn
 
     Column(
         modifier = Modifier
@@ -370,6 +394,11 @@ private fun CreditProgramDetailPane(
             Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(program.bankName, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
                 Text(program.programName, style = MaterialTheme.typography.headlineMedium)
+                Text(
+                    program.liveRateNote ?: "Условия из каталога · сверьте с банком",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
                 Text(program.notesRu, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
 
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
@@ -379,12 +408,18 @@ private fun CreditProgramDetailPane(
                     style = MaterialTheme.typography.bodySmall
                 )
                 Text(
-                    "Без залога до: ${Formatters.byn(program.noCollateralCapByn)} · Справка: ${if (program.requiresIncomeProof) "обязательна" else "не нужна (до лимита)"} · КАСКО: ${if (program.requiresCasco) "обязательно" else "нет"}",
+                    if (program.id == "belarus_ev_general") {
+                        "Обеспечение — поручительство. Требования к поручителю уточняйте в банке."
+                    } else if (program.id == "belarus_ex2" && program.liveRateNote != null) {
+                        "Залог и КАСКО зависят от вида обеспечения. Уточните справки и лимит в банке."
+                    } else {
+                        "Без залога до: ${Formatters.byn(program.noCollateralCapByn)} · Справка: ${if (program.requiresIncomeProof) "обязательна" else "по условиям банка"} · КАСКО: ${if (program.requiresCasco) "обязательно" else "уточните"}"
+                    },
                     style = MaterialTheme.typography.bodySmall.copy(fontFeatureSettings = "tnum"),
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
-                    "РВСР база по стране: ${Formatters.pct(snapshot.rvsrPct)} · СР НБ РБ: ${Formatters.pct(snapshot.refinancingRatePct)}",
+                    "Ставка рефинансирования НБ РБ: ${Formatters.pct(snapshot.refinancingRatePct)}",
                     style = MaterialTheme.typography.labelMedium.copy(fontFeatureSettings = "tnum"),
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -469,7 +504,7 @@ private fun CreditProgramDetailPane(
                     Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         val tc = if (passes) sem.onPassContainer else sem.onFailContainer
                         Text(
-                            text = if (passes) "Одобрение по ПДН: ПРОХОДИТ (≤ ${Formatters.bynShort(profile.freePdnRoomByn)})" else "Одобрение по ПДН: ОТКАЗ (> ${Formatters.bynShort(profile.freePdnRoomByn)})",
+                            text = if (excluded) "Онлайн-программа недоступна сотрудникам МВД" else if (passes) "В расчётном лимите (≤ ${Formatters.bynShort(profile.freePdnRoomByn)})" else "Выше расчётного лимита (> ${Formatters.bynShort(profile.freePdnRoomByn)})",
                             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                             color = tc
                         )

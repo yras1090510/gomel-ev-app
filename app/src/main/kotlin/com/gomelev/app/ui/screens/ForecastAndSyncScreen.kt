@@ -108,6 +108,15 @@ fun ForecastAndSyncScreen(
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             item {
+                SyncControlSection(
+                    snapshot = snapshot,
+                    autoSyncEnabled = autoSyncEnabled,
+                    onTriggerSync = onTriggerSync,
+                    onToggleAutoSync = onToggleAutoSync,
+                    showLogHeading = false
+                )
+            }
+            item {
                 ForecastSectionContent(
                     cars = cars,
                     profile = profile,
@@ -116,19 +125,9 @@ fun ForecastAndSyncScreen(
                     onUpdateProfile = onUpdateProfile
                 )
             }
-            item {
-                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-            }
-            item {
-                SyncControlSection(
-                    snapshot = snapshot,
-                    autoSyncEnabled = autoSyncEnabled,
-                    onTriggerSync = onTriggerSync,
-                    onToggleAutoSync = onToggleAutoSync
-                )
-            }
-            items(snapshot.syncLogs) { log ->
-                SyncLogCard(log)
+            if (snapshot.syncLogs.isNotEmpty()) {
+                item { SyncLogHeading(snapshot.syncLogs) }
+                items(snapshot.syncLogs) { log -> SyncLogCard(log) }
             }
         }
     }
@@ -272,8 +271,7 @@ private fun ForecastSectionContent(
                 valueRange = 200f..1000f
             )
             Text(
-                "При свободном ПДН ${profile.freePdnRoomByn.toInt()} BYN/мес: с 0% ПВ сразу доступны FAW Xiaoma, Peugeot iOn, Geely EX2 Pro и BYD Seagull б/у (БГПБ 12 лет). " +
-                    "Накопив ${Formatters.bynShort(savedBy2027)} BYN к сентябрю 2027, можно добавить первый взнос и выйти на более высокий класс EV.",
+                "Расчётный лимит платежа — ${Formatters.byn(profile.freePdnRoomByn)} в месяц. В каталоге фильтр «По моему ПДН» учитывает ваш взнос и текущие условия программ.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -372,11 +370,10 @@ private fun SyncControlSection(
     snapshot: MarketSnapshot,
     autoSyncEnabled: Boolean,
     onTriggerSync: () -> Unit,
-    onToggleAutoSync: (Boolean) -> Unit
+    onToggleAutoSync: (Boolean) -> Unit,
+    showLogHeading: Boolean = true
 ) {
-    val sem = LocalSemanticColors.current
-
-    Text("Живая связь с сайтами и курсами", style = MaterialTheme.typography.headlineSmall)
+    Text("Обновление данных", style = MaterialTheme.typography.headlineSmall)
 
     Surface(
         shape = RoundedCornerShape(22.dp),
@@ -386,14 +383,6 @@ private fun SyncControlSection(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(
-                    Brush.linearGradient(
-                        colors = listOf(
-                            sem.brandGradientEnd.copy(alpha = if (sem.isDark) 0.14f else 0.07f),
-                            Color.Transparent
-                        )
-                    )
-                )
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
@@ -408,17 +397,23 @@ private fun SyncControlSection(
                         style = MaterialTheme.typography.titleMedium.copy(fontFeatureSettings = "tnum", fontWeight = FontWeight.Bold)
                     )
                     Text(
-                        "${snapshot.nbrbDateLabel} · РВСР ${Formatters.pct(snapshot.rvsrPct)} · СР ${Formatters.pct(snapshot.refinancingRatePct)}",
+                        "${snapshot.nbrbDateLabel} · СР ${Formatters.pct(snapshot.refinancingRatePct)}",
                         style = MaterialTheme.typography.bodySmall.copy(fontFeatureSettings = "tnum"),
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
-                        "Последняя синхронизация: ${Formatters.timestamp(snapshot.lastFullSyncEpochMs)}",
+                        "Последняя проверка: ${Formatters.timestamp(snapshot.lastFullSyncEpochMs)}",
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.primary
                     )
                 }
             }
+
+            Text(
+                "Склады FAW, Dongfeng и AutoGarage, витрины BYD Seagull на WestMotors и кредитов на Myfin и три банковские программы обновляются из сети. При сбое сохраняется предыдущая версия источника.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
 
             Button(
                 onClick = onTriggerSync,
@@ -432,11 +427,11 @@ private fun SyncControlSection(
                         color = MaterialTheme.colorScheme.onPrimary
                     )
                     Spacer(Modifier.width(8.dp))
-                    Text("Опрос НБ РБ, дилеров и Myfin.by...")
+                    Text("Проверяем источники…")
                 } else {
                     Icon(Icons.Rounded.Refresh, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(8.dp))
-                    Text("Обновить цены, курсы и дилеров с сайтов")
+                    Text("Проверить источники")
                 }
             }
 
@@ -446,8 +441,8 @@ private fun SyncControlSection(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column(modifier = Modifier.weight(1f)) {
-                    Text("Фоновое автообновление (WorkManager)", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
-                    Text("Раз в 12 часов при подключении к интернету", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("Фоновое обновление", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
+                    Text("Примерно раз в 12 часов при наличии интернета", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 Switch(checked = autoSyncEnabled, onCheckedChange = onToggleAutoSync)
             }
@@ -456,19 +451,22 @@ private fun SyncControlSection(
                 Text(
                     snapshot.updateStatusMessage,
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.error
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
     }
 
-    if (snapshot.syncLogs.isNotEmpty()) {
-        val okCount = snapshot.syncLogs.count { it.ok }
-        Text(
-            "Журнал живого опроса сайтов ($okCount/${snapshot.syncLogs.size} онлайн)",
-            style = MaterialTheme.typography.titleMedium
-        )
-    }
+    if (showLogHeading && snapshot.syncLogs.isNotEmpty()) SyncLogHeading(snapshot.syncLogs)
+}
+
+@Composable
+private fun SyncLogHeading(logs: List<SyncSourceLog>) {
+    val okCount = logs.count { it.ok }
+    Text(
+        "Ответили источники: $okCount из ${logs.size}",
+        style = MaterialTheme.typography.titleMedium
+    )
 }
 
 @Composable

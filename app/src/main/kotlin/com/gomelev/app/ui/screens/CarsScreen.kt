@@ -27,7 +27,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.OpenInNew
-import androidx.compose.material.icons.automirrored.rounded.TrendingUp
 import androidx.compose.material.icons.rounded.Call
 import androidx.compose.material.icons.rounded.LocationOn
 import androidx.compose.material3.Button
@@ -45,6 +44,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -56,9 +57,8 @@ import androidx.window.layout.FoldingFeature
 import com.gomelev.app.domain.CreditCalculator
 import com.gomelev.app.model.CarOffer
 import com.gomelev.app.model.CreditProgram
+import com.gomelev.app.model.CreditScope
 import com.gomelev.app.model.DealerEntity
-import com.gomelev.app.model.ForecastScenario
-import com.gomelev.app.model.MarketSnapshot
 import com.gomelev.app.model.PaymentEvaluation
 import com.gomelev.app.model.PdnVerdict
 import com.gomelev.app.model.StockStatus
@@ -74,12 +74,10 @@ import com.gomelev.app.ui.components.openGeoLocation
 import com.gomelev.app.ui.theme.ExpressiveMotion
 import com.gomelev.app.ui.theme.LocalSemanticColors
 
-private enum class CarFilter(val label: String) {
-    ALL("Все авто"),
-    PASS_PDN("Проходят ПДН"),
-    EV_ONLY("Электро EV"),
-    IN_GOMEL("В Гомеле"),
-    UNDER_40K("До 40 000")
+private enum class CarBudget(val label: String, val ceiling: Double) {
+    TARGET("До 30 000", 30_000.0),
+    EXTENDED("До 33 000", 33_000.0),
+    ANY("Без лимита", Double.POSITIVE_INFINITY)
 }
 
 @Composable
@@ -88,40 +86,51 @@ fun CarsScreen(
     dealers: List<DealerEntity>,
     programs: List<CreditProgram>,
     profile: UserFinanceProfile,
-    snapshot: MarketSnapshot,
-    scenario: ForecastScenario,
     isExpandedWidth: Boolean,
     foldingFeature: FoldingFeature?,
     selectedCarId: String?,
     onSelectCar: (String?) -> Unit,
     onUpdateProfile: ((UserFinanceProfile) -> UserFinanceProfile) -> Unit,
-    onTriggerSync: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var activeFilter by remember { mutableStateOf(CarFilter.ALL) }
+    var budget by rememberSaveable { mutableStateOf(CarBudget.ANY) }
+    var withinPdn by rememberSaveable { mutableStateOf(false) }
+    var newOnly by rememberSaveable { mutableStateOf(true) }
+    var inGomelOnly by rememberSaveable { mutableStateOf(false) }
+    val listState = rememberLazyListState()
 
-    val evaluatedPairs = remember(cars, programs, profile) {
-        cars.map { car ->
-            car to CreditCalculator.bestEvaluationForCar(car, programs, profile)
+    val evaluatedPairs = remember(cars, programs, profile, budget) {
+        val loans = programs.filter { it.scope != CreditScope.LEASING }
+        cars.filter { it.isEv && it.priceByn <= budget.ceiling }.map { car ->
+            val evaluations = CreditCalculator.evaluateAllProgramsForCar(car, loans, profile)
+            car to CreditCalculator.withinDownPayment(car, evaluations, profile)
         }
     }
 
-    val filtered = remember(evaluatedPairs, activeFilter) {
-        evaluatedPairs.filter { (car, bestEval) ->
-            when (activeFilter) {
-                CarFilter.ALL -> true
-                CarFilter.PASS_PDN -> bestEval != null && bestEval.verdict != PdnVerdict.FAIL
-                CarFilter.EV_ONLY -> car.isEv
-                CarFilter.IN_GOMEL -> car.stockStatus == StockStatus.IN_GOMEL
-                CarFilter.UNDER_40K -> car.priceByn <= 40_000.0
-            }
-        }
+    val filtered = remember(evaluatedPairs, budget, newOnly, inGomelOnly, withinPdn) {
+        evaluatedPairs.filter { (car, payment) ->
+            car.priceByn <= budget.ceiling && (!withinPdn || payment?.verdict == PdnVerdict.PASS) &&
+                (!newOnly || (car.conditionKnown && !car.isUsed)) &&
+                (!inGomelOnly || car.stockStatus == StockStatus.IN_GOMEL)
+        }.sortedWith(
+            compareBy<Pair<CarOffer, PaymentEvaluation?>> { it.second?.verdict?.ordinal ?: Int.MAX_VALUE }
+                .thenBy { it.second?.program?.liveRateNote == null }
+                .thenBy { it.first.stockStatus.ordinal }
+                .thenByDescending { it.first.lastSyncedPriceNote != null }
+                .thenBy { it.first.priceByn }
+        )
     }
 
-    val activeCar = remember(cars, selectedCarId, filtered) {
-        cars.find { it.id == selectedCarId } ?: if (isExpandedWidth) filtered.firstOrNull()?.first else null
+    val activeCar = remember(cars, selectedCarId, filtered, isExpandedWidth) {
+        cars.find { it.isEv && it.id == selectedCarId }
+            ?: if (isExpandedWidth) filtered.firstOrNull()?.first else null
     }
 
+    androidx.compose.runtime.LaunchedEffect(cars, selectedCarId) {
+        if (selectedCarId != null && cars.none { it.id == selectedCarId }) onSelectCar(null)
+    }
+    var previousDetail by remember { mutableStateOf<CarOffer?>(null) }
+    androidx.compose.runtime.SideEffect { if (activeCar != null) previousDetail = activeCar }
     if (!isExpandedWidth && selectedCarId != null) {
         BackHandler { onSelectCar(null) }
     }
@@ -129,10 +138,11 @@ fun CarsScreen(
     FoldableTwoPane(
         isExpandedWidth = isExpandedWidth,
         foldingFeature = foldingFeature,
-        hasDetailSelection = selectedCarId != null,
+        hasDetailSelection = selectedCarId != null && activeCar != null,
         modifier = modifier,
         listPane = {
             LazyColumn(
+                state = listState,
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(
                     start = if (isExpandedWidth) 0.dp else 16.dp,
@@ -143,11 +153,11 @@ fun CarsScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 item {
+                    Text("Электромобили для доставки", style = MaterialTheme.typography.headlineSmall)
+                    Spacer(Modifier.height(8.dp))
                     PdnControlBar(
                         profile = profile,
-                        snapshot = snapshot,
-                        onUpdateProfile = onUpdateProfile,
-                        onTriggerSync = onTriggerSync
+                            onUpdateProfile = onUpdateProfile
                     )
                 }
 
@@ -158,13 +168,32 @@ fun CarsScreen(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
-                        CarFilter.entries.forEach { f ->
+                        CarBudget.entries.forEach { f ->
                             FilterChip(
-                                selected = activeFilter == f,
-                                onClick = { activeFilter = f },
+                                selected = budget == f,
+                                onClick = { budget = f; onSelectCar(null) },
                                 label = { Text(f.label, style = MaterialTheme.typography.labelMedium) }
                             )
                         }
+                        FilterChip(selected = withinPdn, onClick = {
+                            withinPdn = !withinPdn
+                            onSelectCar(null)
+                        }, label = { Text("По моему ПДН") })
+                        FilterChip(selected = newOnly, onClick = {
+                            newOnly = !newOnly
+                            onSelectCar(null)
+                        }, label = { Text("Новые") })
+                        FilterChip(selected = inGomelOnly, onClick = {
+                            inGomelOnly = !inGomelOnly
+                            onSelectCar(null)
+                        }, label = { Text("Гомель") })
+                    }
+                }
+
+                if (filtered.isEmpty()) {
+                    item {
+                        Text("В этом бюджете нет вариантов по выбранным фильтрам.",
+                            style = MaterialTheme.typography.bodyLarge)
                     }
                 }
 
@@ -173,22 +202,21 @@ fun CarsScreen(
                     CarListCard(
                         car = car,
                         bestEval = bestEval,
-                        usdBynRate = snapshot.usdBynRate,
                         selected = isSelected,
-                        onClick = { onSelectCar(car.id) }
+                        onClick = { onSelectCar(car.id) },
+                        modifier = Modifier.animateItem()
                     )
                 }
             }
         },
         detailPane = {
-            if (activeCar != null) {
+            val displayed = activeCar ?: previousDetail?.takeIf { !isExpandedWidth }
+            if (displayed != null) {
                 CarDetailPane(
-                    car = activeCar,
-                    dealer = dealers.find { it.id == activeCar.dealerId },
+                    car = displayed,
+                    dealer = dealers.find { it.id == displayed.dealerId },
                     programs = programs,
                     profile = profile,
-                    snapshot = snapshot,
-                    scenario = scenario,
                     showBackButton = !isExpandedWidth,
                     onBack = { onSelectCar(null) },
                     onUpdateProfile = onUpdateProfile
@@ -205,9 +233,9 @@ fun CarsScreen(
 private fun CarListCard(
     car: CarOffer,
     bestEval: PaymentEvaluation?,
-    usdBynRate: Double,
     selected: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val borderColor by animateColorAsState(
         targetValue = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
@@ -226,7 +254,7 @@ private fun CarListCard(
     )
 
     Surface(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(22.dp))
             .clickable(onClick = onClick),
@@ -235,7 +263,7 @@ private fun CarListCard(
         border = BorderStroke(borderWidth, borderColor)
     ) {
         Column(modifier = Modifier.padding(14.dp)) {
-            MinimalistCarStage(car = car, usdBynRate = usdBynRate, compact = true)
+            MinimalistCarStage(car = car, compact = true)
 
             Spacer(modifier = Modifier.height(12.dp))
 
@@ -260,21 +288,10 @@ private fun CarListCard(
                     )
                 }
                 Spacer(modifier = Modifier.width(8.dp))
-                Column(horizontalAlignment = Alignment.End) {
-                    Text(
-                        text = Formatters.byn(car.priceByn),
-                        style = MaterialTheme.typography.titleLarge.copy(
-                            fontFeatureSettings = "tnum",
-                            fontWeight = FontWeight.Bold
-                        ),
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Text(
-                        text = car.stockStatus.labelRu,
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
+                Text(
+                    text = Formatters.byn(car.priceByn),
+                    style = MaterialTheme.typography.titleMedium.copy(fontFeatureSettings = "tnum", fontWeight = FontWeight.Bold)
+                )
             }
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -285,7 +302,7 @@ private fun CarListCard(
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 Text(
-                    text = car.cityNote,
+                    text = if (car.lastSyncedPriceNote == null) "Из базы · ${car.cityNote}" else "${car.stockStatus.labelRu} · ${car.cityNote}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 2,
@@ -300,10 +317,14 @@ private fun CarListCard(
                 }
             }
 
+            if (bestEval == null) {
+                Text("Нет подходящей программы с вашим взносом и типом занятости", style = MaterialTheme.typography.bodySmall)
+            }
             if (bestEval != null) {
                 Spacer(modifier = Modifier.height(6.dp))
                 Text(
-                    text = "Лучшая линия: ${bestEval.program.bankName} · ПВ ${bestEval.appliedDownPaymentPct}%",
+                    text = "${bestEval.program.bankName} · ПВ ${bestEval.appliedDownPaymentPct}% · " +
+                        if (bestEval.program.liveRateNote == null) "сохранённые условия" else "условия сверены",
                     style = MaterialTheme.typography.labelMedium.copy(fontFeatureSettings = "tnum"),
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -318,17 +339,15 @@ private fun CarDetailPane(
     dealer: DealerEntity?,
     programs: List<CreditProgram>,
     profile: UserFinanceProfile,
-    snapshot: MarketSnapshot,
-    scenario: ForecastScenario,
     showBackButton: Boolean,
     onBack: () -> Unit,
     onUpdateProfile: ((UserFinanceProfile) -> UserFinanceProfile) -> Unit
 ) {
     val context = LocalContext.current
     val sem = LocalSemanticColors.current
-    val scrollState = rememberScrollState()
+    val scrollState = androidx.compose.runtime.key(car.id) { rememberScrollState() }
     val evaluations = remember(car, programs, profile) {
-        CreditCalculator.evaluateAllProgramsForCar(car, programs, profile)
+        CreditCalculator.evaluateAllProgramsForCar(car, programs.filter { it.scope != CreditScope.LEASING }, profile)
     }
 
     Column(
@@ -352,7 +371,7 @@ private fun CarDetailPane(
             }
         }
 
-        MinimalistCarStage(car = car, usdBynRate = snapshot.usdBynRate, compact = false)
+        MinimalistCarStage(car = car, compact = false)
 
         // Header block
         Surface(
@@ -361,30 +380,42 @@ private fun CarDetailPane(
             border = BorderStroke(0.8.dp, MaterialTheme.colorScheme.outlineVariant)
         ) {
             Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.Top
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(car.brandModel, style = MaterialTheme.typography.headlineMedium)
-                        Text(
-                            "${car.trimAndYear} · ${car.bodyType}",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                Text(car.brandModel, style = MaterialTheme.typography.headlineSmall)
+                Text("${car.trimAndYear} · ${car.bodyType}", style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+                val suggested = remember(car, evaluations, profile) {
+                    CreditCalculator.withinDownPayment(car, evaluations, profile)
+                }
+                @OptIn(ExperimentalLayoutApi::class)
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(22.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Column {
+                        Text(if (car.importEstimate) "Под ключ, оценка" else "Цена", style = MaterialTheme.typography.labelMedium)
+                        Text(Formatters.byn(car.priceByn), style = MaterialTheme.typography.titleLarge)
                     }
-                    Column(horizontalAlignment = Alignment.End) {
-                        Text(
-                            Formatters.byn(car.priceByn),
-                            style = MaterialTheme.typography.headlineMedium.copy(fontFeatureSettings = "tnum")
-                        )
-                        Text(
-                            Formatters.usdFromByn(car.priceByn, snapshot.usdBynRate),
-                            style = MaterialTheme.typography.bodySmall.copy(fontFeatureSettings = "tnum"),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                    if (suggested != null) {
+                        Column {
+                            Text("Пик платежа в месяц", style = MaterialTheme.typography.labelMedium)
+                            Text(Formatters.byn(suggested.decidingMonthlyByn), style = MaterialTheme.typography.titleLarge,
+                                color = MaterialTheme.colorScheme.primary)
+                        }
                     }
+                }
+                if (suggested != null) {
+                    Text("${suggested.program.bankName} · ${suggested.program.maxMonths} мес. · взнос ${Formatters.byn(suggested.downPaymentByn)}",
+                        style = MaterialTheme.typography.bodySmall)
+                    Text(if (suggested.verdict == PdnVerdict.PASS) "Платёж подходит. Решение — после проверки дохода и договора банком."
+                        else "При вашем взносе расчётный платёж выше лимита или сумма превышает лимит программы.",
+                        style = MaterialTheme.typography.bodyMedium)
+                    val alternative = evaluations.firstOrNull { ev ->
+                        suggested.verdict != PdnVerdict.PASS && ev.verdict == PdnVerdict.PASS &&
+                            ev.downPaymentByn <= profile.availableDownPayment(car.priceByn) + 0.01 &&
+                            !CreditCalculator.excludesApplicant(ev.program, profile)
+                    }
+                    if (alternative != null) Text("По сохранённым условиям ${alternative.program.bankName} платёж укладывается в лимит. Ставку и доступность нужно подтвердить.", style = MaterialTheme.typography.bodySmall)
+                    Text(suggested.program.liveRateNote ?: "Расчёт по сохранённым условиям",
+                        style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                } else {
+                    Text("В базе нет подходящего кредита с вашим взносом и типом занятости. Причины указаны у программ ниже.")
                 }
 
                 Text(
@@ -395,7 +426,7 @@ private fun CarDetailPane(
                 )
 
                 Text(
-                    car.priceNote,
+                    "${car.stockStatus.labelRu} · ${car.cityNote}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -403,7 +434,7 @@ private fun CarDetailPane(
                 if (car.lastSyncedPriceNote != null) {
                     Surface(shape = CircleShape, color = sem.passContainer) {
                         Text(
-                            text = car.lastSyncedPriceNote,
+                            text = if (car.id.startsWith("ag_") || car.importEstimate) "${car.lastSyncedPriceNote} · ${car.priceNote}" else car.lastSyncedPriceNote,
                             style = MaterialTheme.typography.labelMedium,
                             color = sem.onPassContainer,
                             modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
@@ -411,6 +442,9 @@ private fun CarDetailPane(
                     }
                 }
 
+                if (car.dealerId == "nts_ev" && car.brandModel.contains("Xiaoma", ignoreCase = true)) {
+                    Text(car.priceNote, style = MaterialTheme.typography.bodyMedium)
+                }
                 if (dealer != null) {
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                     Row(
@@ -425,7 +459,7 @@ private fun CarDetailPane(
                             tint = MaterialTheme.colorScheme.primary
                         )
                         Text(
-                            text = "${dealer.name} · ${dealer.address}",
+                            text = if (car.id.startsWith("aps_")) car.cityNote else "${dealer.name} · ${dealer.address}",
                             style = MaterialTheme.typography.bodySmall,
                             modifier = Modifier.weight(1f)
                         )
@@ -436,7 +470,7 @@ private fun CarDetailPane(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        if (dealer.phones.isNotEmpty()) {
+                        if (dealer.phones.isNotEmpty() && (!car.id.startsWith("aps_") || car.cityNote.startsWith("Гомель"))) {
                             Button(
                                 onClick = { dialPhone(context, dealer.phones.first()) },
                                 contentPadding = PaddingValues(horizontal = 14.dp, vertical = 8.dp),
@@ -456,7 +490,7 @@ private fun CarDetailPane(
                             Text("Сайт дилера")
                         }
                         OutlinedButton(
-                            onClick = { openGeoLocation(context, dealer.geoQuery) },
+                            onClick = { openGeoLocation(context, if (car.id.startsWith("aps_")) car.cityNote else dealer.geoQuery) },
                             contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
                         ) {
                             Icon(Icons.Rounded.LocationOn, contentDescription = null, modifier = Modifier.size(16.dp))
@@ -464,6 +498,18 @@ private fun CarDetailPane(
                             Text("Карта")
                         }
                     }
+                }
+            }
+        }
+
+        if (car.brandModel.contains("Xiaoma", ignoreCase = true) && car.brandModel.contains("222")) {
+            Column(modifier = Modifier.padding(horizontal = 12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text("Доставка в Гомеле", style = MaterialTheme.typography.titleLarge)
+                Text("При −5 °C белорусский тест дал около 85 км до остатка 15%. Для смены с ночной зарядкой ориентируйтесь на 60–70 км вместе с дорогой домой.")
+                Text("От 100 км зимой планируйте остановку. В тесте за 10 минут машина приняла 1,14 кВт·ч. При таком темпе с 20 до 80% потребуется около 95 минут.")
+                Text("До покупки уточните у парка допуск трёхдверной машины для ваших заказов, а у дилера — гарантию при работе в доставке.")
+                OutlinedButton(onClick = { openExternalUrl(context, "https://xn----7sbbeeptbfadjdvm5ab9bqj.xn--p1ai/2026/03/01/faw-bestune-xiaoma-2/") }) {
+                    Text("Зимний тест Xiaoma")
                 }
             }
         }
@@ -476,7 +522,7 @@ private fun CarDetailPane(
         ) {
             Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
-                    "Первоначальный взнос (ПВ): ${profile.downPaymentPct}% (${Formatters.byn(car.priceByn * profile.downPaymentPct / 100.0)})",
+                    "Ваш первоначальный взнос · ${Formatters.byn(profile.availableDownPayment(car.priceByn))}",
                     style = MaterialTheme.typography.labelLarge.copy(fontFeatureSettings = "tnum")
                 )
                 @OptIn(ExperimentalLayoutApi::class)
@@ -500,48 +546,20 @@ private fun CarDetailPane(
             }
         }
 
-        // Forecast 2027 summary for this model
-        val projected = CreditCalculator.projectedPrice2027(car, scenario)
-        val pctVal = when (scenario) {
-            ForecastScenario.OPTIMISTIC_BULL -> car.forecast2027BullPct
-            ForecastScenario.BASE -> car.forecast2027BasePct
-            ForecastScenario.PESSIMISTIC_BEAR -> car.forecast2027BearPct
-        }
-        Surface(
-            shape = RoundedCornerShape(20.dp),
-            color = MaterialTheme.colorScheme.surfaceContainerLow,
-            border = BorderStroke(0.8.dp, MaterialTheme.colorScheme.outlineVariant)
-        ) {
-            Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    Icon(Icons.AutoMirrored.Rounded.TrendingUp, contentDescription = null, modifier = Modifier.size(18.dp), tint = MaterialTheme.colorScheme.primary)
-                    Text(
-                        "Прогноз цены на сентябрь 2027 (${scenario.labelRu})",
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                }
-                Text(
-                    text = "${Formatters.byn(projected)} (${if (pctVal >= 0) "+" else ""}${(pctVal * 100).toInt()}% от текущей)",
-                    style = MaterialTheme.typography.titleLarge.copy(fontFeatureSettings = "tnum"),
-                    color = MaterialTheme.colorScheme.primary
-                )
-                Text(
-                    text = car.forecastDriverRu,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-
         // Full bank ranking for THIS car
         Text(
-            "Все подходящие кредитные линии (${evaluations.size})",
+            "Кредиты на максимальный срок (${evaluations.size})",
             style = MaterialTheme.typography.titleLarge
         )
 
+        Text(
+            "Расчётный лимит: ${Formatters.byn(profile.freePdnRoomByn)}/мес. Банк проверяет доход, долги и соответствие дилера программе.",
+            style = MaterialTheme.typography.bodySmall
+        )
+        if (car.importEstimate) {
+            Text("Цена включает ориентир доставки в Минск. До подтверждения договора с продавцом в Беларуси расчёт доступен только по кредитам на любые цели.",
+                style = MaterialTheme.typography.bodySmall)
+        }
         evaluations.forEach { ev ->
             Surface(
                 shape = RoundedCornerShape(18.dp),
@@ -563,12 +581,15 @@ private fun CarDetailPane(
                             )
                         }
                         Spacer(Modifier.width(8.dp))
-                        PdnStatusPill(verdict = ev.verdict, monthlyByn = ev.decidingMonthlyByn)
+                        if (!CreditCalculator.excludesApplicant(ev.program, profile) &&
+                            ev.downPaymentByn <= profile.availableDownPayment(car.priceByn) + 0.01) {
+                            PdnStatusPill(verdict = ev.verdict, monthlyByn = ev.decidingMonthlyByn)
+                        }
                     }
 
                     Text(
                         text = if (ev.program.graceMonths > 0) {
-                            "Платёж: грейс ${ev.program.graceMonths}м = ${Formatters.byn(ev.graceMonthlyByn)} · затем = ${Formatters.byn(ev.peakPostGraceMonthlyByn)} (от P0: ${Formatters.byn(ev.conservativeP0MonthlyByn)})"
+                            "Срок ${ev.program.maxMonths} мес. · Первые ${ev.program.graceMonths} мес.: до ${Formatters.byn(ev.graceMonthlyByn)} · Затем до ${Formatters.byn(ev.peakPostGraceMonthlyByn)}/мес."
                         } else {
                             "Ежемесячный платёж: ${Formatters.byn(ev.decidingMonthlyByn)} · Срок ${ev.program.maxMonths}м"
                         },
@@ -582,11 +603,29 @@ private fun CarDetailPane(
                     )
 
                     Text(
-                        text = ev.reasonRu,
+                        "Всего с авансом: ${Formatters.byn(CreditCalculator.totalCreditPayments(ev) + ev.downPaymentByn)} · без страховки и комиссий",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                    Text(
+                        text = ev.program.liveRateNote ?: "Сохранённые условия · уточните у банка",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = when {
+                            CreditCalculator.excludesApplicant(ev.program, profile) -> "Онлайн-программа недоступна сотрудникам МВД. Условия в отделении уточняются отдельно."
+                            CreditCalculator.requiredDownPayment(ev) > profile.availableDownPayment(car.priceByn) + 0.01 -> {
+                                val needed = kotlin.math.ceil(CreditCalculator.requiredDownPayment(ev))
+                                val extra = kotlin.math.ceil(needed - profile.availableDownPayment(car.priceByn))
+                                "Нужен взнос от ${Formatters.byn(needed)} · добавить ${Formatters.byn(extra)}."
+                            }
+                            else -> ev.reasonRu
+                        },
                         style = MaterialTheme.typography.bodySmall,
-                        color = if (ev.verdict == PdnVerdict.PASS) sem.passAccent else MaterialTheme.colorScheme.onSurfaceVariant
+                        color = if (!CreditCalculator.excludesApplicant(ev.program, profile) && CreditCalculator.requiredDownPayment(ev) <= profile.availableDownPayment(car.priceByn) && ev.verdict == PdnVerdict.PASS) sem.passAccent else MaterialTheme.colorScheme.onSurfaceVariant
                     )
 
+                    if (ev.program.id == "belarus_ev_general") Text("Требуется поручитель. Банк проверяет подтверждённый доход и документы продавца.", style = MaterialTheme.typography.bodySmall)
                     @OptIn(ExperimentalLayoutApi::class)
                     FlowRow(
                         modifier = Modifier.fillMaxWidth(),
@@ -607,6 +646,17 @@ private fun CarDetailPane(
                         }
                     }
                 }
+            }
+        }
+
+        Text("Лизинг", style = MaterialTheme.typography.titleLarge)
+        Text("Сравнивайте аванс, все платежи, выкупную стоимость, страховку и комиссии. Уточните, разрешена ли работа в доставке.", style = MaterialTheme.typography.bodySmall)
+        OutlinedButton(onClick = { openExternalUrl(context, "https://www.wigo.by/avtolizing-v-gomele") }) {
+            Text("Запросить расчёт · WIGO Гомель")
+        }
+        programs.filter { it.scope == CreditScope.LEASING && car.isUsed && car.isDealerLegalEntity }.forEach { offer ->
+            OutlinedButton(onClick = { openExternalUrl(context, offer.officialUrl) }) {
+                Text("Запросить расчёт · ${offer.bankName}")
             }
         }
     }

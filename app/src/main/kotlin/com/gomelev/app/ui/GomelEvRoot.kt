@@ -9,26 +9,21 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AccountBalance
@@ -55,10 +50,13 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
-import androidx.compose.material3.windowsizeclass.WindowSizeClass
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -73,7 +71,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.window.layout.FoldingFeature
 import com.gomelev.app.model.AppThemeMode
 import com.gomelev.app.model.MarketSnapshot
-import com.gomelev.app.model.UserFinanceProfile
 import com.gomelev.app.ui.screens.CarsScreen
 import com.gomelev.app.ui.screens.CreditsScreen
 import com.gomelev.app.ui.screens.DealersScreen
@@ -100,7 +97,6 @@ private fun themeIcon(mode: AppThemeMode): ImageVector = when (mode) {
 @Composable
 fun GomelEvRoot(
     viewModel: MainViewModel,
-    windowSizeClass: WindowSizeClass,
     foldingFeature: FoldingFeature?
 ) {
     val cars by viewModel.cars.collectAsStateWithLifecycle()
@@ -116,136 +112,136 @@ fun GomelEvRoot(
     val selectedDealerId by viewModel.selectedDealerId.collectAsStateWithLifecycle()
     val selectedProgramId by viewModel.selectedProgramId.collectAsStateWithLifecycle()
 
+    val snackbars = remember { SnackbarHostState() }
+    var manualRefresh by remember { mutableStateOf(false) }
+    val refresh = {
+        manualRefresh = true
+        viewModel.triggerLiveSync()
+    }
+    LaunchedEffect(snapshot.isSyncing, snapshot.updateStatusMessage) {
+        val message = snapshot.updateStatusMessage
+        if (manualRefresh && !snapshot.isSyncing && message != null) {
+            manualRefresh = false
+            snackbars.showSnackbar(message)
+        }
+    }
+
     LaunchedEffect(Unit) {
         viewModel.onAppLaunchSyncIfNeeded()
     }
 
-    val isExpandedWidth = windowSizeClass.widthSizeClass != WindowWidthSizeClass.Compact
+    val isExpandedWidth = androidx.compose.ui.platform.LocalConfiguration.current.screenWidthDp >= 680
 
     val mainArea: @Composable (Modifier) -> Unit = { areaModifier ->
-        Column(modifier = areaModifier.fillMaxSize()) {
-            GomelEvHeader(
-                profile = profile,
-                snapshot = snapshot,
-                themeMode = themeMode,
-                isExpandedWidth = isExpandedWidth,
-                onCycleTheme = viewModel::cycleThemeMode,
-                onSyncClick = viewModel::triggerLiveSync
-            )
+        BoxWithConstraints(modifier = areaModifier.fillMaxSize()) {
+            val showTwoPanes = maxWidth >= 600.dp || (foldingFeature?.isSeparating == true &&
+                foldingFeature.orientation == FoldingFeature.Orientation.HORIZONTAL && maxHeight >= 480.dp)
+            Column(Modifier.fillMaxSize()) {
+                GomelEvHeader(
+                    snapshot = snapshot,
+                    themeMode = themeMode,
+                    isExpandedWidth = isExpandedWidth,
+                    onCycleTheme = viewModel::cycleThemeMode,
+                    onSyncClick = refresh
+                )
 
-            AnimatedContent(
-                targetState = destination,
-                modifier = Modifier.weight(1f),
-                transitionSpec = {
-                    val forward = targetState.ordinal >= initialState.ordinal
-                    val enterSlide = slideInHorizontally(
-                        animationSpec = ExpressiveMotion.defaultSpatial()
-                    ) { fullWidth -> if (forward) fullWidth / 10 else -fullWidth / 10 }
-                    val exitSlide = slideOutHorizontally(
-                        animationSpec = ExpressiveMotion.defaultSpatial()
-                    ) { fullWidth -> if (forward) -fullWidth / 14 else fullWidth / 14 }
-                    (enterSlide + fadeIn(animationSpec = ExpressiveMotion.defaultSpatial()) +
-                        scaleIn(initialScale = 0.985f, animationSpec = ExpressiveMotion.defaultSpatial()))
-                        .togetherWith(exitSlide + fadeOut(animationSpec = ExpressiveMotion.fastSpatial()))
-                },
-                label = "destinationTransition"
-            ) { currentDest ->
-                when (currentDest) {
-                    AppDestination.CARS -> CarsScreen(
-                        cars = cars,
-                        dealers = dealers,
-                        programs = programs,
-                        profile = profile,
-                        snapshot = snapshot,
-                        scenario = scenario,
-                        isExpandedWidth = isExpandedWidth,
-                        foldingFeature = foldingFeature,
-                        selectedCarId = selectedCarId,
-                        onSelectCar = viewModel::selectCar,
-                        onUpdateProfile = viewModel::updateProfile,
-                        onTriggerSync = viewModel::triggerLiveSync
-                    )
+                AnimatedContent(
+                    targetState = destination,
+                    modifier = Modifier.weight(1f),
+                    transitionSpec = {
+                        val forward = targetState.ordinal >= initialState.ordinal
+                        val enterSlide = slideInHorizontally(
+                            animationSpec = ExpressiveMotion.defaultSpatial()
+                        ) { fullWidth -> if (forward) fullWidth / 10 else -fullWidth / 10 }
+                        val exitSlide = slideOutHorizontally(
+                            animationSpec = ExpressiveMotion.defaultSpatial()
+                        ) { fullWidth -> if (forward) -fullWidth / 14 else fullWidth / 14 }
+                        (enterSlide + fadeIn(animationSpec = ExpressiveMotion.defaultSpatial()) +
+                            scaleIn(initialScale = 0.985f, animationSpec = ExpressiveMotion.defaultSpatial()))
+                            .togetherWith(exitSlide + fadeOut(animationSpec = ExpressiveMotion.fastSpatial()))
+                    },
+                    label = "destinationTransition"
+                ) { currentDest ->
+                    when (currentDest) {
+                        AppDestination.CARS -> CarsScreen(
+                            cars = cars,
+                            dealers = dealers,
+                            programs = programs,
+                            profile = profile,
+                            isExpandedWidth = showTwoPanes,
+                            foldingFeature = foldingFeature,
+                            selectedCarId = selectedCarId,
+                            onSelectCar = viewModel::selectCar,
+                            onUpdateProfile = viewModel::updateProfile
+                        )
 
-                    AppDestination.DEALERS -> DealersScreen(
-                        dealers = dealers,
-                        cars = cars,
-                        isExpandedWidth = isExpandedWidth,
-                        foldingFeature = foldingFeature,
-                        selectedDealerId = selectedDealerId,
-                        onSelectDealer = viewModel::selectDealer,
-                        onOpenCar = viewModel::openCarFromDealer
-                    )
+                        AppDestination.DEALERS -> DealersScreen(
+                            dealers = dealers,
+                            cars = cars,
+                            isExpandedWidth = showTwoPanes,
+                            foldingFeature = foldingFeature,
+                            selectedDealerId = selectedDealerId,
+                            onSelectDealer = viewModel::selectDealer,
+                            onOpenCar = viewModel::openCarFromDealer
+                        )
 
-                    AppDestination.CREDITS -> CreditsScreen(
-                        programs = programs,
-                        profile = profile,
-                        snapshot = snapshot,
-                        isExpandedWidth = isExpandedWidth,
-                        foldingFeature = foldingFeature,
-                        selectedProgramId = selectedProgramId,
-                        onSelectProgram = viewModel::selectProgram,
-                        onUpdateProfile = viewModel::updateProfile,
-                        onTriggerSync = viewModel::triggerLiveSync
-                    )
+                        AppDestination.CREDITS -> CreditsScreen(
+                            programs = programs,
+                            profile = profile,
+                            snapshot = snapshot,
+                            isExpandedWidth = showTwoPanes,
+                            foldingFeature = foldingFeature,
+                            selectedProgramId = selectedProgramId,
+                            onSelectProgram = viewModel::selectProgram,
+                            onUpdateProfile = viewModel::updateProfile
+                        )
 
-                    AppDestination.FORECAST_SYNC -> ForecastAndSyncScreen(
-                        cars = cars,
-                        profile = profile,
-                        snapshot = snapshot,
-                        scenario = scenario,
-                        autoSyncEnabled = autoSyncEnabled,
-                        isExpandedWidth = isExpandedWidth,
-                        onSelectScenario = viewModel::selectScenario,
-                        onUpdateProfile = viewModel::updateProfile,
-                        onTriggerSync = viewModel::triggerLiveSync,
-                        onToggleAutoSync = viewModel::toggleAutoSync
-                    )
+                        AppDestination.FORECAST_SYNC -> ForecastAndSyncScreen(
+                            cars = cars,
+                            profile = profile,
+                            snapshot = snapshot,
+                            scenario = scenario,
+                            autoSyncEnabled = autoSyncEnabled,
+                            isExpandedWidth = showTwoPanes,
+                            onSelectScenario = viewModel::selectScenario,
+                            onUpdateProfile = viewModel::updateProfile,
+                            onTriggerSync = refresh,
+                            onToggleAutoSync = viewModel::toggleAutoSync
+                        )
+                    }
                 }
             }
         }
     }
 
-    if (isExpandedWidth) {
-        // Unfolded / tablet layout: left NavigationRail with items VERTICALLY CENTERED ("слева посередине")
-        Row(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
-        ) {
-            CenteredNavigationRail(
-                destination = destination,
-                themeMode = themeMode,
-                onSelectDestination = viewModel::selectDestination,
-                onCycleTheme = viewModel::cycleThemeMode
-            )
-            VerticalDivider(
-                thickness = 0.8.dp,
-                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.65f)
-            )
-            Scaffold(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight(),
-                containerColor = MaterialTheme.colorScheme.background,
-                contentWindowInsets = WindowInsets(0, 0, 0, 0)
-            ) { innerPadding ->
-                mainArea(Modifier.padding(innerPadding))
-            }
-        }
-    } else {
-        // Compact / Folded cover screen layout: ergonomic bottom NavigationBar ("внизу")
-        Scaffold(
-            modifier = Modifier.fillMaxSize(),
-            containerColor = MaterialTheme.colorScheme.background,
-            contentWindowInsets = WindowInsets(0, 0, 0, 0),
-            bottomBar = {
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbars) },
+        modifier = Modifier.fillMaxSize(),
+        containerColor = MaterialTheme.colorScheme.background,
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
+        bottomBar = {
+            if (!isExpandedWidth) {
                 CompactBottomBar(
                     destination = destination,
                     onSelectDestination = viewModel::selectDestination
                 )
             }
-        ) { innerPadding ->
-            mainArea(Modifier.padding(innerPadding))
+        }
+    ) { innerPadding ->
+        Row(Modifier.fillMaxSize().padding(innerPadding)) {
+            if (isExpandedWidth) {
+                CenteredNavigationRail(
+                    destination = destination,
+                    themeMode = themeMode,
+                    onSelectDestination = viewModel::selectDestination,
+                    onCycleTheme = viewModel::cycleThemeMode
+                )
+                VerticalDivider(
+                    thickness = 0.8.dp,
+                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.65f)
+                )
+            }
+            mainArea(Modifier.weight(1f).fillMaxHeight())
         }
     }
 }
@@ -408,188 +404,55 @@ private fun CompactBottomBar(
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
+@OptIn(ExperimentalLayoutApi::class, androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 private fun GomelEvHeader(
-    profile: UserFinanceProfile,
     snapshot: MarketSnapshot,
     themeMode: AppThemeMode,
     isExpandedWidth: Boolean,
     onCycleTheme: () -> Unit,
     onSyncClick: () -> Unit
 ) {
-    val sem = LocalSemanticColors.current
-    val syncLabel = snapshot.lastFullSyncEpochMs?.let {
-        "Сеть " + SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(it))
-    } ?: "База 13.11"
+    val syncLabel = when {
+        snapshot.isSyncing -> "Обновляем данные"
+        snapshot.lastFullSyncEpochMs == null -> "Данные из базы"
+        else -> "Проверка " + SimpleDateFormat("dd.MM HH:mm", Locale.getDefault())
+            .format(Date(snapshot.lastFullSyncEpochMs))
+    }
 
-    val headerGradient = Brush.linearGradient(
-        colors = listOf(
-            sem.brandGradientStart.copy(alpha = if (sem.isDark) 0.22f else 0.12f),
-            sem.brandGradientEnd.copy(alpha = if (sem.isDark) 0.14f else 0.06f),
-            Color.Transparent
-        )
-    )
-
-    Surface(
-        color = MaterialTheme.colorScheme.surface,
-        tonalElevation = 1.dp
-    ) {
+    Surface(color = MaterialTheme.colorScheme.surface) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(headerGradient)
-                .statusBarsPadding()
-                .padding(horizontal = 16.dp, vertical = 10.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            modifier = Modifier.fillMaxWidth().statusBarsPadding()
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                if (!isExpandedWidth) {
-                    Box(
-                        modifier = Modifier
-                            .size(34.dp)
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(
-                                Brush.linearGradient(
-                                    colors = listOf(sem.brandGradientStart, sem.brandGradientEnd)
-                                )
-                            ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.ElectricBolt,
-                            contentDescription = null,
-                            tint = Color.White,
-                            modifier = Modifier.size(18.dp)
-                        )
+            androidx.compose.material3.TopAppBar(
+                title = {
+                    Column {
+                        Text("Гомель EV", style = MaterialTheme.typography.titleLarge, maxLines = 1)
+                        Text(syncLabel, style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
-                }
-
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = "Гомель EV · Авто & Кредит",
-                        style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Text(
-                        text = "НБ РБ · дилеры · прогноз 2027",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-
-                // Compact Theme Switcher Pill
-                Surface(
-                    shape = CircleShape,
-                    color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                    modifier = Modifier
-                        .clip(CircleShape)
-                        .clickable(onClick = onCycleTheme)
-                ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        Icon(
-                            imageVector = themeIcon(themeMode),
-                            contentDescription = "Тема: ${themeMode.labelRu}",
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(15.dp)
-                        )
-                        Text(
-                            text = themeMode.labelRu,
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-                }
-
-                // Live Sync Pill
-                Surface(
-                    shape = CircleShape,
-                    color = MaterialTheme.colorScheme.primaryContainer,
-                    modifier = Modifier
-                        .clip(CircleShape)
-                        .clickable(enabled = !snapshot.isSyncing, onClick = onSyncClick)
-                ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 11.dp, vertical = 6.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(5.dp)
-                    ) {
-                        if (snapshot.isSyncing) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(13.dp),
-                                strokeWidth = 2.dp,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
-                        } else {
-                            Icon(
-                                imageVector = Icons.Rounded.Sync,
-                                contentDescription = "Обновить курсы и наличие",
-                                tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                                modifier = Modifier.size(15.dp)
-                            )
+                },
+                windowInsets = WindowInsets(0, 0, 0, 0),
+                actions = {
+                    if (!isExpandedWidth) {
+                        IconButton(onClick = onCycleTheme) {
+                            Icon(themeIcon(themeMode), "Тема: ${themeMode.labelRu}")
                         }
-                        Text(
-                            text = if (snapshot.isSyncing) "Поиск" else "Синхр.",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
+                    }
+                    IconButton(onClick = onSyncClick, enabled = !snapshot.isSyncing) {
+                        if (snapshot.isSyncing) {
+                            CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp)
+                        } else {
+                            Icon(Icons.Rounded.Sync, "Проверить источники")
+                        }
                     }
                 }
-            }
-
-            FlowRow(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                HeaderBadge(
-                    text = "1 USD = ${String.format(Locale.US, "%.4f", snapshot.usdBynRate)} BYN",
-                    container = MaterialTheme.colorScheme.surfaceContainerHigh,
-                    content = MaterialTheme.colorScheme.onSurface
-                )
-                HeaderBadge(
-                    text = "ПДН ≤ ${profile.freePdnRoomByn.toInt()} BYN",
-                    container = sem.passContainer,
-                    content = sem.onPassContainer
-                )
-                HeaderBadge(
-                    text = syncLabel,
-                    container = MaterialTheme.colorScheme.surfaceContainerHigh,
-                    content = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
+            )
 
             HorizontalDivider(
                 thickness = 0.7.dp,
                 color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.55f)
             )
         }
-    }
-}
-
-@Composable
-private fun HeaderBadge(
-    text: String,
-    container: Color,
-    content: Color
-) {
-    Surface(
-        shape = CircleShape,
-        color = container
-    ) {
-        Text(
-            text = text,
-            style = MaterialTheme.typography.labelSmall,
-            color = content,
-            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
-        )
     }
 }

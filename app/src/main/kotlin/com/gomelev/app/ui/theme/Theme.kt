@@ -212,14 +212,14 @@ private val ExpressiveTypography = Typography(
     bodyMedium = TextStyle(
         fontFamily = FontFamily.SansSerif,
         fontWeight = FontWeight.Normal,
-        fontSize = 13.5.sp,
-        lineHeight = 19.sp
+        fontSize = 14.sp,
+        lineHeight = 20.sp
     ),
     bodySmall = TextStyle(
         fontFamily = FontFamily.SansSerif,
         fontWeight = FontWeight.Normal,
-        fontSize = 12.sp,
-        lineHeight = 16.5.sp
+        fontSize = 13.sp,
+        lineHeight = 18.sp
     ),
     labelMedium = TextStyle(
         fontFamily = FontFamily.SansSerif,

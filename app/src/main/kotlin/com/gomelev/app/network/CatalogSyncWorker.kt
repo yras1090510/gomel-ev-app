@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.gomelev.app.GomelEvApp
+import kotlinx.coroutines.CancellationException
 
 class CatalogSyncWorker(
     appContext: Context,
@@ -14,8 +15,11 @@ class CatalogSyncWorker(
         return try {
             val app = applicationContext as? GomelEvApp ?: return Result.success()
             app.repository.syncLiveWebData()
-            Result.success()
-        } catch (_: Throwable) {
+            val snapshot = app.repository.snapshot.value
+            if (snapshot.syncLogs.any { it.ok }) Result.success() else Result.retry()
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (_: Exception) {
             Result.retry()
         }
     }

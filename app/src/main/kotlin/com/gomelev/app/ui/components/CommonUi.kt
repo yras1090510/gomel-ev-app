@@ -2,19 +2,20 @@ package com.gomelev.app.ui.components
 
 import android.content.Context
 import android.content.Intent
-import android.graphics.Rect
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.offset
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInWindow
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
+import coil.compose.AsyncImage
 import android.net.Uri
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
@@ -23,13 +24,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -39,19 +38,14 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Bolt
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.ErrorOutline
-import androidx.compose.material.icons.rounded.LocalGasStation
-import androidx.compose.material.icons.rounded.Sync
 import androidx.compose.material.icons.rounded.Tune
 import androidx.compose.material.icons.rounded.WarningAmber
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
@@ -65,30 +59,24 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.window.layout.FoldingFeature
 import com.gomelev.app.model.CarOffer
-import com.gomelev.app.model.MarketSnapshot
 import com.gomelev.app.model.PdnVerdict
 import com.gomelev.app.model.UserFinanceProfile
 import com.gomelev.app.ui.theme.ExpressiveMotion
 import com.gomelev.app.ui.theme.LocalSemanticColors
 import kotlin.math.roundToInt
 
-/**
- * Galaxy Z Fold 8 / Foldable-aware split layout.
- * - Unfolded vertical hinge or large screen (>= 620dp): dual pane respecting physical crease bounds.
- * - Half-opened tabletop hinge: top studio view + bottom interactive pane.
- * - Cover screen (< 620dp): crisp single pane or overlay detail.
- */
+/** List and detail layout for compact and expanded Android windows. */
 @Composable
 fun FoldableTwoPane(
     isExpandedWidth: Boolean,
@@ -99,43 +87,44 @@ fun FoldableTwoPane(
     detailPane: @Composable () -> Unit
 ) {
     val density = LocalDensity.current
-    val hingeBoundsPx: Rect? = foldingFeature?.bounds
-    val isVerticalHinge = foldingFeature?.orientation == FoldingFeature.Orientation.VERTICAL
-    val hingeGapDp: Dp = if (isVerticalHinge && hingeBoundsPx != null) {
-        with(density) { hingeBoundsPx.width().toDp().coerceIn(12.dp, 32.dp) }
-    } else {
-        16.dp
-    }
-
-    BoxWithConstraints(modifier = modifier.fillMaxSize()) {
-        val showTwoPane = isExpandedWidth && maxWidth >= 600.dp
-        if (showTwoPane) {
-            Row(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(hingeGapDp)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .weight(0.47f)
-                        .fillMaxHeight()
-                ) {
-                    listPane()
-                }
-                Box(
-                    modifier = Modifier
-                        .weight(0.53f)
-                        .fillMaxHeight()
-                ) {
-                    detailPane()
-                }
+    val state = rememberSaveableStateHolder()
+    var origin by remember { mutableStateOf(Offset.Zero) }
+    BoxWithConstraints(modifier.fillMaxSize().clipToBounds().onGloballyPositioned {
+        origin = it.positionInWindow()
+    }) {
+        val feature = foldingFeature?.takeIf { it.isSeparating || it.occlusionType == FoldingFeature.OcclusionType.FULL }
+        val horizontal = feature?.orientation == FoldingFeature.Orientation.HORIZONTAL
+        val vertical = feature?.orientation == FoldingFeature.Orientation.VERTICAL
+        val bounds = feature?.bounds
+        val inset = if (isExpandedWidth) 12.dp else 0.dp
+        val gap = 12.dp
+        val splitX = if (vertical && bounds != null) with(density) { (bounds.left - origin.x).toDp() } else maxWidth * 0.47f
+        val rightX = if (vertical && bounds != null) with(density) { (bounds.right - origin.x).toDp() } else splitX
+        val splitY = if (horizontal && bounds != null) with(density) { (bounds.top - origin.y).toDp() } else maxHeight
+        val bottomY = if (horizontal && bounds != null) with(density) { (bounds.bottom - origin.y).toDp() } else splitY
+        val tabletop = isExpandedWidth && horizontal && splitY > 64.dp && bottomY < maxHeight - 64.dp
+        val sideBySide = isExpandedWidth && !tabletop
+        val listWidth = if (sideBySide) (splitX - inset - gap / 2).coerceAtLeast(1.dp) else maxWidth - inset * 2
+        val detailLeft = if (sideBySide) rightX + gap / 2 else inset
+        val detailWidth = (maxWidth - detailLeft - inset).coerceAtLeast(1.dp)
+        val listX by animateDpAsState(if (isExpandedWidth || !hasDetailSelection) inset else -maxWidth,
+            ExpressiveMotion.defaultSpatial(), label = "catalogPosition")
+        val detailX by animateDpAsState(if (isExpandedWidth || hasDetailSelection) detailLeft else maxWidth,
+            ExpressiveMotion.defaultSpatial(), label = "detailPosition")
+        // Keep a pane composed until it has actually cleared the window on exit.
+        if (isExpandedWidth || !hasDetailSelection || listX > -maxWidth) {
+            Box(Modifier.offset(x = listX).width(listWidth)
+                .height(if (tabletop) splitY - gap / 2 else maxHeight).clipToBounds()) {
+                state.SaveableStateProvider("list") { listPane() }
             }
-        } else {
-            if (hasDetailSelection) {
-                detailPane()
-            } else {
-                listPane()
+        }
+        if (isExpandedWidth || hasDetailSelection || detailX < maxWidth) {
+            val top = if (tabletop) bottomY + gap / 2 else 0.dp
+            Surface(modifier = Modifier.offset(x = detailX, y = top).width(detailWidth)
+                .height((maxHeight - top).coerceAtLeast(1.dp)),
+                shape = if (isExpandedWidth) RoundedCornerShape(24.dp) else RoundedCornerShape(0.dp),
+                color = MaterialTheme.colorScheme.surface) {
+                state.SaveableStateProvider("details") { detailPane() }
             }
         }
     }
@@ -144,7 +133,6 @@ fun FoldableTwoPane(
 @Composable
 fun MinimalistCarStage(
     car: CarOffer,
-    usdBynRate: Double,
     compact: Boolean = true,
     modifier: Modifier = Modifier
 ) {
@@ -168,88 +156,44 @@ fun MinimalistCarStage(
                     )
                 )
         ) {
-            // Soft Material 3 Expressive turntable spotlight behind car silhouette
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(
-                        Brush.radialGradient(
-                            colors = listOf(
-                                sem.stageSpot,
-                                Color.Transparent
-                            )
-                        )
-                    )
-            )
-
-            // Minimalist studio car vector artwork with smooth turntable transition
-            AnimatedContent(
-                targetState = car.id,
-                modifier = Modifier.fillMaxSize(),
-                transitionSpec = {
-                    (fadeIn(animationSpec = tween(220)) +
-                        scaleIn(initialScale = 0.94f, animationSpec = ExpressiveMotion.fastSpatial()))
-                        .togetherWith(fadeOut(animationSpec = tween(140)))
-                },
-                label = "carStageArt"
-            ) {
+            val image = car.imageRes
+            val source = car.imageSource
+            if (car.remotePhoto != null) {
+                AsyncImage(model = car.remotePhoto, contentDescription = "Фото дилера · ${car.brandModel}",
+                    modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Fit,
+                    error = image?.let { painterResource(it) })
+            } else if (image != null) {
+                val context = LocalContext.current
                 Image(
-                    painter = painterResource(id = car.imageRes),
-                    contentDescription = car.brandModel,
-                    contentScale = ContentScale.Fit,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(
-                            horizontal = if (compact) 16.dp else 26.dp,
-                            vertical = if (compact) 8.dp else 14.dp
-                        )
-                )
-            }
-
-            // Top-left minimal fuel badge
-            Surface(
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .padding(10.dp),
-                shape = CircleShape,
-                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.88f),
-                border = BorderStroke(0.5.dp, sem.studioBorder)
-            ) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    Icon(
-                        imageVector = if (car.isEv) Icons.Rounded.Bolt else Icons.Rounded.LocalGasStation,
-                        contentDescription = null,
-                        tint = if (car.isEv) sem.passAccent else MaterialTheme.colorScheme.secondary,
-                        modifier = Modifier.size(13.dp)
+                    painter = painterResource(image),
+                    contentDescription = "Фото модели ${car.brandModel}",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize().then(
+                        if (source != null && !compact) Modifier.clickable(
+                            onClickLabel = "Открыть источник фотографии"
+                        ) { openExternalUrl(context, source) } else Modifier
                     )
+                )
+                if (!compact) Surface(
+                    modifier = Modifier.align(Alignment.BottomStart).padding(10.dp),
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.surface
+                ) {
                     Text(
-                        text = if (car.isEv) "EV" else "ДВС",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurface
+                        car.imageCredit ?: "Фото модели",
+                        style = MaterialTheme.typography.labelSmall,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                     )
                 }
-            }
-
-            // Top-right USD badge
-            Surface(
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(10.dp),
-                shape = CircleShape,
-                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.88f),
-                border = BorderStroke(0.5.dp, sem.studioBorder)
-            ) {
+            } else {
                 Text(
-                    text = Formatters.usdFromByn(car.priceByn, usdBynRate),
-                    style = MaterialTheme.typography.labelMedium.copy(fontFeatureSettings = "tnum"),
+                    "Фото зависит от объявления",
+                    style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                    modifier = Modifier.align(Alignment.Center)
                 )
             }
+
         }
     }
 }
@@ -303,21 +247,11 @@ fun PdnStatusPill(
 @Composable
 fun PdnControlBar(
     profile: UserFinanceProfile,
-    snapshot: MarketSnapshot,
     onUpdateProfile: ((UserFinanceProfile) -> UserFinanceProfile) -> Unit,
-    onTriggerSync: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val sem = LocalSemanticColors.current
     var expanded by remember { mutableStateOf(false) }
-
-    val usedRatio = ((profile.existingHousingCreditByn / profile.totalPdnMaxByn.coerceAtLeast(1.0))
-        .toFloat()).coerceIn(0f, 1f)
-    val animatedRatio by animateFloatAsState(
-        targetValue = usedRatio,
-        animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
-        label = "pdnBar"
-    )
 
     Surface(
         modifier = modifier.fillMaxWidth(),
@@ -343,35 +277,13 @@ fun PdnControlBar(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Text(
-                        text = "Свободный лимит ПДН: ${Formatters.byn(profile.freePdnRoomByn)}/мес",
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontFeatureSettings = "tnum",
-                            fontWeight = FontWeight.SemiBold
-                        ),
-                        color = sem.passAccent
-                    )
-                    FlowRow(
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        ControlMetaTag("ЗП ${Formatters.bynShort(profile.salaryByn)}")
-                        ControlMetaTag("Указ №240: −${Formatters.bynShort(profile.existingHousingCreditByn)}")
-                        ControlMetaTag("1$ = ${Formatters.rateFx(snapshot.usdBynRate)}")
-                    }
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("На автомобиль в месяц", style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(Formatters.byn(profile.freePdnRoomByn), style = MaterialTheme.typography.headlineMedium.copy(
+                        fontFeatureSettings = "tnum", fontWeight = FontWeight.Bold), color = sem.passAccent)
                 }
-
-                Spacer(modifier = Modifier.width(6.dp))
-
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(onClick = onTriggerSync, enabled = !snapshot.isSyncing) {
-                        Icon(
-                            imageVector = Icons.Rounded.Sync,
-                            contentDescription = "Синхронизировать сайты",
-                            tint = if (snapshot.isSyncing) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
                     Surface(
                         shape = CircleShape,
                         color = if (expanded) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerHigh,
@@ -390,7 +302,7 @@ fun PdnControlBar(
                                 modifier = Modifier.size(15.dp)
                             )
                             Text(
-                                text = "ПВ ${profile.downPaymentPct}%",
+                                text = "Профиль",
                                 style = MaterialTheme.typography.labelMedium.copy(fontFeatureSettings = "tnum")
                             )
                         }
@@ -398,17 +310,8 @@ fun PdnControlBar(
                 }
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
-            LinearProgressIndicator(
-                progress = { animatedRatio },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(6.dp)
-                    .clip(CircleShape),
-                color = MaterialTheme.colorScheme.secondary,
-                trackColor = sem.passContainer
-            )
-
+            Text("Доход × ${(profile.pdnRatioCap * 100).roundToInt()}% − жильё − рассрочка − прочие долги",
+                style = MaterialTheme.typography.bodySmall)
             // Quick PV pills always visible & wrapping cleanly on narrow screens
             Spacer(modifier = Modifier.height(10.dp))
             FlowRow(
@@ -457,7 +360,7 @@ fun PdnControlBar(
                 Spacer(modifier = Modifier.height(10.dp))
 
                 Text(
-                    text = "Зарплата (чистыми): ${Formatters.byn(profile.salaryByn)}",
+                    text = "Подтверждаемый доход после налогов: ${Formatters.byn(profile.salaryByn)}",
                     style = MaterialTheme.typography.labelLarge.copy(fontFeatureSettings = "tnum")
                 )
                 Slider(
@@ -469,7 +372,7 @@ fun PdnControlBar(
                 )
 
                 Text(
-                    text = "Действующие кредиты (Указ №240): ${Formatters.byn(profile.existingHousingCreditByn)}/мес",
+                    text = "Платёж по кредиту за жильё: ${Formatters.byn(profile.existingHousingCreditByn)}/мес",
                     style = MaterialTheme.typography.labelLarge.copy(fontFeatureSettings = "tnum")
                 )
                 Slider(
@@ -479,6 +382,35 @@ fun PdnControlBar(
                     },
                     valueRange = 0f..900f
                 )
+
+                FilterChip(selected = profile.mvdEmployee,
+                    onClick = { onUpdateProfile { it.copy(mvdEmployee = !it.mvdEmployee) } },
+                    label = { Text("Служу в МВД") })
+                Text("Рассрочка за устройство · ${Formatters.byn(profile.deviceInstallmentByn)}/мес",
+                    style = MaterialTheme.typography.labelLarge)
+                Slider(value = profile.deviceInstallmentByn.toFloat(),
+                    onValueChange = { v -> onUpdateProfile { it.copy(deviceInstallmentByn = (v / 10f).roundToInt() * 10.0) } },
+                    valueRange = 0f..2000f)
+                Text(
+                    "Другие долговые платежи: ${Formatters.byn(profile.otherMonthlyDebtByn)}/мес",
+                    style = MaterialTheme.typography.labelLarge
+                )
+                Slider(
+                    value = profile.otherMonthlyDebtByn.toFloat(),
+                    onValueChange = { value ->
+                        onUpdateProfile { it.copy(otherMonthlyDebtByn = (value / 10f).roundToInt() * 10.0) }
+                    },
+                    valueRange = 0f..2000f
+                )
+                val context = LocalContext.current
+                Text(
+                    "Ориентир для авто: 40% подтверждённого дохода за вычетом долговых платежей. Банк также проверяет остаток дохода и кредитную историю.",
+                    style = MaterialTheme.typography.bodySmall
+                )
+                androidx.compose.material3.TextButton(onClick = {
+                    openExternalUrl(context, "https://etalonline.by/document/?regnum=B22035303")
+                }) { Text("Правило Нацбанка") }
+
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -507,21 +439,6 @@ fun PdnControlBar(
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun ControlMetaTag(text: String) {
-    Surface(
-        shape = CircleShape,
-        color = MaterialTheme.colorScheme.surfaceContainerHigh
-    ) {
-        Text(
-            text = text,
-            style = MaterialTheme.typography.labelSmall.copy(fontFeatureSettings = "tnum"),
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
-        )
     }
 }
 
