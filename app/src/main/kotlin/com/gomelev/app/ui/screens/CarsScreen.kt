@@ -98,7 +98,7 @@ fun CarsScreen(
 ) {
     var budget by rememberSaveable { mutableStateOf(CarBudget.TARGET) }
     var withinPdn by rememberSaveable { mutableStateOf(true) }
-    var newOnly by rememberSaveable { mutableStateOf(false) }
+    var newOnly by rememberSaveable { mutableStateOf(true) }
     var inGomelOnly by rememberSaveable { mutableStateOf(false) }
     val listState = rememberLazyListState()
 
@@ -189,11 +189,11 @@ fun CarsScreen(
                         FilterChip(selected = newOnly, onClick = {
                             newOnly = !newOnly
                             onSelectCar(null)
-                        }, label = { Text("Только новые") })
+                        }, label = { Text("Новые") })
                         FilterChip(selected = inGomelOnly, onClick = {
                             inGomelOnly = !inGomelOnly
                             onSelectCar(null)
-                        }, label = { Text("В Гомеле") })
+                        }, label = { Text("Гомель") })
                     }
                 }
 
@@ -298,21 +298,10 @@ private fun CarListCard(
                     )
                 }
                 Spacer(modifier = Modifier.width(8.dp))
-                Column(horizontalAlignment = Alignment.End) {
-                    Text(
-                        text = Formatters.byn(car.priceByn),
-                        style = MaterialTheme.typography.titleLarge.copy(
-                            fontFeatureSettings = "tnum",
-                            fontWeight = FontWeight.Bold
-                        ),
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Text(
-                        text = if (car.lastSyncedPriceNote == null) "База · ${car.stockStatus.labelRu}" else car.stockStatus.labelRu,
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
+                Text(
+                    text = Formatters.byn(car.priceByn),
+                    style = MaterialTheme.typography.titleMedium.copy(fontFeatureSettings = "tnum", fontWeight = FontWeight.Bold)
+                )
             }
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -323,7 +312,7 @@ private fun CarListCard(
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 Text(
-                    text = car.cityNote,
+                    text = if (car.lastSyncedPriceNote == null) "Из базы · ${car.cityNote}" else "${car.stockStatus.labelRu} · ${car.cityNote}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 2,

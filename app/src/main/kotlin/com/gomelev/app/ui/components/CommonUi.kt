@@ -192,7 +192,7 @@ fun MinimalistCarStage(
                         ) { openExternalUrl(context, source) } else Modifier
                     )
                 )
-                Surface(
+                if (!compact) Surface(
                     modifier = Modifier.align(Alignment.BottomStart).padding(10.dp),
                     shape = CircleShape,
                     color = MaterialTheme.colorScheme.surface
@@ -212,50 +212,6 @@ fun MinimalistCarStage(
                 )
             }
 
-            // Top-left minimal fuel badge
-            Surface(
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .padding(10.dp),
-                shape = CircleShape,
-                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.88f),
-                border = BorderStroke(0.5.dp, sem.studioBorder)
-            ) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    Icon(
-                        imageVector = if (car.isEv) Icons.Rounded.Bolt else Icons.Rounded.LocalGasStation,
-                        contentDescription = null,
-                        tint = if (car.isEv) sem.passAccent else MaterialTheme.colorScheme.secondary,
-                        modifier = Modifier.size(13.dp)
-                    )
-                    Text(
-                        text = if (car.isEv) "EV" else "ДВС",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-            }
-
-            // Top-right USD badge
-            Surface(
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(10.dp),
-                shape = CircleShape,
-                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.88f),
-                border = BorderStroke(0.5.dp, sem.studioBorder)
-            ) {
-                Text(
-                    text = Formatters.usdFromByn(car.priceByn, usdBynRate),
-                    style = MaterialTheme.typography.labelMedium.copy(fontFeatureSettings = "tnum"),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                )
-            }
         }
     }
 }
@@ -317,14 +273,6 @@ fun PdnControlBar(
     val sem = LocalSemanticColors.current
     var expanded by remember { mutableStateOf(false) }
 
-    val usedRatio = (((profile.existingHousingCreditByn + profile.otherMonthlyDebtByn) / profile.totalPdnMaxByn.coerceAtLeast(1.0))
-        .toFloat()).coerceIn(0f, 1f)
-    val animatedRatio by animateFloatAsState(
-        targetValue = usedRatio,
-        animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
-        label = "pdnBar"
-    )
-
     Surface(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(22.dp),
@@ -349,35 +297,13 @@ fun PdnControlBar(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Text(
-                        text = "Расчётный лимит: ${Formatters.byn(profile.freePdnRoomByn)}/мес",
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontFeatureSettings = "tnum",
-                            fontWeight = FontWeight.SemiBold
-                        ),
-                        color = sem.passAccent
-                    )
-                    FlowRow(
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        ControlMetaTag("ЗП ${Formatters.bynShort(profile.salaryByn)}")
-                        ControlMetaTag("Жильё −${Formatters.bynShort(profile.existingHousingCreditByn)}")
-                        ControlMetaTag("1$ = ${Formatters.rateFx(snapshot.usdBynRate)}")
-                    }
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("На автомобиль в месяц", style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(Formatters.byn(profile.freePdnRoomByn), style = MaterialTheme.typography.headlineMedium.copy(
+                        fontFeatureSettings = "tnum", fontWeight = FontWeight.Bold), color = sem.passAccent)
                 }
-
-                Spacer(modifier = Modifier.width(6.dp))
-
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(onClick = onTriggerSync, enabled = !snapshot.isSyncing) {
-                        Icon(
-                            imageVector = Icons.Rounded.Sync,
-                            contentDescription = "Синхронизировать сайты",
-                            tint = if (snapshot.isSyncing) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
                     Surface(
                         shape = CircleShape,
                         color = if (expanded) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerHigh,
@@ -403,17 +329,6 @@ fun PdnControlBar(
                     }
                 }
             }
-
-            Spacer(modifier = Modifier.height(10.dp))
-            LinearProgressIndicator(
-                progress = { animatedRatio },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(6.dp)
-                    .clip(CircleShape),
-                color = MaterialTheme.colorScheme.secondary,
-                trackColor = sem.passContainer
-            )
 
             // Quick PV pills always visible & wrapping cleanly on narrow screens
             Spacer(modifier = Modifier.height(10.dp))

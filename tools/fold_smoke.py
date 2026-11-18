@@ -59,6 +59,8 @@ try:
     capture("02-selected")
     # Fold8 open in its wider natural orientation; 1/3 of 2448 x 1848.
     shell("wm", "size", "816x616")
+    time.sleep(1)
+    shell("input", "swipe", "180", "230", "180", "550", "250")
     find("Электромобили для доставки")
     matches = [n for n in nodes() if n.get("text") == "FAW Bestune Xiaoma 222"]
     assert any(int(re.findall(r"\d+", n.get("bounds"))[0]) > 390 for n in matches), "detail pane missing"
@@ -71,8 +73,15 @@ try:
     shell("wm", "size", "400x840")
     find("Назад к каталогу")
     shell("input", "keyevent", "4")
+    time.sleep(.7)
+    shell("input", "swipe", "180", "230", "180", "650", "250")
     find("Электромобили для доставки")
     capture("05-phone")
+except Exception:
+    capture("failure")
+    print([(n.get("text"), n.get("content-desc"), n.get("bounds")) for n in nodes()
+           if n.get("text") or n.get("content-desc")], flush=True)
+    raise
 finally:
     shell("wm", "size", "reset")
     shell("wm", "density", "reset")
