@@ -57,10 +57,16 @@ class LiveWebSyncEngine {
         .followRedirects(true)
         .build()
 
+    // The importer serves a photo-rich model page; its first response can exceed the health-check timeout.
+    private val importCatalogClient = client.newBuilder()
+        .readTimeout(35, TimeUnit.SECONDS)
+        .callTimeout(50, TimeUnit.SECONDS)
+        .build()
+
     private val userAgent =
         "Mozilla/5.0 (Linux; Android 15; SM-F966B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36"
 
-    private fun fetchText(url: String, query: JSONObject? = null): Triple<Int?, Long, String?> {
+    private fun fetchText(url: String, query: JSONObject? = null, http: OkHttpClient = client): Triple<Int?, Long, String?> {
         val start = System.currentTimeMillis()
         return try {
             val req = Request.Builder()
@@ -69,7 +75,7 @@ class LiveWebSyncEngine {
                 .header("User-Agent", userAgent)
                 .header("Accept-Language", "ru-BY,ru;q=0.9,en;q=0.7")
                 .build()
-            client.newCall(req).execute().use { resp ->
+            http.newCall(req).execute().use { resp ->
                 val latency = System.currentTimeMillis() - start
                 val body = if (resp.isSuccessful) resp.body?.string() else null
                 Triple(resp.code, latency, body)
@@ -90,7 +96,7 @@ class LiveWebSyncEngine {
             val nbrbDeferred = async { syncNbrbRate(now) }
             val refinancingDeferred = async { syncRefinancingRate(now) }
             val seagullDeferred = async {
-                val (code, elapsed, body) = fetchText(DealerInventory.SEAGULL_URL)
+                val (code, elapsed, body) = fetchText(DealerInventory.SEAGULL_URL, http = importCatalogClient)
                 val rate = nbrbDeferred.await().usdRate
                 val rows = if (code == 200 && body != null && rate != null)
                     runCatching { DealerInventory.seagullShowcase(body, rate) }.getOrNull() else null
