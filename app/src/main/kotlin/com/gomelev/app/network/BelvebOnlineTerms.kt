@@ -2,7 +2,7 @@ package com.gomelev.app.network
 
 import org.jsoup.Jsoup
 
-internal data class BelvebOnlineTerms(val first: Double, val next: Double, val months: Int, val cap: Double) {
+internal data class BelvebOnlineTerms(val first: Double, val next: Double, val months: Int, val cap: Double, val excludesMvdOnline: Boolean?) {
     companion object {
         fun parse(html: String): BelvebOnlineTerms? {
             val text = Jsoup.parse(html).text().replace('\u00a0', ' ')
@@ -14,7 +14,8 @@ internal data class BelvebOnlineTerms(val first: Double, val next: Double, val m
             val next = rate(3) ?: return null
             val cap = m.groupValues[4].replace(" ", "").toDoubleOrNull() ?: return null
             return if (years in 1..30 && first in 0.0..100.0 && next in 0.0..100.0 && cap > 0)
-                BelvebOnlineTerms(first, next, years * 12, cap) else null
+                BelvebOnlineTerms(first, next, years * 12, cap,
+                    Regex("""Онлайн-программа не\s*доступна[^.!?]{0,220}сотрудникам МВД""", RegexOption.IGNORE_CASE).containsMatchIn(text).takeIf { it }) else null
         }
     }
 }

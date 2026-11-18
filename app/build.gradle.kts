@@ -12,7 +12,12 @@ android {
         applicationId = "com.gomelev.app"
         minSdk = 26
         targetSdk = 35
-        versionCode = 2
+        val installment = providers.gradleProperty("initialDevicePayment").orNull?.toDouble() ?: 0.0
+        require(installment.isFinite() && installment >= 0)
+        buildConfigField("double", "INITIAL_DEVICE_PAYMENT", installment.toString())
+        buildConfigField("boolean", "INITIAL_MVD_PROFILE",
+            (providers.gradleProperty("initialMvdProfile").orNull?.toBooleanStrict() ?: false).toString())
+        versionCode = 3
         versionName = "2.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

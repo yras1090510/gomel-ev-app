@@ -310,6 +310,8 @@ fun PdnControlBar(
                 }
             }
 
+            Text("Доход × ${(profile.pdnRatioCap * 100).roundToInt()}% − жильё − рассрочка − прочие долги",
+                style = MaterialTheme.typography.bodySmall)
             // Quick PV pills always visible & wrapping cleanly on narrow screens
             Spacer(modifier = Modifier.height(10.dp))
             FlowRow(
@@ -358,7 +360,7 @@ fun PdnControlBar(
                 Spacer(modifier = Modifier.height(10.dp))
 
                 Text(
-                    text = "Зарплата (чистыми): ${Formatters.byn(profile.salaryByn)}",
+                    text = "Подтверждаемый доход после налогов: ${Formatters.byn(profile.salaryByn)}",
                     style = MaterialTheme.typography.labelLarge.copy(fontFeatureSettings = "tnum")
                 )
                 Slider(
@@ -381,6 +383,14 @@ fun PdnControlBar(
                     valueRange = 0f..900f
                 )
 
+                FilterChip(selected = profile.mvdEmployee,
+                    onClick = { onUpdateProfile { it.copy(mvdEmployee = !it.mvdEmployee) } },
+                    label = { Text("Служу в МВД") })
+                Text("Рассрочка за устройство · ${Formatters.byn(profile.deviceInstallmentByn)}/мес",
+                    style = MaterialTheme.typography.labelLarge)
+                Slider(value = profile.deviceInstallmentByn.toFloat(),
+                    onValueChange = { v -> onUpdateProfile { it.copy(deviceInstallmentByn = (v / 10f).roundToInt() * 10.0) } },
+                    valueRange = 0f..2000f)
                 Text(
                     "Другие долговые платежи: ${Formatters.byn(profile.otherMonthlyDebtByn)}/мес",
                     style = MaterialTheme.typography.labelLarge

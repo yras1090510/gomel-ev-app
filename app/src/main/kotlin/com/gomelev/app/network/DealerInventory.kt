@@ -33,9 +33,16 @@ internal object DealerInventory {
             val amount = card.selectFirst(".cat-list-title em.black .dgts-space, .cat-list-title em.black")
                 ?.text()?.filter { it.isDigit() }?.toDoubleOrNull()
             require(name.isNotBlank() && amount != null && amount > 0)
+            val previousPrice = card.selectFirst(".cat-list-title .old-price")
+                ?.text()?.filter(Char::isDigit)?.toDoubleOrNull()
+            val xiaomaDiscount = name.contains("Xiaoma", ignoreCase = true) && previousPrice != null && previousPrice > amount
+            val calculationPrice = if (xiaomaDiscount) requireNotNull(previousPrice) else amount
+            val priceNote = if (xiaomaDiscount) {
+                "Без trade-in расчёт по перечёркнутой цене ${calculationPrice.toInt()} BYN. Акция ${amount.toInt()} BYN требует подтверждения условий у дилера."
+            } else "Цена витрины дилера. Запросите счёт без trade-in."
             val photo = card.selectFirst("img[src]")?.absUrl("src")
             rows.put(JSONObject().put("id", "nts_" + url.trimEnd('/').substringAfterLast('/'))
-                .put("name", name).put("price", amount).put("url", url).put("location", "Гомель")
+                .put("name", name).put("price", calculationPrice).put("priceNote", priceNote).put("url", url).put("location", "Гомель")
                 .put("stock", StockStatus.IN_GOMEL.name).put("photo", photo)
                 .put("year", assets.firstOrNull { it.matches(Regex("""20\d\d""")) }?.toInt()))
         }
@@ -148,6 +155,8 @@ internal object DealerInventory {
                 val row = rows.getJSONObject(i)
                 val url = row.getString("url")
                 val seed = base.firstOrNull { it.id == seedId && it.imageSource == url && dealer == "nts_ev" }
+                // Older FAW snapshots stored the trade-in amount as the purchase price.
+                val legacyDiscount = seed != null && !row.has("priceNote") && row.getDouble("price") == 24990.0
                 val year = row.optInt("year").takeIf { it > 0 }
                 result += CarOffer(id = seed?.id ?: row.getString("id"), brandModel = row.getString("name"),
                     trimAndYear = listOfNotNull(row.optString("trim").ifBlank { null }, year?.toString(),
@@ -155,7 +164,8 @@ internal object DealerInventory {
                     bodyType = row.optString("body", seed?.bodyType ?: "Электромобиль"),
                     batteryOrEngine = row.optString("battery", seed?.batteryOrEngine ?: "Электропривод"),
                     rangeOrSpec = row.optString("range", seed?.rangeOrSpec ?: "Запас хода уточните у дилера"),
-                    priceByn = row.getDouble("price"), priceNote = row.optString("priceNote", "Цена витрины дилера"), isEv = true, isUsed = row.optBoolean("used"),
+                    priceByn = if (legacyDiscount) seed!!.priceByn else row.getDouble("price"),
+                    priceNote = if (legacyDiscount) seed!!.priceNote else row.optString("priceNote", "Цена витрины дилера"), isEv = true, isUsed = row.optBoolean("used"),
                     isGeelyEx = false, isBelPartner = false, isDongfengIceOrForthing = false, isDealerLegalEntity = true,
                     stockStatus = StockStatus.valueOf(row.getString("stock")), cityNote = row.getString("location"),
                     dealerId = dealer, imageRes = seed?.imageRes, imageSource = url, imageCredit = "Фото дилера",

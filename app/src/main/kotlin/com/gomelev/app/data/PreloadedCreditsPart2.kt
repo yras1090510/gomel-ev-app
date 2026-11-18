@@ -223,6 +223,7 @@ internal val preloadedCreditsPart2List: List<CreditProgram> = listOf(
         ),
         CreditProgram(
             id = "belarus_ev_general",
+            liveRateNote = "Условия сайта банка · 18.11.2026",
             bankName = "Беларусбанк",
             programName = "На приобретение электромобиля (общий 16,25% → 16,75%, ДИФФ)",
             scope = CreditScope.EV_UNDER_TEN_YEARS,
@@ -264,6 +265,8 @@ internal val preloadedCreditsPart2List: List<CreditProgram> = listOf(
         ),
         CreditProgram(
             id = "belveb_online",
+            liveRateNote = "Условия сайта банка · 18.11.2026",
+            excludesMvdOnline = true,
             bankName = "Банк БелВЭБ",
             programName = "Автокредит онлайн (новые и б/у 9,9% 1м → 16,5%, ДИФФ)",
             scope = CreditScope.UNIVERSAL_AUTO,

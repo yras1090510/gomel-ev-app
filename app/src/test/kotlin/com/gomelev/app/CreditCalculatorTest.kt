@@ -45,7 +45,7 @@ class CreditCalculatorTest {
 
     @Test
     fun `xiaoma passes with 0 pct pv while geely ex2 requires pv 10 to 15 pct`() {
-        val xiaoma = PreloadedCatalog.cars.first { it.id == "faw_xiaoma" }
+        val xiaoma = PreloadedCatalog.cars.first { it.id == "faw_xiaoma" }.copy(priceByn = 24990.0)
         val ex2 = PreloadedCatalog.cars.first { it.id == "geely_ex2_pro" }
         val dabFix = PreloadedCatalog.creditPrograms.first { it.id == "dabrabyt_avtonado_fix" }
         val prior = PreloadedCatalog.creditPrograms.first { it.id == "prior_bel_4" }
@@ -73,7 +73,7 @@ class CreditCalculatorTest {
 
     @Test
     fun `belarusbank EV defers principal but charges interest for six months`() {
-        val car = PreloadedCatalog.cars.first { it.id == "faw_xiaoma" }
+        val car = PreloadedCatalog.cars.first { it.id == "faw_xiaoma" }.copy(priceByn = 24990.0)
         val program = PreloadedCatalog.creditPrograms.first { it.id == "belarus_ev_general" }
         val evaluation = CreditCalculator.evaluateCarWithProgram(car, program, UserFinanceProfile(downPaymentPct = 0))
         assertEquals(338.40625, evaluation.graceMonthlyByn, 0.001)
@@ -96,6 +96,33 @@ class CreditCalculatorTest {
         assertEquals(320.0, profile.existingHousingCreditByn, 0.001)
         assertEquals(640.0, profile.freePdnRoomByn, 0.001)
         assertEquals(540.0, profile.copy(otherMonthlyDebtByn = 100.0).freePdnRoomByn, 0.001)
+    }
+
+    @Test
+    fun `applicant restriction is distinct from payment and down payment fit`() {
+        val car = PreloadedCatalog.cars.first { it.id == "faw_xiaoma" }.copy(priceByn = 24990.0)
+        val online = PreloadedCatalog.creditPrograms.first { it.id == "belveb_online" }
+        val branch = PreloadedCatalog.creditPrograms.first { it.id == "belarus_ev_general" }
+        val profile = baseProfile.copy(mvdEmployee = true, deviceInstallmentByn = 120.0, downPaymentPct = 10)
+        assertEquals(560.0, profile.freePdnRoomByn, 0.01)
+        assertEquals(branch.id, CreditCalculator.bestEvaluationForCar(car, listOf(online, branch), profile)?.program?.id)
+        assertEquals(online.id, CreditCalculator.bestEvaluationForCar(car, listOf(online, branch), profile.copy(mvdEmployee = false))?.program?.id)
+        val higherAdvance = branch.copy(minDownPaymentPct = 25)
+        assertEquals(null, CreditCalculator.bestEvaluationForCar(car, listOf(online, higherAdvance), profile))
+        val ev = CreditCalculator.evaluateCarWithProgram(car, higherAdvance, profile)
+        assertEquals(car.priceByn / 4, CreditCalculator.requiredDownPayment(ev), 0.01)
+    }
+
+    @Test
+    fun `primary estimate uses published terms while cached alternative remains in bank list`() {
+        val car = PreloadedCatalog.cars.first { it.id == "faw_xiaoma" }.copy(priceByn = 24990.0)
+        val branch = PreloadedCatalog.creditPrograms.first { it.id == "belarus_ev_general" }
+        val cheap = branch.copy(id = "example", postRatePct = 1.0, graceRatePct = 1.0, liveRateNote = null)
+        val profile = baseProfile.copy(deviceInstallmentByn = 280.0)
+        val programs = listOf(branch, cheap)
+        assertEquals(branch.id, CreditCalculator.bestEvaluationForCar(car, programs, profile)?.program?.id)
+        val alternative = CreditCalculator.evaluateAllProgramsForCar(car, programs, profile).first { it.program.id == cheap.id }
+        assertEquals(PdnVerdict.PASS, alternative.verdict)
     }
 
     @Test

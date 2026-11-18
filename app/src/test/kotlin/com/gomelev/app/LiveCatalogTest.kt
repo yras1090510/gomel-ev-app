@@ -31,6 +31,19 @@ class LiveCatalogTest {
         assertTrue(stock().isEmpty())
     }
 
+    @Test fun xiaomaTradeInDoesNotBecomeThePurchasePriceOnRefreshOrFromOlderCache() {
+        val page = faw("bestune-xiaoma-222-y00010" to 24990).replace("FAW bestune-xiaoma-222-y00010", "FAW Bestune Xiaoma 222")
+            .replace("59900", "28240")
+        val rows = DealerInventory.faw(page)
+        val row = rows.getJSONObject(0)
+        assertEquals(28240.0, row.getDouble("price"), 0.01)
+        assertTrue(row.getString("priceNote").contains("24990"))
+        row.remove("priceNote")
+        row.put("price", 24990)
+        val snapshot = JSONObject().put("nts_ev", JSONObject().put("checked", 1L).put("rows", rows))
+        assertEquals(28240.0, DealerInventory.merge(PreloadedCatalog.cars, snapshot).single { it.id == "faw_xiaoma" }.priceByn, 0.01)
+    }
+
     @Test fun apsOnlyImportsUnreservedElectricCarsAndKeepsFactorySeparateFromCityStock() {
         val raw = JSONObject("""{"id":1,"models":{"id":92,"name":"BOX"},"brands":{"name":"Dongfeng"},
             "car_type":{"name":"электро"},"car_conditions":{"id":1},"reserved":false,"cities":{"name":"Гомель"},
@@ -72,7 +85,8 @@ class LiveCatalogTest {
         val html = """В приложении UP Online Срок кредита От 1 года до 8 лет включительно Процентная ставка
             Первый 1 месяц – 9,90 %, начиная со второго месяца – 17,5 % (СР+8,25 п.п)
             Максимальная сумма кредита 100 000 ƃ равномерными долями"""
-        assertEquals(BelvebOnlineTerms(9.9, 17.5, 96, 100000.0), BelvebOnlineTerms.parse(html))
+        assertEquals(BelvebOnlineTerms(9.9, 17.5, 96, 100000.0, null), BelvebOnlineTerms.parse(html))
+        assertEquals(true, BelvebOnlineTerms.parse(html + " Онлайн-программа не доступна ИП, военнослужащим, сотрудникам МВД")?.excludesMvdOnline)
         assertNull(BelvebOnlineTerms.parse(html.replace("равномерными долями", "аннуитет")))
     }
 

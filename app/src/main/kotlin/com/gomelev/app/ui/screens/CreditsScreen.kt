@@ -277,6 +277,10 @@ private fun CreditProgramCard(
                 overflow = TextOverflow.Ellipsis
             )
 
+            if (CreditCalculator.excludesApplicant(program, profile)) {
+                Text("Онлайн-программа недоступна сотрудникам МВД", style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.error)
+            }
             val rateStr = if (program.graceMonths > 0) {
                 "${Formatters.pct(program.graceRatePct)} (${program.graceMonths}м) → ${Formatters.pct(program.postRatePct)} · до ${program.maxMonths} мес."
             } else {
@@ -358,7 +362,8 @@ private fun CreditProgramDetailPane(
     } else {
         maxOf(stepped.graceMonthly, stepped.postGraceMonthly)
     }
-    val passes = currentPeak <= profile.freePdnRoomByn && loan <= program.maxAmountByn
+    val excluded = CreditCalculator.excludesApplicant(program, profile)
+    val passes = !excluded && currentPeak <= profile.freePdnRoomByn && loan <= program.maxAmountByn
 
     Column(
         modifier = Modifier
@@ -499,7 +504,7 @@ private fun CreditProgramDetailPane(
                     Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         val tc = if (passes) sem.onPassContainer else sem.onFailContainer
                         Text(
-                            text = if (passes) "В расчётном лимите (≤ ${Formatters.bynShort(profile.freePdnRoomByn)})" else "Выше расчётного лимита (> ${Formatters.bynShort(profile.freePdnRoomByn)})",
+                            text = if (excluded) "Онлайн-программа недоступна сотрудникам МВД" else if (passes) "В расчётном лимите (≤ ${Formatters.bynShort(profile.freePdnRoomByn)})" else "Выше расчётного лимита (> ${Formatters.bynShort(profile.freePdnRoomByn)})",
                             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                             color = tc
                         )

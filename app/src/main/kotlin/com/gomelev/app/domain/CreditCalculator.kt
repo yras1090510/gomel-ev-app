@@ -225,9 +225,9 @@ object CreditCalculator {
         val effectivePvByn: Double
         val effectivePvPct: Int
 
-        if (profile.useCustomDownPaymentByn && profile.customDownPaymentByn > 0.0) {
+        if (profile.useCustomDownPaymentByn) {
             val minReqByn = car.priceByn * (program.minDownPaymentPct / 100.0)
-            effectivePvByn = max(profile.customDownPaymentByn, minReqByn).coerceAtMost(car.priceByn * 0.90)
+            effectivePvByn = max(profile.customDownPaymentByn, minReqByn).coerceIn(0.0, car.priceByn)
             effectivePvPct = ((effectivePvByn / car.priceByn) * 100.0).roundToInt()
         } else {
             effectivePvPct = max(profile.downPaymentPct, program.minDownPaymentPct)
@@ -359,11 +359,18 @@ object CreditCalculator {
             )
     }
 
-    /** Evaluations are ranked by fit and peak payment. Prefer offers whose terms have been read from the bank. */
+    fun requiredDownPayment(ev: PaymentEvaluation): Double =
+        max(ev.carPriceByn * ev.program.minDownPaymentPct / 100, ev.carPriceByn - ev.maxLoanByPdnByn)
+            .coerceIn(0.0, ev.carPriceByn)
+
+    fun excludesApplicant(program: CreditProgram, profile: UserFinanceProfile) =
+        profile.mvdEmployee && program.excludesMvdOnline
+
     fun withinDownPayment(car: CarOffer, ranked: List<PaymentEvaluation>, profile: UserFinanceProfile): PaymentEvaluation? {
-        val cash = if (profile.useCustomDownPaymentByn) profile.customDownPaymentByn else car.priceByn * profile.downPaymentPct / 100
-        val feasible = ranked.filter { it.downPaymentByn <= cash + 0.01 }
-        return feasible.firstOrNull { it.program.liveRateNote != null } ?: feasible.firstOrNull()
+        val cash = profile.availableDownPayment(car.priceByn)
+        val feasible = ranked.filter { it.downPaymentByn <= cash + 0.01 && !excludesApplicant(it.program, profile) }
+        return feasible.minWithOrNull(compareBy<PaymentEvaluation> { it.program.liveRateNote == null }
+            .thenBy { it.verdict != PdnVerdict.PASS }.thenBy { it.decidingMonthlyByn })
     }
 
     fun bestEvaluationForCar(
@@ -371,7 +378,7 @@ object CreditCalculator {
         programs: List<CreditProgram>,
         profile: UserFinanceProfile
     ): PaymentEvaluation? {
-        return evaluateAllProgramsForCar(car, programs, profile).firstOrNull()
+        return withinDownPayment(car, evaluateAllProgramsForCar(car, programs, profile), profile)
     }
 
     fun projectedPrice2027(car: CarOffer, scenario: ForecastScenario): Double {

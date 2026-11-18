@@ -93,8 +93,8 @@ fun CarsScreen(
     onUpdateProfile: ((UserFinanceProfile) -> UserFinanceProfile) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var budget by rememberSaveable { mutableStateOf(CarBudget.TARGET) }
-    var withinPdn by rememberSaveable { mutableStateOf(true) }
+    var budget by rememberSaveable { mutableStateOf(CarBudget.ANY) }
+    var withinPdn by rememberSaveable { mutableStateOf(false) }
     var newOnly by rememberSaveable { mutableStateOf(true) }
     var inGomelOnly by rememberSaveable { mutableStateOf(false) }
     val listState = rememberLazyListState()
@@ -114,6 +114,7 @@ fun CarsScreen(
                 (!inGomelOnly || car.stockStatus == StockStatus.IN_GOMEL)
         }.sortedWith(
             compareBy<Pair<CarOffer, PaymentEvaluation?>> { it.second?.verdict?.ordinal ?: Int.MAX_VALUE }
+                .thenBy { it.second?.program?.liveRateNote == null }
                 .thenBy { it.first.stockStatus.ordinal }
                 .thenByDescending { it.first.lastSyncedPriceNote != null }
                 .thenBy { it.first.priceByn }
@@ -316,6 +317,9 @@ private fun CarListCard(
                 }
             }
 
+            if (bestEval == null) {
+                Text("Нет подходящей программы с вашим взносом и типом занятости", style = MaterialTheme.typography.bodySmall)
+            }
             if (bestEval != null) {
                 Spacer(modifier = Modifier.height(6.dp))
                 Text(
@@ -399,8 +403,19 @@ private fun CarDetailPane(
                 if (suggested != null) {
                     Text("${suggested.program.bankName} · ${suggested.program.maxMonths} мес. · взнос ${Formatters.byn(suggested.downPaymentByn)}",
                         style = MaterialTheme.typography.bodySmall)
+                    Text(if (suggested.verdict == PdnVerdict.PASS) "Платёж подходит. Решение — после проверки дохода и договора банком."
+                        else "При вашем взносе расчётный платёж выше лимита или сумма превышает лимит программы.",
+                        style = MaterialTheme.typography.bodyMedium)
+                    val alternative = evaluations.firstOrNull { ev ->
+                        suggested.verdict != PdnVerdict.PASS && ev.verdict == PdnVerdict.PASS &&
+                            ev.downPaymentByn <= profile.availableDownPayment(car.priceByn) + 0.01 &&
+                            !CreditCalculator.excludesApplicant(ev.program, profile)
+                    }
+                    if (alternative != null) Text("По сохранённым условиям ${alternative.program.bankName} платёж укладывается в лимит. Ставку и доступность нужно подтвердить.", style = MaterialTheme.typography.bodySmall)
                     Text(suggested.program.liveRateNote ?: "Расчёт по сохранённым условиям",
                         style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                } else {
+                    Text("В базе нет подходящего кредита с вашим взносом и типом занятости. Причины указаны у программ ниже.")
                 }
 
                 Text(
@@ -427,6 +442,9 @@ private fun CarDetailPane(
                     }
                 }
 
+                if (car.dealerId == "nts_ev" && car.brandModel.contains("Xiaoma", ignoreCase = true)) {
+                    Text(car.priceNote, style = MaterialTheme.typography.bodyMedium)
+                }
                 if (dealer != null) {
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                     Row(
@@ -484,6 +502,18 @@ private fun CarDetailPane(
             }
         }
 
+        if (car.brandModel.contains("Xiaoma", ignoreCase = true) && car.brandModel.contains("222")) {
+            Column(modifier = Modifier.padding(horizontal = 12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text("Доставка в Гомеле", style = MaterialTheme.typography.titleLarge)
+                Text("При −5 °C белорусский тест дал около 85 км до остатка 15%. Для смены с ночной зарядкой ориентируйтесь на 60–70 км вместе с дорогой домой.")
+                Text("От 100 км зимой планируйте остановку. В тесте за 10 минут машина приняла 1,14 кВт·ч. При таком темпе с 20 до 80% потребуется около 95 минут.")
+                Text("До покупки уточните у парка допуск трёхдверной машины для ваших заказов, а у дилера — гарантию при работе в доставке.")
+                OutlinedButton(onClick = { openExternalUrl(context, "https://xn----7sbbeeptbfadjdvm5ab9bqj.xn--p1ai/2026/03/01/faw-bestune-xiaoma-2/") }) {
+                    Text("Зимний тест Xiaoma")
+                }
+            }
+        }
+
         // Down payment selector right in detail pane
         Surface(
             shape = RoundedCornerShape(18.dp),
@@ -492,7 +522,7 @@ private fun CarDetailPane(
         ) {
             Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
-                    "Первоначальный взнос (ПВ): ${profile.downPaymentPct}% (${Formatters.byn(car.priceByn * profile.downPaymentPct / 100.0)})",
+                    "Ваш первоначальный взнос · ${Formatters.byn(profile.availableDownPayment(car.priceByn))}",
                     style = MaterialTheme.typography.labelLarge.copy(fontFeatureSettings = "tnum")
                 )
                 @OptIn(ExperimentalLayoutApi::class)
@@ -551,7 +581,10 @@ private fun CarDetailPane(
                             )
                         }
                         Spacer(Modifier.width(8.dp))
-                        PdnStatusPill(verdict = ev.verdict, monthlyByn = ev.decidingMonthlyByn)
+                        if (!CreditCalculator.excludesApplicant(ev.program, profile) &&
+                            ev.downPaymentByn <= profile.availableDownPayment(car.priceByn) + 0.01) {
+                            PdnStatusPill(verdict = ev.verdict, monthlyByn = ev.decidingMonthlyByn)
+                        }
                     }
 
                     Text(
@@ -579,11 +612,20 @@ private fun CarDetailPane(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
-                        text = ev.reasonRu,
+                        text = when {
+                            CreditCalculator.excludesApplicant(ev.program, profile) -> "Онлайн-программа недоступна сотрудникам МВД. Условия в отделении уточняются отдельно."
+                            CreditCalculator.requiredDownPayment(ev) > profile.availableDownPayment(car.priceByn) + 0.01 -> {
+                                val needed = kotlin.math.ceil(CreditCalculator.requiredDownPayment(ev))
+                                val extra = kotlin.math.ceil(needed - profile.availableDownPayment(car.priceByn))
+                                "Нужен взнос от ${Formatters.byn(needed)} · добавить ${Formatters.byn(extra)}."
+                            }
+                            else -> ev.reasonRu
+                        },
                         style = MaterialTheme.typography.bodySmall,
-                        color = if (ev.verdict == PdnVerdict.PASS) sem.passAccent else MaterialTheme.colorScheme.onSurfaceVariant
+                        color = if (!CreditCalculator.excludesApplicant(ev.program, profile) && CreditCalculator.requiredDownPayment(ev) <= profile.availableDownPayment(car.priceByn) && ev.verdict == PdnVerdict.PASS) sem.passAccent else MaterialTheme.colorScheme.onSurfaceVariant
                     )
 
+                    if (ev.program.id == "belarus_ev_general") Text("Требуется поручитель. Банк проверяет подтверждённый доход и документы продавца.", style = MaterialTheme.typography.bodySmall)
                     @OptIn(ExperimentalLayoutApi::class)
                     FlowRow(
                         modifier = Modifier.fillMaxWidth(),

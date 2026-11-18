@@ -60,10 +60,15 @@ data class UserFinanceProfile(
     val useCustomDownPaymentByn: Boolean = false,
     val monthlySavingsFor2027Byn: Double = 600.0,
     val forceConservativeP0: Boolean = false,
-    val otherMonthlyDebtByn: Double = 0.0
+    val otherMonthlyDebtByn: Double = 0.0,
+    val deviceInstallmentByn: Double = 0.0,
+    val mvdEmployee: Boolean = false
 ) {
+    fun availableDownPayment(price: Double) =
+        if (useCustomDownPaymentByn) customDownPaymentByn else price * downPaymentPct / 100
+
     val totalPdnMaxByn: Double get() = salaryByn * pdnRatioCap
-    val freePdnRoomByn: Double get() = (totalPdnMaxByn - existingHousingCreditByn - otherMonthlyDebtByn).coerceAtLeast(0.0)
+    val freePdnRoomByn: Double get() = (totalPdnMaxByn - existingHousingCreditByn - deviceInstallmentByn - otherMonthlyDebtByn).coerceAtLeast(0.0)
 }
 
 data class CarOffer(
@@ -137,7 +142,8 @@ data class CreditProgram(
     val myfinUrl: String,
     val notesRu: String,
     val liveRateNote: String? = null,
-    val principalGraceMonths: Int = 0
+    val principalGraceMonths: Int = 0,
+    val excludesMvdOnline: Boolean = false
 )
 
 data class PaymentEvaluation(

@@ -58,6 +58,8 @@ class CatalogRepository(private val appContext: Context) {
     }
 
     private fun restoreProfile(): UserFinanceProfile {
+        val device = prefs.getFloat("device_installment", com.gomelev.app.BuildConfig.INITIAL_DEVICE_PAYMENT.toFloat())
+        val legacyDebt = prefs.getFloat("other_monthly_debt_byn", 0f)
         return UserFinanceProfile(
             salaryByn = prefs.getFloat("salary_byn", 2400f).toDouble(),
             existingHousingCreditByn = prefs.getFloat("housing_byn", 320f).toDouble(),
@@ -66,7 +68,11 @@ class CatalogRepository(private val appContext: Context) {
             useCustomDownPaymentByn = prefs.getBoolean("use_custom_pv", false),
             monthlySavingsFor2027Byn = prefs.getFloat("monthly_save_2027", 600f).toDouble(),
             forceConservativeP0 = prefs.getBoolean("conservative_p0", false),
-            otherMonthlyDebtByn = prefs.getFloat("other_monthly_debt_byn", 0f).toDouble()
+            deviceInstallmentByn = device.toDouble(),
+            mvdEmployee = prefs.getBoolean("mvd_employee", com.gomelev.app.BuildConfig.INITIAL_MVD_PROFILE),
+            // The previous field was the total of installments and other debt.
+            otherMonthlyDebtByn = if (prefs.contains("device_installment")) legacyDebt.toDouble()
+                else (legacyDebt - device).coerceAtLeast(0f).toDouble()
         )
     }
 
@@ -88,6 +94,7 @@ class CatalogRepository(private val appContext: Context) {
             runCatching {
                 val fields = JSONObject(saved)
                 if (program.id == "belveb_online") return@map program.copy(
+                    excludesMvdOnline = fields.optBoolean("excludesMvdOnline", program.excludesMvdOnline),
                     programName = "Автокредит онлайн", maxMonths = fields.getInt("maxMonths"),
                     maxAmountByn = fields.getDouble("cap"), graceMonths = 1,
                     graceRatePct = fields.getDouble("graceRate"), postRatePct = fields.getDouble("postRate"),
@@ -133,7 +140,7 @@ class CatalogRepository(private val appContext: Context) {
             val json = JSONObject(raw)
             base.map { c ->
                 val o = json.optJSONObject(c.id)
-                if (o != null) {
+                if (o != null && !(c.id == "faw_xiaoma" && o.optDouble("price") == 24990.0)) {
                     c.copy(
                         priceByn = o.optDouble("price", c.priceByn),
                         lastSyncedPriceNote = o.optString("note", "").takeIf { it.isNotBlank() }
@@ -159,6 +166,8 @@ class CatalogRepository(private val appContext: Context) {
                 .putFloat("monthly_save_2027", next.monthlySavingsFor2027Byn.toFloat())
                 .putBoolean("conservative_p0", next.forceConservativeP0)
                 .putFloat("other_monthly_debt_byn", next.otherMonthlyDebtByn.toFloat())
+                .putFloat("device_installment", next.deviceInstallmentByn.toFloat())
+                .putBoolean("mvd_employee", next.mvdEmployee)
                 .apply()
             next
         }
@@ -242,7 +251,7 @@ class CatalogRepository(private val appContext: Context) {
             }
             outcome.belvebOnline?.let { terms ->
                 editor.putString("belveb_online_terms", JSONObject().put("graceRate", terms.first)
-                    .put("postRate", terms.next).put("maxMonths", terms.months).put("cap", terms.cap)
+                    .put("postRate", terms.next).put("maxMonths", terms.months).put("cap", terms.cap).put("excludesMvdOnline", terms.excludesMvdOnline)
                     .put("checkedAt", outcome.syncEpochMs).toString())
                 updatedCredits++
             }
