@@ -11,6 +11,7 @@ import java.time.ZoneId
 /** A complete response is the replacement unit. A missing or malformed page keeps the previous snapshot. */
 internal object DealerInventory {
     const val FAW_URL = "https://faw-bestune.by/in-stock/gomel/"
+    const val GARAGE_URL = "https://autogarage.by/katalog/avto/?engine-type%5B%5D=electric&Status%5B%5D=in%20stock&filter=yes&price=no"
     const val APS_API = "https://apistock.aps.by/cars"
     private const val APS_URL = "https://dongfeng.by/stock/"
 
@@ -38,6 +39,41 @@ internal object DealerInventory {
                 .put("year", assets.firstOrNull { it.matches(Regex("""20\d\d""")) }?.toInt()))
         }
         return rows
+    }
+
+    /** Local stock at the Minsk price only. Auctions and personal imports have different financing. */
+    fun garagePage(html: String, fx: Double): Pair<JSONArray, String?> {
+        require(fx > 0 && fx.isFinite())
+        val doc = Jsoup.parse(html, GARAGE_URL)
+        require(doc.selectFirst(".category-list-catalog") != null)
+        val cards = doc.select("a.single-prod")
+        require(cards.isNotEmpty() || doc.text().contains("Ничего не найдено", ignoreCase = true))
+        val rows = JSONArray()
+        for (card in cards) {
+            val fields = card.select(".main-param-top .param-name").associate { it.text() to it.nextElementSibling()?.text() }
+            if (!fields["Тип двигателя"].equals("Электро", true) || card.select(".status-auto").text() != "В наличии") continue
+            val priceBox = card.select(".car-price-block-top").firstOrNull {
+                it.selectFirst("p")?.text()?.trimEnd(':') == "Цена в Минске"
+            } ?: continue
+            val text = priceBox.selectFirst("p + p")?.ownText()?.replace(" ", "")?.replace("\u00a0", "") ?: continue
+            val m = Regex("""([0-9]+(?:[.,][0-9]+)?)(\$|BYN)""").matchEntire(text) ?: continue
+            val amount = m.groupValues[1].replace(',', '.').toDouble()
+            if (amount <= 0) continue
+            val usd = m.groupValues[2] == "$"
+            val url = card.absUrl("href")
+            require(url.startsWith("https://autogarage.by/"))
+            val name = card.selectFirst(".catalog-title span")!!.text().substringBefore(" В НАЛИЧИИ")
+            rows.put(JSONObject().put("id", "ag_" + url.trimEnd('/').substringAfterLast('/'))
+                .put("name", name).put("location", "Минск").put("stock", StockStatus.RB_WAREHOUSE.name)
+                .put("price", if (usd) kotlin.math.round(amount * fx) else amount)
+                .put("priceNote", if (usd) "Эквивалент ${amount.toInt()} USD по курсу НБ РБ $fx" else "Цена в Минске")
+                .put("year", fields["Год выпуска"]?.toIntOrNull()).put("url", url)
+                .put("photo", card.selectFirst(".catalog-thumb img[src]")?.absUrl("src"))
+                .put("conditionKnown", false))
+        }
+        val next = doc.selectFirst("a.next.page-numbers")?.absUrl("href")
+        require(next == null || next.startsWith("https://autogarage.by/katalog/avto/page/"))
+        return rows to next
     }
 
     fun apsPage(raw: JSONArray): JSONArray {
@@ -72,11 +108,11 @@ internal object DealerInventory {
 
     fun merge(base: List<CarOffer>, snapshots: JSONObject): List<CarOffer> {
         val result = base.toMutableList()
-        for (dealer in listOf("nts_ev", "autopromservis")) {
+        for (dealer in listOf("nts_ev", "autopromservis", "autogarage")) {
             val snapshot = snapshots.optJSONObject(dealer) ?: continue
             val rows = snapshot.getJSONArray("rows")
             val date = Instant.ofEpochMilli(snapshot.getLong("checked")).atZone(ZoneId.of("Europe/Minsk")).toLocalDate()
-            val seedId = if (dealer == "nts_ev") "faw_xiaoma" else "dongfeng_box"
+            val seedId = when (dealer) { "nts_ev" -> "faw_xiaoma"; "autopromservis" -> "dongfeng_box"; else -> null }
             result.removeAll { it.id == seedId }
             for (i in 0 until rows.length()) {
                 val row = rows.getJSONObject(i)
@@ -84,18 +120,19 @@ internal object DealerInventory {
                 val seed = base.firstOrNull { it.id == seedId && it.imageSource == url && dealer == "nts_ev" }
                 val year = row.optInt("year").takeIf { it > 0 }
                 result += CarOffer(id = seed?.id ?: row.getString("id"), brandModel = row.getString("name"),
-                    trimAndYear = listOfNotNull(row.optString("trim").ifBlank { null }, year?.toString()).joinToString(" · "),
+                    trimAndYear = listOfNotNull(row.optString("trim").ifBlank { null }, year?.toString(),
+                        "Пробег и состояние уточняются".takeIf { !row.optBoolean("conditionKnown", true) }).joinToString(" · "),
                     bodyType = row.optString("body", seed?.bodyType ?: "Электромобиль"),
                     batteryOrEngine = seed?.batteryOrEngine ?: "Электропривод",
                     rangeOrSpec = row.optString("range", seed?.rangeOrSpec ?: "Запас хода уточните у дилера"),
-                    priceByn = row.getDouble("price"), priceNote = "Цена витрины дилера", isEv = true, isUsed = false,
+                    priceByn = row.getDouble("price"), priceNote = row.optString("priceNote", "Цена витрины дилера"), isEv = true, isUsed = false,
                     isGeelyEx = false, isBelPartner = false, isDongfengIceOrForthing = false, isDealerLegalEntity = true,
                     stockStatus = StockStatus.valueOf(row.getString("stock")), cityNote = row.getString("location"),
                     dealerId = dealer, imageRes = seed?.imageRes, imageSource = url, imageCredit = "Фото дилера",
                     listingUrl = url, forecast2027BullPct = seed?.forecast2027BullPct ?: 0.0,
                     forecast2027BasePct = seed?.forecast2027BasePct ?: 0.0, forecast2027BearPct = seed?.forecast2027BearPct ?: 0.0,
                     forecastDriverRu = seed?.forecastDriverRu.orEmpty(), lastSyncedPriceNote = "Витрина · $date",
-                    modelYear = year, remotePhoto = row.optString("photo").takeIf { it.startsWith("https://") })
+                    modelYear = year, conditionKnown = row.optBoolean("conditionKnown", true), remotePhoto = row.optString("photo").takeIf { it.startsWith("https://") })
             }
         }
         return result

@@ -58,6 +58,11 @@ import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -114,6 +119,20 @@ fun GomelEvRoot(
     val selectedDealerId by viewModel.selectedDealerId.collectAsStateWithLifecycle()
     val selectedProgramId by viewModel.selectedProgramId.collectAsStateWithLifecycle()
 
+    val snackbars = remember { SnackbarHostState() }
+    var manualRefresh by remember { mutableStateOf(false) }
+    val refresh = {
+        manualRefresh = true
+        viewModel.triggerLiveSync()
+    }
+    LaunchedEffect(snapshot.isSyncing, snapshot.updateStatusMessage) {
+        val message = snapshot.updateStatusMessage
+        if (manualRefresh && !snapshot.isSyncing && message != null) {
+            manualRefresh = false
+            snackbars.showSnackbar(message)
+        }
+    }
+
     LaunchedEffect(Unit) {
         viewModel.onAppLaunchSyncIfNeeded()
     }
@@ -130,7 +149,7 @@ fun GomelEvRoot(
                     themeMode = themeMode,
                     isExpandedWidth = isExpandedWidth,
                     onCycleTheme = viewModel::cycleThemeMode,
-                    onSyncClick = viewModel::triggerLiveSync
+                    onSyncClick = refresh
                 )
 
                 AnimatedContent(
@@ -162,7 +181,7 @@ fun GomelEvRoot(
                             selectedCarId = selectedCarId,
                             onSelectCar = viewModel::selectCar,
                             onUpdateProfile = viewModel::updateProfile,
-                            onTriggerSync = viewModel::triggerLiveSync
+                            onTriggerSync = refresh
                         )
 
                         AppDestination.DEALERS -> DealersScreen(
@@ -184,7 +203,7 @@ fun GomelEvRoot(
                             selectedProgramId = selectedProgramId,
                             onSelectProgram = viewModel::selectProgram,
                             onUpdateProfile = viewModel::updateProfile,
-                            onTriggerSync = viewModel::triggerLiveSync
+                            onTriggerSync = refresh
                         )
 
                         AppDestination.FORECAST_SYNC -> ForecastAndSyncScreen(
@@ -196,7 +215,7 @@ fun GomelEvRoot(
                             isExpandedWidth = showTwoPanes,
                             onSelectScenario = viewModel::selectScenario,
                             onUpdateProfile = viewModel::updateProfile,
-                            onTriggerSync = viewModel::triggerLiveSync,
+                            onTriggerSync = refresh,
                             onToggleAutoSync = viewModel::toggleAutoSync
                         )
                     }
@@ -206,6 +225,7 @@ fun GomelEvRoot(
     }
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbars) },
         modifier = Modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.background,
         contentWindowInsets = WindowInsets(0, 0, 0, 0),

@@ -271,8 +271,7 @@ private fun ForecastSectionContent(
                 valueRange = 200f..1000f
             )
             Text(
-                "При свободном ПДН ${profile.freePdnRoomByn.toInt()} BYN/мес: с 0% ПВ сразу доступны FAW Xiaoma, Peugeot iOn, Geely EX2 Pro и BYD Seagull б/у (БГПБ 12 лет). " +
-                    "Накопив ${Formatters.bynShort(savedBy2027)} BYN к сентябрю 2027, можно добавить первый взнос и выйти на более высокий класс EV.",
+                "Расчётный лимит платежа — ${Formatters.byn(profile.freePdnRoomByn)} в месяц. В каталоге фильтр «По моему ПДН» учитывает ваш взнос и текущие условия программ.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -411,7 +410,7 @@ private fun SyncControlSection(
             }
 
             Text(
-                "Условия кредитов сверяются по программам. Остальные предложения показаны по сохранённому каталогу.",
+                "Склады FAW, Dongfeng и AutoGarage, витрина Myfin и три банковские программы обновляются из сети. При сбое сохраняется предыдущая версия источника.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )

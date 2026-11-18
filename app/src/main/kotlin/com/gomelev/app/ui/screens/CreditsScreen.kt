@@ -354,7 +354,7 @@ private fun CreditProgramDetailPane(
         CreditCalculator.steppedAnnuity(loan, program.graceRatePct, program.graceMonths, program.postRatePct, program.maxMonths)
     }
     val diff = remember(loan, program) {
-        CreditCalculator.differentiatedDetails(loan, program.graceRatePct, program.graceMonths, program.postRatePct, program.maxMonths)
+        CreditCalculator.differentiatedDetails(loan, program.graceRatePct, program.graceMonths, program.postRatePct, program.maxMonths, program.principalGraceMonths)
     }
     val currentPeak = if (program.scheduleType == ScheduleType.DIFFERENTIATED) {
         maxOf(diff.month1Grace, diff.peakPostGrace)
@@ -502,7 +502,7 @@ private fun CreditProgramDetailPane(
                     Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         val tc = if (passes) sem.onPassContainer else sem.onFailContainer
                         Text(
-                            text = if (passes) "Одобрение по ПДН: ПРОХОДИТ (≤ ${Formatters.bynShort(profile.freePdnRoomByn)})" else "Одобрение по ПДН: ОТКАЗ (> ${Formatters.bynShort(profile.freePdnRoomByn)})",
+                            text = if (passes) "В расчётном лимите (≤ ${Formatters.bynShort(profile.freePdnRoomByn)})" else "Выше расчётного лимита (> ${Formatters.bynShort(profile.freePdnRoomByn)})",
                             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                             color = tc
                         )

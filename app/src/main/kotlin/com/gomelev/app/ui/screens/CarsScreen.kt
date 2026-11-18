@@ -116,7 +116,7 @@ fun CarsScreen(
     val filtered = remember(evaluatedPairs, budget, newOnly, inGomelOnly, withinPdn) {
         evaluatedPairs.filter { (car, payment) ->
             car.priceByn <= budget.ceiling && (!withinPdn || payment?.verdict == PdnVerdict.PASS) &&
-                (!newOnly || !car.isUsed) &&
+                (!newOnly || (car.conditionKnown && !car.isUsed)) &&
                 (!inGomelOnly || car.stockStatus == StockStatus.IN_GOMEL)
         }.sortedWith(
             compareBy<Pair<CarOffer, PaymentEvaluation?>> { it.second?.verdict?.ordinal ?: Int.MAX_VALUE }
@@ -134,6 +134,8 @@ fun CarsScreen(
     androidx.compose.runtime.LaunchedEffect(cars, selectedCarId) {
         if (selectedCarId != null && cars.none { it.id == selectedCarId }) onSelectCar(null)
     }
+    var previousDetail by remember { mutableStateOf<CarOffer?>(null) }
+    androidx.compose.runtime.SideEffect { if (activeCar != null) previousDetail = activeCar }
     if (!isExpandedWidth && selectedCarId != null) {
         BackHandler { onSelectCar(null) }
     }
@@ -216,10 +218,11 @@ fun CarsScreen(
             }
         },
         detailPane = {
-            if (activeCar != null) {
+            val displayed = activeCar ?: previousDetail?.takeIf { !isExpandedWidth }
+            if (displayed != null) {
                 CarDetailPane(
-                    car = activeCar,
-                    dealer = dealers.find { it.id == activeCar.dealerId },
+                    car = displayed,
+                    dealer = dealers.find { it.id == displayed.dealerId },
                     programs = programs,
                     profile = profile,
                     snapshot = snapshot,
@@ -305,7 +308,7 @@ private fun CarListCard(
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
-                        text = car.stockStatus.labelRu,
+                        text = if (car.lastSyncedPriceNote == null) "База · ${car.stockStatus.labelRu}" else car.stockStatus.labelRu,
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.primary
                     )
@@ -438,7 +441,7 @@ private fun CarDetailPane(
                 if (car.lastSyncedPriceNote != null) {
                     Surface(shape = CircleShape, color = sem.passContainer) {
                         Text(
-                            text = car.lastSyncedPriceNote,
+                            text = if (car.id.startsWith("ag_")) "${car.lastSyncedPriceNote} · ${car.priceNote}" else car.lastSyncedPriceNote,
                             style = MaterialTheme.typography.labelMedium,
                             color = sem.onPassContainer,
                             modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)

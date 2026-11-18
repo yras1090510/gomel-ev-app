@@ -57,15 +57,19 @@ try:
     tap(find("FAW Bestune Xiaoma 222", scroll=True))
     find("Назад к каталогу")
     capture("02-selected")
-    shell("wm", "size", "800x850")
+    # Fold8 open in its wider natural orientation; 1/3 of 2448 x 1848.
+    shell("wm", "size", "816x616")
     find("Электромобили для доставки")
     matches = [n for n in nodes() if n.get("text") == "FAW Bestune Xiaoma 222"]
     assert any(int(re.findall(r"\d+", n.get("bounds"))[0]) > 390 for n in matches), "detail pane missing"
     capture("03-unfolded")
-    shell("wm", "size", "400x840")
+    # Fold8 cover has the 1248:1972 aspect ratio.
+    shell("wm", "size", "416x657")
     find("Назад к каталогу")
     find("FAW Bestune Xiaoma 222")
     capture("04-refolded")
+    shell("wm", "size", "400x840")
+    find("Назад к каталогу")
     shell("input", "keyevent", "4")
     find("Электромобили для доставки")
     capture("05-phone")

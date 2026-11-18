@@ -42,6 +42,18 @@ class LiveCatalogTest {
         assertEquals("IN_GOMEL", DealerInventory.apsPage(rows).getJSONObject(0).getString("stock"))
     }
 
+    @Test fun garageUsesOnlyTheLocalPriceAndRecordsWhenConditionIsUnknown() {
+        val page = """<section class="category-list-catalog"><a class="single-prod" href="/test-ev/">
+            <span class="status-auto">В наличии</span><p class="catalog-title"><span>Test EV</span></p>
+            <div class="main-param-top"><p class="param-name">Тип двигателя</p><p>Электро</p></div>
+            <div class="car-price-block-top"><p>Цена в Минске:</p><p>10 000 $</p></div></a></section>"""
+        val (rows, next) = DealerInventory.garagePage(page, 3.0)
+        assertNull(next)
+        assertEquals(30000.0, rows.getJSONObject(0).getDouble("price"), 0.01)
+        assertFalse(rows.getJSONObject(0).getBoolean("conditionKnown"))
+        assertEquals(0, DealerInventory.garagePage(page.replace("Цена в Минске:", "Цена в Китае:"), 3.0).first.length())
+    }
+
     @Test fun belvebRateChangeAndTermAreParsedTogether() {
         val html = """В приложении UP Online Срок кредита От 1 года до 8 лет включительно Процентная ставка
             Первый 1 месяц – 9,90 %, начиная со второго месяца – 17,5 % (СР+8,25 п.п)

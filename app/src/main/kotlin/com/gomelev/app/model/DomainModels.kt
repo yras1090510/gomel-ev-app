@@ -94,7 +94,8 @@ data class CarOffer(
     val forecastDriverRu: String,
     val lastSyncedPriceNote: String? = null,
     val modelYear: Int? = null,
-    val remotePhoto: String? = null
+    val remotePhoto: String? = null,
+    val conditionKnown: Boolean = true
 )
 
 data class DealerEntity(

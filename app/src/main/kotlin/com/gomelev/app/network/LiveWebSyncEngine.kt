@@ -89,6 +89,7 @@ class LiveWebSyncEngine {
         coroutineScope {
             val nbrbDeferred = async { syncNbrbRate(now) }
             val refinancingDeferred = async { syncRefinancingRate(now) }
+            val garageDeferred = async { syncGarage(now, nbrbDeferred.await().usdRate) }
             val apsDeferred = async { syncAps(now) }
             val belvebDeferred = async {
                 val url = "https://www.belveb.by/credits/avtokredit-online/"
@@ -167,6 +168,7 @@ class LiveWebSyncEngine {
 
             val nbrbRes = nbrbDeferred.await()
             val (listings, myfinLog) = myfinDeferred.await()
+            val (garage, garageLog) = garageDeferred.await()
             val (aps, apsLog) = apsDeferred.await()
             val (belveb, belvebLog) = belvebDeferred.await()
             val (refinancingRate, refinancingLog) = refinancingDeferred.await()
@@ -179,7 +181,7 @@ class LiveWebSyncEngine {
             val patchMap = dealerResults.associate { it.first }
             val dealerLogs = dealerResults.map { it.second }
 
-            val allLogs = listOf(nbrbRes.log, refinancingLog, myfinLog, apsLog, belvebLog) + bankLogs + extraCarLogs + dealerLogs
+            val allLogs = listOf(nbrbRes.log, refinancingLog, myfinLog, apsLog, garageLog, belvebLog) + bankLogs + extraCarLogs + dealerLogs
             LiveSyncOutcome(
                 usdRate = nbrbRes.usdRate,
                 nbrbDateLabel = nbrbRes.dateLabel,
@@ -187,6 +189,7 @@ class LiveWebSyncEngine {
                 belarusbankTerms = bankTerms,
                 inventories = buildMap {
                     dealerResults.forEach { result -> result.third?.let { put(result.first.first, it) } }
+                    garage?.let { put("autogarage", it) }
                     aps?.let { put("autopromservis", it) }
                 },
                 bankListings = listings,
@@ -282,6 +285,32 @@ class LiveWebSyncEngine {
         return listings to SyncSourceLog("Myfin · предложения автокредитов", BankListings.URL, "Банки",
             listings != null, code, System.currentTimeMillis() - start,
             listings?.let { "Прочитано предложений: ${it.size}" } ?: "Каталог не прочитан", now)
+    }
+
+    private fun syncGarage(now: Long, fx: Double?): Pair<JSONArray?, SyncSourceLog> {
+        val start = System.currentTimeMillis()
+        var code: Int? = null
+        val rows = runCatching {
+            val rate = requireNotNull(fx)
+            val all = linkedMapOf<String, JSONObject>()
+            var url = DealerInventory.GARAGE_URL
+            val visited = mutableSetOf<String>()
+            while (visited.size < 30 && visited.add(url)) {
+                val response = fetchText(url)
+                code = response.first
+                require(code == 200)
+                val (batch, next) = DealerInventory.garagePage(requireNotNull(response.third), rate)
+                for (i in 0 until batch.length()) {
+                    val row = batch.getJSONObject(i)
+                    all[row.getString("id")] = row
+                }
+                url = next ?: return@runCatching JSONArray(all.values)
+            }
+            error("Неполный каталог")
+        }.getOrNull()
+        return rows to SyncSourceLog("AutoGarage · склад в Минске", DealerInventory.GARAGE_URL, "Автомобили",
+            rows != null, code, System.currentTimeMillis() - start,
+            rows?.let { "Цены витрины в Минске: ${it.length()}" } ?: "Склад или курс не получен", now)
     }
 
     private fun syncAps(now: Long): Pair<JSONArray?, SyncSourceLog> {

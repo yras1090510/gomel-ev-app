@@ -185,6 +185,8 @@ object CreditCalculator {
     }
 
     fun isProgramEligibleForCar(car: CarOffer, program: CreditProgram): Boolean {
+        if (!car.conditionKnown && (program.scope !in setOf(CreditScope.UNIVERSAL_AUTO, CreditScope.CONSUMER) ||
+                program.id.contains("new_only"))) return false
         return when (program.scope) {
             CreditScope.GEELY_EV -> car.isGeelyEx
             CreditScope.BEL_AUTO -> {

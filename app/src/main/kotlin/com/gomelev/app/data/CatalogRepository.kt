@@ -256,7 +256,7 @@ class CatalogRepository(private val appContext: Context) {
                 if (failed > 0) append("Источников недоступно: $failed. ")
                 val added = refreshed.count { it.id !in previous }
                 val changed = refreshed.count { previous[it.id]?.priceByn?.let { old -> old != it.priceByn } == true }
-                append("Склады: ${outcome.inventories.size}/2 · новых авто: $added · изменённых цен: $changed. ")
+                append("Склады: ${outcome.inventories.size}/3 · новых авто: $added · изменённых цен: $changed. ")
                 append("Сверено банковских программ: $updatedCredits/3.")
             }
 
