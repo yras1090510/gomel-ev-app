@@ -359,6 +359,13 @@ object CreditCalculator {
             )
     }
 
+    /** Evaluations are ranked by fit and peak payment. Prefer offers whose terms have been read from the bank. */
+    fun withinDownPayment(car: CarOffer, ranked: List<PaymentEvaluation>, profile: UserFinanceProfile): PaymentEvaluation? {
+        val cash = if (profile.useCustomDownPaymentByn) profile.customDownPaymentByn else car.priceByn * profile.downPaymentPct / 100
+        val feasible = ranked.filter { it.downPaymentByn <= cash + 0.01 }
+        return feasible.firstOrNull { it.program.liveRateNote != null } ?: feasible.firstOrNull()
+    }
+
     fun bestEvaluationForCar(
         car: CarOffer,
         programs: List<CreditProgram>,

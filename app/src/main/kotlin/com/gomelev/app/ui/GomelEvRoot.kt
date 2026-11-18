@@ -168,7 +168,6 @@ fun GomelEvRoot(
                             dealers = dealers,
                             programs = programs,
                             profile = profile,
-                            snapshot = snapshot,
                             isExpandedWidth = showTwoPanes,
                             foldingFeature = foldingFeature,
                             selectedCarId = selectedCarId,

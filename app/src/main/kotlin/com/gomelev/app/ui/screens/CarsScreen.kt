@@ -59,7 +59,6 @@ import com.gomelev.app.model.CarOffer
 import com.gomelev.app.model.CreditProgram
 import com.gomelev.app.model.CreditScope
 import com.gomelev.app.model.DealerEntity
-import com.gomelev.app.model.MarketSnapshot
 import com.gomelev.app.model.PaymentEvaluation
 import com.gomelev.app.model.PdnVerdict
 import com.gomelev.app.model.StockStatus
@@ -87,7 +86,6 @@ fun CarsScreen(
     dealers: List<DealerEntity>,
     programs: List<CreditProgram>,
     profile: UserFinanceProfile,
-    snapshot: MarketSnapshot,
     isExpandedWidth: Boolean,
     foldingFeature: FoldingFeature?,
     selectedCarId: String?,
@@ -104,11 +102,8 @@ fun CarsScreen(
     val evaluatedPairs = remember(cars, programs, profile, budget) {
         val loans = programs.filter { it.scope != CreditScope.LEASING }
         cars.filter { it.isEv && it.priceByn <= budget.ceiling }.map { car ->
-            val availableDown = if (profile.useCustomDownPaymentByn) profile.customDownPaymentByn
-                else car.priceByn * profile.downPaymentPct / 100
-            val feasible = loans.filter { car.priceByn * it.minDownPaymentPct / 100 <= availableDown + 0.01 }
-            val checked = feasible.filter { it.liveRateNote != null && CreditCalculator.isProgramEligibleForCar(car, it) }
-            car to CreditCalculator.bestEvaluationForCar(car, checked.ifEmpty { feasible }, profile)
+            val evaluations = CreditCalculator.evaluateAllProgramsForCar(car, loans, profile)
+            car to CreditCalculator.withinDownPayment(car, evaluations, profile)
         }
     }
 
@@ -221,7 +216,6 @@ fun CarsScreen(
                     dealer = dealers.find { it.id == displayed.dealerId },
                     programs = programs,
                     profile = profile,
-                    snapshot = snapshot,
                     showBackButton = !isExpandedWidth,
                     onBack = { onSelectCar(null) },
                     onUpdateProfile = onUpdateProfile
@@ -341,7 +335,6 @@ private fun CarDetailPane(
     dealer: DealerEntity?,
     programs: List<CreditProgram>,
     profile: UserFinanceProfile,
-    snapshot: MarketSnapshot,
     showBackButton: Boolean,
     onBack: () -> Unit,
     onUpdateProfile: ((UserFinanceProfile) -> UserFinanceProfile) -> Unit
@@ -383,30 +376,31 @@ private fun CarDetailPane(
             border = BorderStroke(0.8.dp, MaterialTheme.colorScheme.outlineVariant)
         ) {
             Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.Top
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(car.brandModel, style = MaterialTheme.typography.headlineMedium)
-                        Text(
-                            "${car.trimAndYear} · ${car.bodyType}",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                Text(car.brandModel, style = MaterialTheme.typography.headlineSmall)
+                Text("${car.trimAndYear} · ${car.bodyType}", style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+                val suggested = remember(car, evaluations, profile) {
+                    CreditCalculator.withinDownPayment(car, evaluations, profile)
+                }
+                @OptIn(ExperimentalLayoutApi::class)
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(22.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Column {
+                        Text(if (car.importEstimate) "Под ключ, оценка" else "Цена", style = MaterialTheme.typography.labelMedium)
+                        Text(Formatters.byn(car.priceByn), style = MaterialTheme.typography.titleLarge)
                     }
-                    Column(horizontalAlignment = Alignment.End) {
-                        Text(
-                            Formatters.byn(car.priceByn),
-                            style = MaterialTheme.typography.headlineMedium.copy(fontFeatureSettings = "tnum")
-                        )
-                        Text(
-                            Formatters.usdFromByn(car.priceByn, snapshot.usdBynRate),
-                            style = MaterialTheme.typography.bodySmall.copy(fontFeatureSettings = "tnum"),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                    if (suggested != null) {
+                        Column {
+                            Text("Пик платежа в месяц", style = MaterialTheme.typography.labelMedium)
+                            Text(Formatters.byn(suggested.decidingMonthlyByn), style = MaterialTheme.typography.titleLarge,
+                                color = MaterialTheme.colorScheme.primary)
+                        }
                     }
+                }
+                if (suggested != null) {
+                    Text("${suggested.program.bankName} · ${suggested.program.maxMonths} мес. · взнос ${Formatters.byn(suggested.downPaymentByn)}",
+                        style = MaterialTheme.typography.bodySmall)
+                    Text(suggested.program.liveRateNote ?: "Расчёт по сохранённым условиям",
+                        style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
 
                 Text(
